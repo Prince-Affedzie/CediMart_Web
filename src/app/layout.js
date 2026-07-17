@@ -62,7 +62,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="inter_396b12ce-module__rRjk0G__className bg-gray-50">
+      <body className="inter_396b12ce-module__rRjk0G__className bg-gray-50" suppressHydrationWarning>
         <Header />
         <main>{children}</main>
         <Footer />

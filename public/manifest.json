@@ -1,0 +1,17 @@
+
+{
+  "name": "CediMart - Campus Marketplace",
+  "short_name": "CediMart",
+  "description": "Buy, sell, and connect with verified students across Ghana's top universities.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090F",
+  "theme_color": "#6366F1",
+  "icons": [
+    {
+      "src": "/app/icon.jpg",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

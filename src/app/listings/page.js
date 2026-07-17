@@ -1,7 +1,7 @@
 // src/app/listings/page.js
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef,Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getAllProducts, getProductsByCategory, searchProducts } from '@/apis/productApi';
@@ -162,6 +162,35 @@ function ProductCard({ product, viewMode }) {
   );
 }
 
+
+function ListingsFallback() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#09090F',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column',
+      gap: '16px',
+    }}>
+      <div style={{
+        width: '40px',
+        height: '40px',
+        border: '3px solid #27273A',
+        borderTopColor: '#10B981',
+        borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite',
+      }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <p style={{ color: '#52525B', fontFamily: 'sans-serif', fontSize: '14px' }}>
+        Loading listings...
+      </p>
+    </div>
+  );
+}
+
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function ListingsPage() {
   const router = useRouter();
@@ -279,7 +308,7 @@ export default function ListingsPage() {
   const activeFilterCount = [selectedCampus, selectedCondition, negotiableOnly, minPrice, maxPrice].filter(Boolean).length;
 
   return (
-    <>
+    <Suspense fallback={<ListingsFallback />}>
       <style>{listingsStyles}</style>
       <div className="l-page">
         {/* Header */}
@@ -511,7 +540,7 @@ export default function ListingsPage() {
           )}
         </div>
       </div>
-    </>
+    </Suspense>
   );
 }
 
