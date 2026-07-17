@@ -1,10 +1,13 @@
 // src/app/listings/page.js
 'use client';
 
-import { useState, useEffect, useCallback, useRef,Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { getAllProducts, getProductsByCategory, searchProducts } from '@/apis/productApi';
+
+// Force dynamic rendering to prevent prerender errors
+export const dynamic = 'force-dynamic';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
@@ -162,7 +165,7 @@ function ProductCard({ product, viewMode }) {
   );
 }
 
-
+// ─── Loading Fallback ──────────────────────────────────────────────────────────
 function ListingsFallback() {
   return (
     <div style={{
@@ -190,9 +193,8 @@ function ListingsFallback() {
   );
 }
 
-
-// ─── Main Page ─────────────────────────────────────────────────────────────────
-export default function ListingsPage() {
+// ─── Listings Content (uses useSearchParams) ───────────────────────────────────
+function ListingsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -225,13 +227,14 @@ export default function ListingsPage() {
   }, []);
 
   useEffect(() => {
+    if (!searchParams) return;
     const cat = searchParams.get('category');
     const camp = searchParams.get('campus');
     const q = searchParams.get('q');
     if (cat) setSelectedCategory(cat);
     if (camp) setSelectedCampus(camp);
     if (q) setSearchQuery(q);
-  }, []);
+  }, [searchParams]);
 
   const fetchProducts = useCallback(async (page = 1, append = false) => {
     fetchIdRef.current += 1;
@@ -287,7 +290,7 @@ export default function ListingsPage() {
 
   useEffect(() => {
     fetchProducts(1);
-  }, [selectedCategory, selectedCampus, selectedSort, selectedCondition, negotiableOnly, minPrice, maxPrice, searchQuery]);
+  }, [fetchProducts]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -308,7 +311,7 @@ export default function ListingsPage() {
   const activeFilterCount = [selectedCampus, selectedCondition, negotiableOnly, minPrice, maxPrice].filter(Boolean).length;
 
   return (
-    <Suspense fallback={<ListingsFallback />}>
+    <>
       <style>{listingsStyles}</style>
       <div className="l-page">
         {/* Header */}
@@ -360,7 +363,6 @@ export default function ListingsPage() {
         {/* Toolbar */}
         <div className="l-toolbar">
           <div className="l-toolbar-left">
-            {/* Campus Filter */}
             <select
               className="l-select"
               value={selectedCampus}
@@ -371,7 +373,6 @@ export default function ListingsPage() {
               ))}
             </select>
 
-            {/* Sort */}
             <select
               className="l-select"
               value={selectedSort}
@@ -382,7 +383,6 @@ export default function ListingsPage() {
               ))}
             </select>
 
-            {/* Filters Toggle */}
             <button
               className={`l-filter-btn ${activeFilterCount > 0 ? 'active' : ''}`}
               onClick={() => setShowFilters(!showFilters)}
@@ -392,7 +392,6 @@ export default function ListingsPage() {
           </div>
 
           <div className="l-toolbar-right">
-            {/* View Mode */}
             <div className="l-view-toggle">
               <button
                 className={`l-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
@@ -414,7 +413,6 @@ export default function ListingsPage() {
         {showFilters && (
           <div className="l-filters-panel">
             <div className="l-filters-grid">
-              {/* Condition */}
               <div className="l-filter-group">
                 <label className="l-filter-label">Condition</label>
                 <select
@@ -428,7 +426,6 @@ export default function ListingsPage() {
                 </select>
               </div>
 
-              {/* Price Range */}
               <div className="l-filter-group">
                 <label className="l-filter-label">Price Range (GH₵)</label>
                 <div className="l-price-inputs">
@@ -450,7 +447,6 @@ export default function ListingsPage() {
                 </div>
               </div>
 
-              {/* Negotiable Toggle */}
               <div className="l-filter-group">
                 <label className="l-filter-label">Options</label>
                 <label className="l-toggle">
@@ -540,6 +536,15 @@ export default function ListingsPage() {
           )}
         </div>
       </div>
+    </>
+  );
+}
+
+// ─── Main Exported Page ────────────────────────────────────────────────────────
+export default function ListingsPage() {
+  return (
+    <Suspense fallback={<ListingsFallback />}>
+      <ListingsContent />
     </Suspense>
   );
 }
@@ -558,13 +563,11 @@ const listingsStyles = `
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
 
-  /* ── Header ── */
   .l-header {
     background: ${C.surf};
     border-bottom: 1px solid ${C.border};
     padding: 14px 24px;
     position: sticky;
-     overflow-x: hidden;
     top: 0;
     z-index: 50;
   }
@@ -594,7 +597,6 @@ const listingsStyles = `
     font-family: 'JetBrains Mono', monospace;
   }
 
-  /* ── Search ── */
   .l-search-bar {
     background: ${C.surf};
     padding: 12px 24px;
@@ -646,7 +648,6 @@ const listingsStyles = `
     padding: 0 8px;
   }
 
-  /* ── Category Tabs ── */
   .l-cat-strip {
     background: ${C.surf};
     border-bottom: 1px solid ${C.border};
@@ -692,7 +693,6 @@ const listingsStyles = `
   .l-cat-emoji { font-size: 16px; }
   .l-cat-label { font-size: 12.5px; }
 
-  /* ── Toolbar ── */
   .l-toolbar {
     max-width: 1280px;
     margin: 0 auto;
@@ -768,7 +768,6 @@ const listingsStyles = `
     color: #fff;
   }
 
-  /* ── Filters Panel ── */
   .l-filters-panel {
     max-width: 1280px;
     margin: 0 auto;
@@ -868,7 +867,6 @@ const listingsStyles = `
     border-color: ${C.coral};
   }
 
-  /* ── Active Filter Chips ── */
   .l-active-filters {
     max-width: 1280px;
     margin: 0 auto;
@@ -898,7 +896,6 @@ const listingsStyles = `
     padding: 0;
   }
 
-  /* ── Products Area ── */
   .l-products-area {
     max-width: 1280px;
     margin: 0 auto;
@@ -921,7 +918,6 @@ const listingsStyles = `
     }
   }
 
-  /* ── Grid Card ── */
   .grid-card {
     background: ${C.surf};
     border: 1px solid ${C.border};
@@ -951,9 +947,7 @@ const listingsStyles = `
     height: 100%;
     object-fit: cover;
   }
-  .grid-card-img-placeholder {
-    font-size: 36px;
-  }
+  .grid-card-img-placeholder { font-size: 36px; }
   .grid-card-badge {
     position: absolute;
     top: 8px;
@@ -1007,11 +1001,7 @@ const listingsStyles = `
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .grid-card-meta {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
+  .grid-card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
   .grid-card-campus {
     font-size: 10px;
     font-weight: 600;
@@ -1053,7 +1043,6 @@ const listingsStyles = `
     white-space: nowrap;
   }
 
-  /* ── List Card ── */
   .list-card-h {
     display: flex;
     background: ${C.surf};
@@ -1077,11 +1066,7 @@ const listingsStyles = `
     flex-shrink: 0;
     position: relative;
   }
-  .list-card-img-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+  .list-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
   .list-card-img-placeholder { font-size: 32px; }
   .list-card-badge {
     position: absolute;
@@ -1102,11 +1087,7 @@ const listingsStyles = `
     gap: 8px;
     min-width: 0;
   }
-  .list-card-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-  }
+  .list-card-top { display: flex; justify-content: space-between; gap: 8px; }
   .list-card-name {
     font-size: 14px;
     font-weight: 700;
@@ -1117,17 +1098,8 @@ const listingsStyles = `
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  .list-card-cat {
-    font-size: 10px;
-    color: ${C.muted};
-    white-space: nowrap;
-    text-transform: capitalize;
-  }
-  .list-card-meta {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
+  .list-card-cat { font-size: 10px; color: ${C.muted}; white-space: nowrap; text-transform: capitalize; }
+  .list-card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
   .list-card-campus {
     font-size: 10px;
     font-weight: 600;
@@ -1182,26 +1154,15 @@ const listingsStyles = `
     padding: 6px 12px;
     border-radius: 8px;
   }
-  @media (max-width: 480px) {
-    .list-card-img-wrap { width: 100px; min-height: 100px; }
-    .list-card-content { padding: 10px; }
-  }
 
-  /* ── Skeleton ── */
   .list-card-skel {
     background: ${C.surf};
     border: 1px solid ${C.border};
     border-radius: 14px;
     overflow: hidden;
   }
-  .list-card-skel.list-view {
-    display: flex;
-  }
-  .list-card-skel.list-view .skel-img {
-    width: 140px;
-    min-height: 140px;
-    flex-shrink: 0;
-  }
+  .list-card-skel.list-view { display: flex; }
+  .list-card-skel.list-view .skel-img { width: 140px; min-height: 140px; flex-shrink: 0; }
   .skel-img {
     aspect-ratio: 1;
     background: ${C.elev};
@@ -1209,13 +1170,7 @@ const listingsStyles = `
     background: linear-gradient(90deg, ${C.surf} 25%, ${C.elev} 50%, ${C.surf} 75%);
     background-size: 400% 100%;
   }
-  .skel-info {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex: 1;
-  }
+  .skel-info { padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
   .skel-line {
     height: 12px;
     border-radius: 6px;
@@ -1228,21 +1183,12 @@ const listingsStyles = `
     100% { background-position: 200% center; }
   }
 
-  /* ── Empty State ── */
-  .l-empty {
-    text-align: center;
-    padding: 60px 20px;
-  }
+  .l-empty { text-align: center; padding: 60px 20px; }
   .l-empty-icon { font-size: 56px; margin-bottom: 16px; }
   .l-empty h3 { font-size: 20px; margin-bottom: 8px; }
   .l-empty p { color: ${C.muted}; margin-bottom: 20px; }
 
-  /* ── Load More ── */
-  .l-load-more-wrap {
-    display: flex;
-    justify-content: center;
-    padding: 24px 0;
-  }
+  .l-load-more-wrap { display: flex; justify-content: center; padding: 24px 0; }
   .l-load-more-btn {
     background: ${C.surf};
     border: 1.5px solid ${C.border};
@@ -1255,10 +1201,7 @@ const listingsStyles = `
     font-family: 'Plus Jakarta Sans', sans-serif;
     transition: all .2s;
   }
-  .l-load-more-btn:hover {
-    border-color: ${C.emerald};
-    color: ${C.emerald};
-  }
+  .l-load-more-btn:hover { border-color: ${C.emerald}; color: ${C.emerald}; }
   .l-loading-more {
     display: flex;
     align-items: center;
@@ -1276,16 +1219,17 @@ const listingsStyles = `
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Responsive ── */
   @media (max-width: 768px) {
     .l-header { padding: 10px 16px; }
     .l-search-bar { padding: 10px 16px; }
     .l-cat-scroll { padding: 0 16px; }
     .l-toolbar { padding: 10px 16px; }
     .l-products-area { padding: 12px 16px 40px; }
+  }
+  @media (max-width: 480px) {
+    .list-card-img-wrap { width: 100px; min-height: 100px; }
+    .list-card-content { padding: 10px; }
   }
 `;
