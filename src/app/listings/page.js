@@ -1,1235 +1,1090 @@
-// src/app/listings/page.js
 'use client';
 
-import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { getAllProducts, getProductsByCategory, searchProducts } from '@/apis/productApi';
+import { getAllProducts, getProductsByCategory } from '@/apis/productApi';
+import { CATEGORIES, SUBCATEGORIES } from '@/data/data';
 
-// Force dynamic rendering to prevent prerender errors
-export const dynamic = 'force-dynamic';
-
-// ─── Design tokens ─────────────────────────────────────────────────────────────
-const C = {
-  void:    '#09090F',
-  surf:    '#13131E',
-  elev:    '#1C1C2E',
-  indigo:  '#6366F1',
-  indigoL: '#818CF8',
-  indigoDim:'rgba(99,102,241,0.12)',
-  amber:   '#F59E0B',
-  amberL:  '#FCD34D',
-  amberDim:'rgba(245,158,11,0.12)',
-  coral:   '#F43F5E',
-  coralDim:'rgba(244,63,94,0.12)',
-  emerald: '#10B981',
-  emeraldDim:'rgba(16,185,129,0.12)',
-  white:   '#F1F0FF',
-  off:     '#A8A8B8',
-  muted:   '#52525B',
-  border:  '#27273A',
-};
-
-const CATEGORIES = [
-  { id: 'all', label: 'All', emoji: '🛍️', color: '#10B981' },
-  { id: 'electronics', label: 'Electronics', emoji: '🔌', color: '#6366F1' },
-  { id: 'phones and tablets', label: 'Phones & Tablets', emoji: '📱', color: '#8B5CF6' },
-  { id: 'computers and laptops', label: 'Computers', emoji: '💻', color: '#3B82F6' },
-  { id: 'gaming', label: 'Gaming', emoji: '🎮', color: '#EC4899' },
-  { id: 'fashion', label: 'Fashion', emoji: '👗', color: '#F43F5E' },
-  { id: 'books-course-materials', label: 'Books', emoji: '📚', color: '#F59E0B' },
-  { id: 'hostel-items', label: 'Hostel', emoji: '🏠', color: '#10B981' },
-  { id: 'appliances', label: 'Appliances', emoji: '🔧', color: '#06B6D4' },
-  { id: 'furniture', label: 'Furniture', emoji: '🪑', color: '#84CC16' },
-  { id: 'beauty and grooming', label: 'Beauty', emoji: '💄', color: '#EC4899' },
-  { id: 'sports and fitness', label: 'Sports', emoji: '⚽', color: '#14B8A6' },
-  { id: 'food and drinks', label: 'Food & Drinks', emoji: '🍕', color: '#F97316' },
-  { id: 'services', label: 'Services', emoji: '🛠️', color: '#6366F1' },
-  { id: 'other', label: 'Other', emoji: '📦', color: '#71717A' },
+const SORT_OPTIONS = [
+  { value: 'newest',     label: 'Newest'          },
+  { value: 'popular',    label: 'Most Popular'    },
+  { value: 'price-asc',  label: 'Price: Low → High'},
+  { value: 'price-desc', label: 'Price: High → Low'},
 ];
 
 const CAMPUS_OPTIONS = [
-  { id: '', label: 'All Campuses' },
-  { id: 'UG', label: 'University of Ghana' },
-  { id: 'KNUST', label: 'KNUST' },
-  { id: 'UCC', label: 'Univ. of Cape Coast' },
-  { id: 'ASHESI', label: 'Ashesi University' },
-  { id: 'GIMPA', label: 'GIMPA' },
-  { id: 'UEW', label: 'Univ. of Education' },
-  { id: 'UPSA', label: 'UPSA' },
-  { id: 'ATU', label: 'Accra Technical Univ.' },
+  { value: '', label: 'All Campuses' },
+  { value: 'UG',     label: 'University of Ghana' },
+  { value: 'KNUST',  label: 'KNUST'               },
+  { value: 'UCC',    label: 'UCC'                 },
+  { value: 'UPSA',   label: 'UPSA'                },
+  { value: 'GIMPA',  label: 'GIMPA'               },
+  { value: 'ASHESI', label: 'Ashesi'              },
+  { value: 'UEW',    label: 'UEW'                 },
+  { value: 'ATU',    label: 'ATU'                 },
 ];
 
-const SORT_OPTIONS = [
-  { id: 'newest', label: 'Newest First' },
-  { id: 'oldest', label: 'Oldest First' },
-  { id: 'price-asc', label: 'Price: Low → High' },
-  { id: 'price-desc', label: 'Price: High → Low' },
-  { id: 'popular', label: 'Most Popular' },
-];
+// ─── Design tokens (consistent with the rest of CediMart) ────────────────────
+const C = {
+  void:       '#09090F',
+  surf:       '#13131E',
+  elev:       '#1C1C2E',
+  border:     '#27273A',
+  indigo:     '#6366F1',
+  indigoL:    '#818CF8',
+  indigoDim:  'rgba(99,102,241,0.10)',
+  amber:      '#F59E0B',
+  amberDim:   'rgba(245,158,11,0.10)',
+  coral:      '#F43F5E',
+  white:      '#F1F0FF',
+  off:        '#A8A8B8',
+  muted:      '#52525B',
+};
 
-const CONDITION_OPTIONS = [
-  { id: '', label: 'Any Condition' },
-  { id: 'new', label: 'Brand New' },
-  { id: 'like-new', label: 'Like New' },
-  { id: 'excellent', label: 'Excellent' },
-  { id: 'good', label: 'Good' },
-  { id: 'fair', label: 'Fair' },
-  { id: 'slightly-used', label: 'Slightly Used' },
-];
+// Categories to actually render in the sidebar (drop the synthetic "all" entry —
+// we already have a dedicated "All Products" row)
+const SIDEBAR_CATEGORIES = CATEGORIES.filter(c => c.id !== 'all');
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmtPrice = (p) =>
-  p == null ? '—' : `GH₵\u00A0${Number(p).toLocaleString('en-GH', { minimumFractionDigits: 0 })}`;
+  p == null ? '—'
+  : `GH₵\u00A0${Number(p).toLocaleString('en-GH', { minimumFractionDigits: 0 })}`;
 
-// ─── Skeleton Card ─────────────────────────────────────────────────────────────
-function SkeletonCard({ viewMode }) {
-  return (
-    <div className={`list-card-skel ${viewMode === 'list' ? 'list-view' : ''}`}>
-      <div className="skel-img" />
-      <div className="skel-info">
-        <div className="skel-line" style={{ width: '60%' }} />
-        <div className="skel-line" style={{ width: '90%' }} />
-        <div className="skel-line" style={{ width: '40%', height: 20 }} />
-      </div>
-    </div>
-  );
+// ─── Skeleton card ────────────────────────────────────────────────────────────
+function SkeletonCard() {
+  return <div className="lp-sk-card"><div className="lp-sk-img" /><div className="lp-sk-body"><div className="lp-sk-line" style={{ width: '55%' }} /><div className="lp-sk-line" style={{ width: '85%' }} /><div className="lp-sk-line" style={{ width: '40%', height: 18 }} /></div></div>;
 }
 
-// ─── Product Card ──────────────────────────────────────────────────────────────
-function ProductCard({ product, viewMode }) {
-  const img = product.images?.[0] || product.image || null;
+// ─── Product card ─────────────────────────────────────────────────────────────
+function ProductCard({ product }) {
+  const img = product.images?.[0] || product.image;
   const isOnSale = product.discountInfo?.isOnSale && product.discountInfo?.originalPrice > product.price;
-  const discountPct = isOnSale
+  const pct = isOnSale
     ? Math.round(((product.discountInfo.originalPrice - product.price) / product.discountInfo.originalPrice) * 100)
     : null;
 
-  if (viewMode === 'list') {
-    return (
-      <Link href={`/product/${product._id}`} className="list-card-h">
-        <div className="list-card-img-wrap">
-          {img ? (
-            <img src={img} alt={product.name} onError={e => { e.target.src = 'https://placehold.co/400x300/13131E/52525B?text=No+Image'; }} />
-          ) : (
-            <div className="list-card-img-placeholder">📦</div>
-          )}
-          {isOnSale && <span className="list-card-badge">-{discountPct}%</span>}
-        </div>
-        <div className="list-card-content">
-          <div className="list-card-top">
-            <h3 className="list-card-name">{product.name}</h3>
-            <span className="list-card-cat">{product.category?.replace(/-/g, ' ') || 'Other'}</span>
-          </div>
-          <div className="list-card-meta">
-            {product.campus && <span className="list-card-campus">📍 {product.campus}</span>}
-            {product.condition && <span className="list-card-cond">{product.condition}</span>}
-            {product.negotiable && <span className="list-card-nego">Nego</span>}
-          </div>
-          <div className="list-card-bottom">
-            <div>
-              {isOnSale && <span className="list-card-original">{fmtPrice(product.discountInfo.originalPrice)}</span>}
-              <span className={`list-card-price ${isOnSale ? 'sale' : ''}`}>{fmtPrice(product.price)}</span>
-            </div>
-            <span className="list-card-view">View →</span>
-          </div>
-        </div>
-      </Link>
-    );
-  }
-
   return (
-    <Link href={`/product/${product._id}`} className="grid-card">
-      <div className="grid-card-img-wrap">
-        {img ? (
-          <img src={img} alt={product.name} onError={e => { e.target.src = 'https://placehold.co/400x300/13131E/52525B?text=No+Image'; }} />
-        ) : (
-          <div className="grid-card-img-placeholder">📦</div>
-        )}
-        {isOnSale && <span className="grid-card-badge">-{discountPct}%</span>}
-        {product.condition && !isOnSale && <span className="grid-card-cond-badge">{product.condition}</span>}
-        {product.negotiable && <span className="grid-card-nego-badge">Nego</span>}
+    <Link href={`/product/${product._id}`} className="lp-card" style={{ textDecoration: 'none', color: 'inherit' }}>
+      <div className="lp-card-img-wrap">
+        {img
+          ? <img src={img} alt={product.name} className="lp-card-img" onError={e => { e.target.src = 'https://placehold.co/400x300/1C1C2E/52525B?text=No+Image'; }} />
+          : <div className="lp-card-img-ph">📦</div>
+        }
+        {isOnSale && <span className="lp-badge lp-badge-sale">-{pct}%</span>}
+        {product.negotiable && <span className="lp-badge lp-badge-nego">Nego.</span>}
       </div>
-      <div className="grid-card-info">
-        <p className="grid-card-name">{product.name}</p>
-        <div className="grid-card-meta">
-          {product.campus && <span className="grid-card-campus">{product.campus}</span>}
-        </div>
-        <div className="grid-card-footer">
+      <div className="lp-card-body">
+        {product.campus && <span className="lp-card-campus">{product.campus}</span>}
+        <p className="lp-card-name">{product.name}</p>
+        <div className="lp-card-foot">
           <div>
-            {isOnSale && <span className="grid-card-original">{fmtPrice(product.discountInfo.originalPrice)}</span>}
-            <span className={`grid-card-price ${isOnSale ? 'sale' : ''}`}>{fmtPrice(product.price)}</span>
+            {isOnSale && <s className="lp-original">{fmtPrice(product.discountInfo.originalPrice)}</s>}
+            <span className="lp-price" style={{ color: isOnSale ? C.coral : C.amber }}>{fmtPrice(product.price)}</span>
           </div>
-          <span className="grid-card-view">View</span>
+          <span className="lp-view">View →</span>
         </div>
       </div>
     </Link>
   );
 }
 
-// ─── Loading Fallback ──────────────────────────────────────────────────────────
-function ListingsFallback() {
+// ─── THE SIDEBAR ──────────────────────────────────────────────────────────────
+// `sticky=true`  → desktop rail: position:sticky, own scroll, border-right
+// `sticky=false` → used inside the mobile drawer: static, no inner scroll
+//   (the drawer panel itself scrolls)
+function Sidebar({ activeCategory, activeSub, onCategory, onSub, sticky = true }) {
+  const [openKeys, setOpenKeys] = useState(() => {
+    const initial = {};
+    if (activeCategory) initial[activeCategory] = true;
+    return initial;
+  });
+
+  useEffect(() => {
+    if (activeCategory) {
+      setOpenKeys(prev => ({ ...prev, [activeCategory]: true }));
+    }
+  }, [activeCategory]);
+
+  const toggleOpen = (key) => {
+    setOpenKeys(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleCategoryClick = (cat) => {
+    if (cat.id === activeCategory) {
+      onCategory('');
+      onSub('');
+    } else {
+      onCategory(cat.id);
+      onSub('');
+      setOpenKeys(prev => ({ ...prev, [cat.id]: true }));
+    }
+  };
+
+  const handleSubClick = (e, catId, subLabel) => {
+    e.stopPropagation();
+    onCategory(catId);
+    onSub(activeSub === subLabel ? '' : subLabel);
+  };
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#09090F',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      gap: '16px',
-    }}>
-      <div style={{
-        width: '40px',
-        height: '40px',
-        border: '3px solid #27273A',
-        borderTopColor: '#10B981',
-        borderRadius: '50%',
-        animation: 'spin 0.8s linear infinite',
-      }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      <p style={{ color: '#52525B', fontFamily: 'sans-serif', fontSize: '14px' }}>
-        Loading listings...
-      </p>
-    </div>
+    <aside className={`lp-sidebar${sticky ? '' : ' lp-sidebar-static'}`}>
+      {/* "All Products" row */}
+      <button
+        className={`lp-cat-row lp-all-row${!activeCategory ? ' lp-cat-active' : ''}`}
+        onClick={() => { onCategory(''); onSub(''); }}
+      >
+        <span className="lp-cat-icon">🛒</span>
+        <span className="lp-cat-label">All Products</span>
+      </button>
+
+      <div className="lp-sidebar-divider" />
+
+      <p className="lp-sidebar-section-label">Shop by Category</p>
+
+      {SIDEBAR_CATEGORIES.map((cat) => {
+        const isActive = activeCategory === cat.id;
+        const isOpen   = !!openKeys[cat.id];
+        const subs     = SUBCATEGORIES[cat.id] || [];
+
+        return (
+          <div key={cat.id} className="lp-cat-group">
+            {/* Category header row */}
+            <button
+              className={`lp-cat-row${isActive ? ' lp-cat-active' : ''}`}
+              onClick={() => {
+                handleCategoryClick(cat);
+                if (subs.length) toggleOpen(cat.id);
+              }}
+            >
+              <span className="lp-cat-icon">{cat.emoji}</span>
+              <span className="lp-cat-label">{cat.label}</span>
+              {subs.length > 0 && (
+                <span
+                  className="lp-cat-chevron"
+                  style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                  onClick={(e) => { e.stopPropagation(); toggleOpen(cat.id); }}
+                >
+                  ›
+                </span>
+              )}
+            </button>
+
+            {/* Subcategory list — inline expand, NO extra scroll */}
+            {isOpen && subs.length > 0 && (
+              <div className="lp-sub-list">
+                {subs.map((sub) => {
+                  const subActive = isActive && activeSub === sub.label;
+                  return (
+                    <button
+                      key={sub.id}
+                      className={`lp-sub-row${subActive ? ' lp-sub-active' : ''}`}
+                      onClick={(e) => handleSubClick(e, cat.id, sub.label)}
+                    >
+                      {subActive && <span className="lp-sub-dot" />}
+                      <span className="lp-sub-label">{sub.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </aside>
   );
 }
 
-// ─── Listings Content (uses useSearchParams) ───────────────────────────────────
-function ListingsContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [totalProducts, setTotalProducts] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedCampus, setSelectedCampus] = useState('');
-  const [selectedSort, setSelectedSort] = useState('newest');
-  const [selectedCondition, setSelectedCondition] = useState('');
-  const [negotiableOnly, setNegotiableOnly] = useState(false);
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState('grid');
-  const [showFilters, setShowFilters] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+// ─── Main page ────────────────────────────────────────────────────────────────
+export default function ListingsPage() {
+  const [products,     setProducts]     = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [totalPages,   setTotalPages]   = useState(1);
+  const [total,        setTotal]        = useState(0);
 
-  const searchInputRef = useRef(null);
-  const fetchIdRef = useRef(0);
+  // Filters
+  const [activeCategory, setActiveCategory] = useState('');
+  const [activeSub,      setActiveSub]      = useState('');
+  const [campus,         setCampus]         = useState('');
+  const [sort,           setSort]           = useState('newest');
+  const [page,           setPage]           = useState(1);
+  const [search,         setSearch]         = useState('');
+  const [searchInput,    setSearchInput]    = useState('');
 
+  // Mobile filter drawer
+  const [drawerOpen, setDrawerOpen] = useState(false);
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    document.body.style.overflow = drawerOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [drawerOpen]);
 
-  useEffect(() => {
-    if (!searchParams) return;
-    const cat = searchParams.get('category');
-    const camp = searchParams.get('campus');
-    const q = searchParams.get('q');
-    if (cat) setSelectedCategory(cat);
-    if (camp) setSelectedCampus(camp);
-    if (q) setSearchQuery(q);
-  }, [searchParams]);
-
-  const fetchProducts = useCallback(async (page = 1, append = false) => {
-    fetchIdRef.current += 1;
-    const myId = fetchIdRef.current;
-
-    if (!append) setLoading(true);
-
+  const fetchProducts = useCallback(async () => {
+    setLoading(true);
     try {
-      const params = {
-        limit: 20,
-        page,
-        sort: selectedSort,
-        ...(selectedCategory !== 'all' && { category: selectedCategory }),
-        ...(selectedCampus && { campus: selectedCampus }),
-        ...(selectedCondition && { condition: selectedCondition }),
-        ...(negotiableOnly && { negotiable: true }),
-        ...(minPrice && { minPrice }),
-        ...(maxPrice && { maxPrice }),
-        ...(searchQuery.trim() && { search: searchQuery.trim() }),
-      };
+      const params = { page, limit: 20, sort };
+      if (activeSub)  params.subcategory = activeSub;
+      if (campus)     params.campus      = campus;
+      if (search)     params.search      = search;
 
       let res;
-      if (searchQuery.trim()) {
-        res = await searchProducts(searchQuery.trim());
-      } else if (selectedCategory !== 'all') {
-        const { getProductsByCategory } = await import('@/apis/productApi');
-        res = await getProductsByCategory(selectedCategory, params);
+      if (activeCategory) {
+        res = await getProductsByCategory(activeCategory, params);
       } else {
         res = await getAllProducts(params);
       }
 
-      if (myId !== fetchIdRef.current) return;
+      const data     = res?.data?.data        || res?.data?.products || res?.data || [];
+      const pgData   = res?.data?.pagination  || {};
+      const tot      = res?.data?.total ?? (Array.isArray(data) ? data.length : 0);
 
-      const data = res?.data?.data?.products || 
-                   res?.data?.data?.data || 
-                   res?.data?.products || 
-                   res?.data?.data || 
-                   res?.data || 
-                   [];
-      
-      const productsList = Array.isArray(data) ? data : [];
-      setProducts(append ? prev => [...prev, ...productsList] : productsList);
-      setTotalProducts(res?.data?.total || res?.data?.pagination?.total || productsList.length);
-      setHasMore(res?.data?.pagination?.hasNextPage || false);
-      setCurrentPage(page);
-    } catch (err) {
-      console.error('Fetch error:', err);
-      if (!append) setProducts([]);
+      setProducts(Array.isArray(data) ? data : []);
+      setTotalPages(pgData.totalPages ?? Math.ceil(tot / 20) ?? 1);
+      setTotal(tot);
+    } catch {
+      setProducts([]);
     } finally {
-      if (myId === fetchIdRef.current) setLoading(false);
+      setLoading(false);
     }
-  }, [selectedCategory, selectedCampus, selectedSort, selectedCondition, negotiableOnly, minPrice, maxPrice, searchQuery]);
+  }, [activeCategory, activeSub, campus, sort, page, search]);
 
-  useEffect(() => {
-    fetchProducts(1);
-  }, [fetchProducts]);
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+
+  // Reset to page 1 whenever any filter changes
+  useEffect(() => { setPage(1); }, [activeCategory, activeSub, campus, sort, search]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchProducts(1);
+    setSearch(searchInput.trim());
   };
 
-  const clearFilters = () => {
-    setSelectedCategory('all');
-    setSelectedCampus('');
-    setSelectedSort('newest');
-    setSelectedCondition('');
-    setNegotiableOnly(false);
-    setMinPrice('');
-    setMaxPrice('');
-    setSearchQuery('');
+  const handleCategoryChange = (cat) => {
+    setActiveCategory(cat);
+    setActiveSub('');
+    setPage(1);
   };
 
-  const activeFilterCount = [selectedCampus, selectedCondition, negotiableOnly, minPrice, maxPrice].filter(Boolean).length;
+  const handleSubChange = (sub) => {
+    setActiveSub(sub);
+    setPage(1);
+  };
+
+  // Breadcrumb
+  const activeCatObj = SIDEBAR_CATEGORIES.find(c => c.id === activeCategory);
+  const crumbs = [
+    { label: 'Home',     href: '/'          },
+    { label: 'Listings', href: '/listings'  },
+    ...(activeCatObj ? [{ label: activeCatObj.label }] : []),
+    ...(activeSub     ? [{ label: activeSub }]          : []),
+  ];
 
   return (
     <>
-      <style>{listingsStyles}</style>
-      <div className="l-page">
-        {/* Header */}
-        <div className="l-header">
-          <div className="l-header-inner">
-            <Link href="/" className="l-back-btn">← Back</Link>
-            <h1 className="l-title">Browse Listings</h1>
-            <span className="l-count">{totalProducts.toLocaleString()} items</span>
-          </div>
-        </div>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@500;700&display=swap');
 
-        {/* Search Bar */}
-        <div className="l-search-bar">
-          <form onSubmit={handleSearch} className="l-search-form">
-            <input
-              ref={searchInputRef}
-              type="text"
-              className="l-search-input"
-              placeholder="Search listings, brands…"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button type="submit" className="l-search-btn">Search</button>
-            {searchQuery && (
-              <button type="button" className="l-search-clear" onClick={() => { setSearchQuery(''); fetchProducts(1); }}>
-                ✕
-              </button>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+          background: ${C.void};
+          color: ${C.white};
+          font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+          overflow-x: hidden;
+        }
+        ::selection { background: ${C.indigoDim}; color: ${C.indigoL}; }
+
+        /* ── Keyframes ── */
+        @keyframes shimmer {
+          0%   { background-position: -400% center; }
+          100% { background-position:  400% center; }
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0);    }
+        }
+        @keyframes slideIn {
+          from { transform: translateX(-100%); }
+          to   { transform: translateX(0);      }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+
+        /* ── Layout shell ── */
+        .lp-page    { min-height: 100vh; }
+
+        /* ══════════════════════════════════════════════
+           TOP BAR — Jumia-style: brand · centered search · utilities
+        ══════════════════════════════════════════════ */
+        .lp-topbar {
+          background: ${C.surf};
+          border-bottom: 1px solid ${C.border};
+          box-shadow: 0 2px 12px rgba(0,0,0,.25);
+          padding: 12px clamp(16px, 4vw, 60px);
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          position: sticky;
+          top: 0;
+          z-index: 50;
+        }
+        .lp-brand {
+          font-size: 19px;
+          font-weight: 900;
+          letter-spacing: -.5px;
+          color: ${C.white};
+          text-decoration: none;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .lp-brand span { color: ${C.amber}; }
+
+        .lp-mobile-filter-btn {
+          display: none;
+          align-items: center;
+          gap: 6px;
+          background: ${C.elev};
+          border: 1.5px solid ${C.border};
+          border-radius: 10px;
+          padding: 10px 13px;
+          color: ${C.white};
+          font-weight: 700;
+          font-size: 13px;
+          cursor: pointer;
+          white-space: nowrap;
+          flex-shrink: 0;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .lp-mobile-filter-btn:hover { border-color: ${C.indigo}; }
+
+        .lp-search-wrap {
+          flex: 1;
+          display: flex;
+          justify-content: center;
+          min-width: 0;
+        }
+        .lp-search-form {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          max-width: 580px;
+          background: ${C.elev};
+          border: 1.5px solid ${C.border};
+          border-radius: 24px;
+          overflow: hidden;
+          transition: border-color .2s, box-shadow .2s;
+        }
+        .lp-search-form:focus-within {
+          border-color: ${C.indigo};
+          box-shadow: 0 0 0 3px ${C.indigoDim};
+        }
+        .lp-search-input {
+          flex: 1;
+          background: none;
+          border: none;
+          outline: none;
+          padding: 11px 18px;
+          font-size: 14px;
+          color: ${C.white};
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          min-width: 0;
+        }
+        .lp-search-input::placeholder { color: ${C.muted}; }
+        .lp-search-btn {
+          background: ${C.indigo};
+          border: none;
+          cursor: pointer;
+          padding: 11px 20px;
+          color: #fff;
+          font-size: 15px;
+          font-weight: 700;
+          transition: background .2s;
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
+        }
+        .lp-search-btn:hover { background: ${C.indigoL}; }
+
+        .lp-topbar-utils {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-shrink: 0;
+        }
+
+        .lp-select {
+          background: ${C.elev};
+          border: 1.5px solid ${C.border};
+          border-radius: 10px;
+          color: ${C.white};
+          font-size: 13px;
+          font-weight: 600;
+          padding: 10px 14px;
+          cursor: pointer;
+          outline: none;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          transition: border-color .2s;
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23A8A8B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 12px center;
+          padding-right: 34px;
+          min-width: 140px;
+        }
+        .lp-select:hover,
+        .lp-select:focus { border-color: ${C.indigo}; }
+        .lp-select option { background: ${C.surf}; }
+
+        .lp-total-badge {
+          font-size: 12px;
+          font-weight: 600;
+          color: ${C.muted};
+          white-space: nowrap;
+          font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Body: sidebar + grid ── */
+        .lp-body {
+          display: grid;
+          grid-template-columns: 240px 1fr;
+          gap: 0;
+          max-width: 1440px;
+          margin: 0 auto;
+          align-items: start;
+        }
+        @media (max-width: 900px) {
+          .lp-body { grid-template-columns: 1fr; }
+          .lp-sidebar:not(.lp-sidebar-static) { display: none; }
+          .lp-mobile-filter-btn { display: flex; }
+          .lp-topbar-utils .lp-select,
+          .lp-topbar-utils .lp-total-badge { display: none; }
+        }
+
+        /* ════════════════════════════════════════════
+           THE SIDEBAR (desktop rail)
+        ════════════════════════════════════════════ */
+        .lp-sidebar {
+          position: sticky;
+          top: 62px;
+          height: calc(100vh - 62px);
+          overflow-y: auto;
+          overflow-x: hidden;
+          overscroll-behavior: contain;
+          padding: 20px 0 40px;
+          border-right: 1px solid ${C.border};
+          background: ${C.void};
+          scrollbar-width: thin;
+          scrollbar-color: ${C.border} transparent;
+        }
+        .lp-sidebar::-webkit-scrollbar       { width: 3px; }
+        .lp-sidebar::-webkit-scrollbar-track { background: transparent; }
+        .lp-sidebar::-webkit-scrollbar-thumb { background: ${C.border}; border-radius: 2px; }
+
+        /* Static variant used inside the mobile drawer — no sticky/scroll of its own */
+        .lp-sidebar-static {
+          position: static;
+          height: auto;
+          overflow: visible;
+          border-right: none;
+          padding: 4px 0 0;
+        }
+
+        .lp-sidebar-section-label {
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+          color: ${C.muted};
+          padding: 0 20px;
+          margin-bottom: 6px;
+          font-family: 'JetBrains Mono', monospace;
+        }
+        .lp-sidebar-divider {
+          height: 1px;
+          background: ${C.border};
+          margin: 10px 20px 14px;
+        }
+
+        .lp-cat-group { position: relative; }
+
+        .lp-cat-row,
+        .lp-all-row {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 9px 20px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          text-align: left;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 13.5px;
+          font-weight: 500;
+          color: ${C.off};
+          position: relative;
+          transition: color .18s, background .18s;
+          border-left: 3px solid transparent;
+          line-height: 1.35;
+        }
+        .lp-cat-row:hover,
+        .lp-all-row:hover {
+          color: ${C.white};
+          background: rgba(255,255,255,.03);
+        }
+
+        .lp-cat-active {
+          color: ${C.white} !important;
+          font-weight: 700;
+          border-left-color: ${C.indigo} !important;
+          background: ${C.indigoDim} !important;
+        }
+
+        .lp-cat-icon  { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+        .lp-cat-label { flex: 1; }
+
+        .lp-cat-chevron {
+          font-size: 18px;
+          color: ${C.muted};
+          line-height: 1;
+          transition: transform .22s cubic-bezier(.4,0,.2,1);
+          flex-shrink: 0;
+          padding: 0 4px;
+        }
+        .lp-cat-row:hover .lp-cat-chevron { color: ${C.off}; }
+
+        .lp-sub-list {
+          padding: 2px 0 6px 49px;
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+          animation: fadeUp .18s ease forwards;
+        }
+
+        .lp-sub-row {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 7px 20px 7px 0;
+          background: none;
+          border: none;
+          border-left: 3px solid transparent;
+          cursor: pointer;
+          text-align: left;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 12.5px;
+          font-weight: 400;
+          color: ${C.muted};
+          transition: color .18s;
+          line-height: 1.3;
+        }
+        .lp-sub-row:hover { color: ${C.white}; }
+
+        .lp-sub-active {
+          color: ${C.indigoL} !important;
+          font-weight: 600;
+        }
+        .lp-sub-dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: ${C.indigo};
+          flex-shrink: 0;
+        }
+        .lp-sub-label { flex: 1; }
+
+        /* ════════════════════════════════════════════
+           MOBILE FILTER DRAWER
+        ════════════════════════════════════════════ */
+        .lp-drawer-overlay {
+          display: none;
+        }
+        @media (max-width: 900px) {
+          .lp-drawer-overlay.open {
+            display: block;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+            z-index: 200;
+            animation: fadeIn .18s ease;
+          }
+        }
+        .lp-drawer-panel {
+          position: fixed;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: min(84vw, 320px);
+          background: ${C.void};
+          z-index: 201;
+          display: flex;
+          flex-direction: column;
+          animation: slideIn .22s cubic-bezier(.22,1,.36,1);
+          box-shadow: 12px 0 40px rgba(0,0,0,.5);
+        }
+        .lp-drawer-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 16px 18px;
+          border-bottom: 1px solid ${C.border};
+          flex-shrink: 0;
+        }
+        .lp-drawer-title { font-size: 15px; font-weight: 800; color: ${C.white}; }
+        .lp-drawer-close {
+          background: ${C.elev};
+          border: 1px solid ${C.border};
+          color: ${C.off};
+          width: 30px; height: 30px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 16px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .lp-drawer-body {
+          flex: 1;
+          overflow-y: auto;
+          padding-bottom: 10px;
+        }
+        .lp-drawer-section {
+          padding: 16px 20px 4px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .lp-drawer-section .lp-select { width: 100%; min-width: 0; }
+        .lp-drawer-foot {
+          padding: 14px 18px;
+          border-top: 1px solid ${C.border};
+          flex-shrink: 0;
+        }
+        .lp-drawer-apply-btn {
+          width: 100%;
+          background: ${C.indigo};
+          border: none;
+          color: #fff;
+          font-weight: 800;
+          font-size: 14px;
+          padding: 13px;
+          border-radius: 10px;
+          cursor: pointer;
+        }
+        .lp-drawer-apply-btn:hover { background: ${C.indigoL}; }
+
+        /* ── Main content area ── */
+        .lp-main {
+          padding: 20px clamp(16px, 3vw, 36px) 60px;
+          min-height: calc(100vh - 62px);
+        }
+
+        .lp-breadcrumb {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          color: ${C.muted};
+          margin-bottom: 20px;
+          flex-wrap: wrap;
+        }
+        .lp-breadcrumb a  { color: ${C.muted}; text-decoration: none; transition: color .15s; }
+        .lp-breadcrumb a:hover { color: ${C.indigoL}; }
+        .lp-breadcrumb-sep { color: ${C.border}; font-size: 14px; }
+        .lp-breadcrumb-cur { color: ${C.off}; font-weight: 600; }
+
+        .lp-active-filters {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+        }
+        .lp-filter-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          color: ${C.indigoL};
+          background: ${C.indigoDim};
+          border: 1px solid ${C.indigo}40;
+          border-radius: 20px;
+          padding: 5px 12px;
+        }
+        .lp-filter-pill-x {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: ${C.indigoL};
+          font-size: 14px;
+          line-height: 1;
+          padding: 0;
+          transition: color .15s;
+        }
+        .lp-filter-pill-x:hover { color: ${C.coral}; }
+
+        .lp-section-title {
+          font-size: 18px;
+          font-weight: 800;
+          color: ${C.white};
+          margin-bottom: 6px;
+          letter-spacing: -.3px;
+        }
+        .lp-section-sub {
+          font-size: 12px;
+          color: ${C.muted};
+          margin-bottom: 22px;
+          font-family: 'JetBrains Mono', monospace;
+        }
+
+        .lp-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 16px;
+        }
+
+        .lp-card {
+          display: block;
+          background: ${C.surf};
+          border: 1px solid ${C.border};
+          border-radius: 16px;
+          overflow: hidden;
+          transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s, border-color .2s;
+          animation: fadeUp .4s ease both;
+        }
+        .lp-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 16px 40px rgba(0,0,0,.45);
+          border-color: ${C.indigo}50;
+        }
+        .lp-card-img-wrap {
+          position: relative;
+          height: 170px;
+          background: ${C.elev};
+          overflow: hidden;
+        }
+        .lp-card-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform .35s ease;
+        }
+        .lp-card:hover .lp-card-img { transform: scale(1.05); }
+        .lp-card-img-ph {
+          width: 100%; height: 100%;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 38px; opacity: .35;
+        }
+        .lp-badge {
+          position: absolute;
+          font-size: 9.5px;
+          font-weight: 800;
+          padding: 3px 8px;
+          border-radius: 7px;
+          letter-spacing: .02em;
+        }
+        .lp-badge-sale  { top: 8px; right: 8px; background: ${C.coral};    color: #fff; }
+        .lp-badge-nego  { bottom: 8px; left: 8px; background: ${C.amberDim}; color: ${C.amber}; border: 1px solid ${C.amber}30; }
+        .lp-card-body   { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 5px; }
+        .lp-card-campus { font-size: 9.5px; font-weight: 700; color: ${C.indigoL}; background: ${C.indigoDim}; border-radius: 7px; padding: 2px 7px; display: inline-block; width: fit-content; font-family: 'JetBrains Mono', monospace; }
+        .lp-card-name   { font-size: 13.5px; font-weight: 700; color: ${C.white}; line-height: 1.38; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .lp-card-foot   { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 4px; }
+        .lp-original    { font-size: 10px; color: ${C.muted}; text-decoration: line-through; display: block; margin-bottom: 1px; font-family: 'JetBrains Mono', monospace; }
+        .lp-price       { font-size: 16px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+        .lp-view        { font-size: 11.5px; font-weight: 700; background: ${C.indigoDim}; color: ${C.indigoL}; border: 1px solid ${C.indigo}30; padding: 5px 11px; border-radius: 8px; white-space: nowrap; transition: all .18s; }
+        .lp-card:hover .lp-view { background: ${C.indigo}; color: #fff; border-color: transparent; }
+
+        .lp-sk-card {
+          background: linear-gradient(90deg, ${C.surf} 25%, ${C.elev} 50%, ${C.surf} 75%);
+          background-size: 400% 100%;
+          animation: shimmer 1.6s ease-in-out infinite;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid ${C.border};
+        }
+        .lp-sk-img  { height: 170px; background: ${C.elev}; }
+        .lp-sk-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+        .lp-sk-line { height: 12px; border-radius: 6px; background: ${C.elev}; }
+
+        .lp-empty {
+          display: flex; flex-direction: column; align-items: center;
+          justify-content: center; padding: 80px 20px; text-align: center;
+          color: ${C.muted};
+        }
+        .lp-empty-icon { font-size: 48px; margin-bottom: 16px; opacity: .4; }
+        .lp-empty h3   { font-size: 17px; font-weight: 700; color: ${C.off}; margin-bottom: 6px; }
+        .lp-empty p    { font-size: 14px; line-height: 1.6; }
+
+        .lp-pagination {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          margin-top: 40px;
+          flex-wrap: wrap;
+        }
+        .lp-pg-btn {
+          background: ${C.surf};
+          border: 1px solid ${C.border};
+          color: ${C.off};
+          font-size: 13px;
+          font-weight: 600;
+          padding: 8px 14px;
+          border-radius: 9px;
+          cursor: pointer;
+          transition: all .18s;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          min-width: 38px;
+        }
+        .lp-pg-btn:hover:not(:disabled) { border-color: ${C.indigo}; color: ${C.indigoL}; }
+        .lp-pg-btn.active { background: ${C.indigo}; border-color: ${C.indigo}; color: #fff; }
+        .lp-pg-btn:disabled { opacity: .35; cursor: not-allowed; }
+        .lp-pg-dots { color: ${C.muted}; font-size: 14px; padding: 0 4px; }
+
+        @media (max-width: 640px) {
+          .lp-brand    { display: none; }
+          .lp-topbar   { gap: 8px; }
+          .lp-grid     { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        }
+      `}</style>
+
+      <div className="lp-page">
+
+        {/* ── Top bar ── */}
+        <div className="lp-topbar">
+          
+
+          <button
+            className="lp-mobile-filter-btn"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open filters"
+          >
+            ☰ Filters
+          </button>
+
+          <div className="lp-search-wrap">
+            <form className="lp-search-form" onSubmit={handleSearch}>
+              <input
+                className="lp-search-input"
+                placeholder="Search listings…"
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+              />
+              <button type="submit" className="lp-search-btn" aria-label="Search">🔍</button>
+            </form>
+          </div>
+
+          <div className="lp-topbar-utils">
+            <select
+              className="lp-select"
+              value={campus}
+              onChange={e => { setCampus(e.target.value); setPage(1); }}
+              aria-label="Filter by campus"
+            >
+              {CAMPUS_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+
+            <select
+              className="lp-select"
+              value={sort}
+              onChange={e => { setSort(e.target.value); setPage(1); }}
+              aria-label="Sort by"
+            >
+              {SORT_OPTIONS.map(o => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+
+            {!loading && (
+              <span className="lp-total-badge">
+                {total.toLocaleString()} listing{total !== 1 ? 's' : ''}
+              </span>
             )}
-          </form>
-        </div>
-
-        {/* Category Tabs */}
-        <div className="l-cat-strip">
-          <div className="l-cat-scroll">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.id}
-                className={`l-cat-tab ${selectedCategory === cat.id ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(cat.id)}
-                style={selectedCategory === cat.id ? { '--cat-color': cat.color } : {}}
-              >
-                <span className="l-cat-emoji">{cat.emoji}</span>
-                <span className="l-cat-label">{cat.label}</span>
-              </button>
-            ))}
           </div>
         </div>
 
-        {/* Toolbar */}
-        <div className="l-toolbar">
-          <div className="l-toolbar-left">
-            <select
-              className="l-select"
-              value={selectedCampus}
-              onChange={(e) => setSelectedCampus(e.target.value)}
-            >
-              {CAMPUS_OPTIONS.map(opt => (
-                <option key={opt.id} value={opt.id}>{opt.label}</option>
-              ))}
-            </select>
-
-            <select
-              className="l-select"
-              value={selectedSort}
-              onChange={(e) => setSelectedSort(e.target.value)}
-            >
-              {SORT_OPTIONS.map(opt => (
-                <option key={opt.id} value={opt.id}>{opt.label}</option>
-              ))}
-            </select>
-
-            <button
-              className={`l-filter-btn ${activeFilterCount > 0 ? 'active' : ''}`}
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
-            </button>
-          </div>
-
-          <div className="l-toolbar-right">
-            <div className="l-view-toggle">
-              <button
-                className={`l-view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                onClick={() => setViewMode('grid')}
-              >
-                ▦
-              </button>
-              <button
-                className={`l-view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                onClick={() => setViewMode('list')}
-              >
-                ☰
-              </button>
+        {/* ── Mobile filter drawer ── */}
+        <div className={`lp-drawer-overlay${drawerOpen ? ' open' : ''}`} onClick={() => setDrawerOpen(false)} />
+        {drawerOpen && (
+          <div className="lp-drawer-panel">
+            <div className="lp-drawer-head">
+              <span className="lp-drawer-title">Filters</span>
+              <button className="lp-drawer-close" onClick={() => setDrawerOpen(false)} aria-label="Close filters">✕</button>
             </div>
-          </div>
-        </div>
-
-        {/* Advanced Filters Panel */}
-        {showFilters && (
-          <div className="l-filters-panel">
-            <div className="l-filters-grid">
-              <div className="l-filter-group">
-                <label className="l-filter-label">Condition</label>
+            <div className="lp-drawer-body">
+              <div className="lp-drawer-section">
                 <select
-                  className="l-select"
-                  value={selectedCondition}
-                  onChange={(e) => setSelectedCondition(e.target.value)}
+                  className="lp-select"
+                  value={campus}
+                  onChange={e => { setCampus(e.target.value); setPage(1); }}
+                  aria-label="Filter by campus"
                 >
-                  {CONDITION_OPTIONS.map(opt => (
-                    <option key={opt.id} value={opt.id}>{opt.label}</option>
+                  {CAMPUS_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+                <select
+                  className="lp-select"
+                  value={sort}
+                  onChange={e => { setSort(e.target.value); setPage(1); }}
+                  aria-label="Sort by"
+                >
+                  {SORT_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
               </div>
-
-              <div className="l-filter-group">
-                <label className="l-filter-label">Price Range (GH₵)</label>
-                <div className="l-price-inputs">
-                  <input
-                    type="number"
-                    className="l-price-input"
-                    placeholder="Min"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                  />
-                  <span className="l-price-dash">–</span>
-                  <input
-                    type="number"
-                    className="l-price-input"
-                    placeholder="Max"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="l-filter-group">
-                <label className="l-filter-label">Options</label>
-                <label className="l-toggle">
-                  <input
-                    type="checkbox"
-                    checked={negotiableOnly}
-                    onChange={(e) => setNegotiableOnly(e.target.checked)}
-                  />
-                  <span className="l-toggle-slider" />
-                  <span className="l-toggle-text">Negotiable Only</span>
-                </label>
-              </div>
+              <div className="lp-sidebar-divider" />
+              <Sidebar
+                sticky={false}
+                activeCategory={activeCategory}
+                activeSub={activeSub}
+                onCategory={handleCategoryChange}
+                onSub={handleSubChange}
+              />
             </div>
-
-            <div className="l-filters-actions">
-              <button className="l-clear-btn" onClick={clearFilters}>Clear All Filters</button>
+            <div className="lp-drawer-foot">
+              <button className="lp-drawer-apply-btn" onClick={() => setDrawerOpen(false)}>
+                Show {total.toLocaleString()} result{total !== 1 ? 's' : ''}
+              </button>
             </div>
           </div>
         )}
 
-        {/* Active Filter Chips */}
-        {(selectedCampus || selectedCondition || negotiableOnly || minPrice || maxPrice) && (
-          <div className="l-active-filters">
-            {selectedCampus && (
-              <span className="l-chip">
-                📍 {selectedCampus}
-                <button onClick={() => setSelectedCampus('')}>✕</button>
-              </span>
-            )}
-            {selectedCondition && (
-              <span className="l-chip">
-                {CONDITION_OPTIONS.find(c => c.id === selectedCondition)?.label}
-                <button onClick={() => setSelectedCondition('')}>✕</button>
-              </span>
-            )}
-            {negotiableOnly && (
-              <span className="l-chip">
-                Negotiable
-                <button onClick={() => setNegotiableOnly(false)}>✕</button>
-              </span>
-            )}
-            {(minPrice || maxPrice) && (
-              <span className="l-chip">
-                GH₵{minPrice || '0'} – {maxPrice || '∞'}
-                <button onClick={() => { setMinPrice(''); setMaxPrice(''); }}>✕</button>
-              </span>
-            )}
-          </div>
-        )}
+        {/* ── Body: sidebar + main ── */}
+        <div className="lp-body">
 
-        {/* Products */}
-        <div className="l-products-area">
-          {loading && products.length === 0 ? (
-            <div className={`l-products-${viewMode}`}>
-              {[...Array(8)].map((_, i) => <SkeletonCard key={i} viewMode={viewMode} />)}
-            </div>
-          ) : products.length === 0 ? (
-            <div className="l-empty">
-              <div className="l-empty-icon">🔍</div>
-              <h3>No listings found</h3>
-              <p>{searchQuery ? `No results for "${searchQuery}"` : 'Try adjusting your filters'}</p>
-              <button className="l-clear-btn" onClick={clearFilters}>Clear All Filters</button>
-            </div>
-          ) : (
-            <>
-              <div className={`l-products-${viewMode}`}>
-                {products.map(product => (
-                  <ProductCard key={product._id} product={product} viewMode={viewMode} />
+          {/* Desktop sidebar */}
+          <Sidebar
+            activeCategory={activeCategory}
+            activeSub={activeSub}
+            onCategory={handleCategoryChange}
+            onSub={handleSubChange}
+          />
+
+          {/* Main content */}
+          <main className="lp-main">
+
+            {/* Breadcrumb */}
+            <nav className="lp-breadcrumb" aria-label="Breadcrumb">
+              {crumbs.map((crumb, i) => (
+                <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {i > 0 && <span className="lp-breadcrumb-sep">›</span>}
+                  {crumb.href
+                    ? <Link href={crumb.href}>{crumb.label}</Link>
+                    : <span className="lp-breadcrumb-cur">{crumb.label}</span>
+                  }
+                </span>
+              ))}
+            </nav>
+
+            {/* Active filter pills */}
+            {(activeCategory || activeSub || campus || search) && (
+              <div className="lp-active-filters">
+                {activeCategory && (
+                  <span className="lp-filter-pill">
+                    {activeCatObj?.emoji} {activeCatObj?.label}
+                    <button className="lp-filter-pill-x" onClick={() => { handleCategoryChange(''); }} aria-label="Remove category filter">×</button>
+                  </span>
+                )}
+                {activeSub && (
+                  <span className="lp-filter-pill">
+                    {activeSub}
+                    <button className="lp-filter-pill-x" onClick={() => handleSubChange('')} aria-label="Remove subcategory filter">×</button>
+                  </span>
+                )}
+                {campus && (
+                  <span className="lp-filter-pill">
+                    📍 {CAMPUS_OPTIONS.find(c => c.value === campus)?.label}
+                    <button className="lp-filter-pill-x" onClick={() => { setCampus(''); setPage(1); }} aria-label="Remove campus filter">×</button>
+                  </span>
+                )}
+                {search && (
+                  <span className="lp-filter-pill">
+                    🔍 "{search}"
+                    <button className="lp-filter-pill-x" onClick={() => { setSearch(''); setSearchInput(''); }} aria-label="Remove search">×</button>
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Title */}
+            <h1 className="lp-section-title">
+              {activeSub
+                ? activeSub
+                : activeCatObj
+                  ? activeCatObj.label
+                  : search
+                    ? `Results for "${search}"`
+                    : 'All Listings'}
+            </h1>
+            <p className="lp-section-sub">
+              {loading ? 'Loading…' : `${total.toLocaleString()} listing${total !== 1 ? 's' : ''}${campus ? ` · ${CAMPUS_OPTIONS.find(c => c.value === campus)?.label}` : ''}`}
+            </p>
+
+            {/* Grid */}
+            {loading ? (
+              <div className="lp-grid">
+                {[...Array(12)].map((_, i) => <SkeletonCard key={i} />)}
+              </div>
+            ) : products.length === 0 ? (
+              <div className="lp-empty">
+                <div className="lp-empty-icon">📭</div>
+                <h3>No listings found</h3>
+                <p>Try a different category, campus, or search term.</p>
+              </div>
+            ) : (
+              <div className="lp-grid">
+                {products.map((p, i) => (
+                  <ProductCard key={p._id || i} product={p} />
                 ))}
               </div>
+            )}
 
-              {hasMore && !loading && (
-                <div className="l-load-more-wrap">
-                  <button className="l-load-more-btn" onClick={() => fetchProducts(currentPage + 1, true)}>
-                    Load More Listings ↓
-                  </button>
-                </div>
-              )}
+            {/* Pagination */}
+            {!loading && totalPages > 1 && (
+              <div className="lp-pagination">
+                <button
+                  className="lp-pg-btn"
+                  disabled={page <= 1}
+                  onClick={() => setPage(p => p - 1)}
+                >
+                  ← Prev
+                </button>
 
-              {loading && products.length > 0 && (
-                <div className="l-loading-more">
-                  <div className="l-spinner" />
-                  <span>Loading more...</span>
-                </div>
-              )}
-            </>
-          )}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(n => n === 1 || n === totalPages || Math.abs(n - page) <= 2)
+                  .reduce((acc, n, i, arr) => {
+                    if (i > 0 && n - arr[i - 1] > 1) acc.push('…');
+                    acc.push(n);
+                    return acc;
+                  }, [])
+                  .map((item, i) =>
+                    item === '…'
+                      ? <span key={`dot-${i}`} className="lp-pg-dots">…</span>
+                      : <button
+                          key={item}
+                          className={`lp-pg-btn${page === item ? ' active' : ''}`}
+                          onClick={() => setPage(item)}
+                        >
+                          {item}
+                        </button>
+                  )
+                }
+
+                <button
+                  className="lp-pg-btn"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </main>
         </div>
       </div>
     </>
   );
 }
-
-// ─── Main Exported Page ────────────────────────────────────────────────────────
-export default function ListingsPage() {
-  return (
-    <Suspense fallback={<ListingsFallback />}>
-      <ListingsContent />
-    </Suspense>
-  );
-}
-
-// ─── Styles ────────────────────────────────────────────────────────────────────
-const listingsStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  .l-page {
-    min-height: 100vh;
-    background: ${C.void};
-    color: ${C.white};
-    overflow-x: hidden;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-  }
-
-  .l-header {
-    background: ${C.surf};
-    border-bottom: 1px solid ${C.border};
-    padding: 14px 24px;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-  .l-header-inner {
-    max-width: 1280px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .l-back-btn {
-    color: ${C.off};
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    transition: color .2s;
-  }
-  .l-back-btn:hover { color: ${C.white}; }
-  .l-title {
-    font-size: 18px;
-    font-weight: 800;
-    flex: 1;
-  }
-  .l-count {
-    font-size: 13px;
-    color: ${C.muted};
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .l-search-bar {
-    background: ${C.surf};
-    padding: 12px 24px;
-    border-bottom: 1px solid ${C.border};
-  }
-  .l-search-form {
-    max-width: 1280px;
-    margin: 0 auto;
-    display: flex;
-    gap: 10px;
-  }
-  .l-search-input {
-    flex: 1;
-    background: ${C.elev};
-    border: 1.5px solid ${C.border};
-    border-radius: 14px;
-    padding: 12px 18px;
-    color: ${C.white};
-    font-size: 14px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    outline: none;
-    transition: all .2s;
-  }
-  .l-search-input:focus {
-    border-color: ${C.emerald};
-    box-shadow: 0 0 0 3px rgba(16,185,129,.1);
-  }
-  .l-search-input::placeholder { color: ${C.muted}; }
-  .l-search-btn {
-    background: linear-gradient(135deg, ${C.emerald}, #34D399);
-    color: #000;
-    font-weight: 700;
-    font-size: 14px;
-    padding: 12px 24px;
-    border-radius: 14px;
-    border: none;
-    cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    transition: all .2s;
-    white-space: nowrap;
-  }
-  .l-search-btn:hover { filter: brightness(1.1); }
-  .l-search-clear {
-    background: none;
-    border: none;
-    color: ${C.muted};
-    cursor: pointer;
-    font-size: 16px;
-    padding: 0 8px;
-  }
-
-  .l-cat-strip {
-    background: ${C.surf};
-    border-bottom: 1px solid ${C.border};
-    padding: 10px 0;
-    overflow: hidden;
-  }
-  .l-cat-scroll {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding: 0 24px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .l-cat-scroll::-webkit-scrollbar { display: none; }
-  .l-cat-tab {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border-radius: 40px;
-    border: 1.5px solid ${C.border};
-    background: none;
-    color: ${C.off};
-    font-size: 12.5px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all .2s;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    flex-shrink: 0;
-  }
-  .l-cat-tab:hover {
-    border-color: ${C.indigoL};
-    color: ${C.white};
-  }
-  .l-cat-tab.active {
-    background: var(--cat-color, ${C.emerald});
-    border-color: transparent;
-    color: #fff;
-    box-shadow: 0 4px 16px rgba(0,0,0,.25);
-  }
-  .l-cat-emoji { font-size: 16px; }
-  .l-cat-label { font-size: 12.5px; }
-
-  .l-toolbar {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 14px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .l-toolbar-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .l-toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .l-select {
-    background: ${C.elev};
-    border: 1px solid ${C.border};
-    border-radius: 10px;
-    padding: 8px 32px 8px 12px;
-    color: ${C.white};
-    font-size: 13px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    cursor: pointer;
-    outline: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2352525B' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-  }
-  .l-filter-btn {
-    background: ${C.elev};
-    border: 1px solid ${C.border};
-    border-radius: 10px;
-    padding: 8px 14px;
-    color: ${C.off};
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    transition: all .2s;
-  }
-  .l-filter-btn:hover { border-color: ${C.indigoL}; color: ${C.white}; }
-  .l-filter-btn.active {
-    background: ${C.indigoDim};
-    border-color: ${C.indigoL};
-    color: ${C.indigoL};
-  }
-  .l-view-toggle {
-    display: flex;
-    background: ${C.elev};
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid ${C.border};
-  }
-  .l-view-btn {
-    background: none;
-    border: none;
-    padding: 8px 12px;
-    color: ${C.muted};
-    cursor: pointer;
-    font-size: 16px;
-    transition: all .2s;
-  }
-  .l-view-btn.active {
-    background: ${C.indigo};
-    color: #fff;
-  }
-
-  .l-filters-panel {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 24px 16px;
-    border-bottom: 1px solid ${C.border};
-  }
-  .l-filters-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 12px;
-  }
-  .l-filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .l-filter-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: ${C.muted};
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .l-price-inputs {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .l-price-input {
-    flex: 1;
-    background: ${C.elev};
-    border: 1px solid ${C.border};
-    border-radius: 8px;
-    padding: 8px 12px;
-    color: ${C.white};
-    font-size: 13px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    outline: none;
-    width: 100%;
-  }
-  .l-price-dash { color: ${C.muted}; }
-  .l-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-  }
-  .l-toggle input { display: none; }
-  .l-toggle-slider {
-    width: 44px;
-    height: 24px;
-    background: ${C.elev};
-    border: 1px solid ${C.border};
-    border-radius: 12px;
-    position: relative;
-    transition: all .2s;
-  }
-  .l-toggle-slider::after {
-    content: '';
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    background: ${C.muted};
-    border-radius: 50%;
-    top: 2px;
-    left: 2px;
-    transition: all .2s;
-  }
-  .l-toggle input:checked + .l-toggle-slider {
-    background: ${C.emerald};
-    border-color: ${C.emerald};
-  }
-  .l-toggle input:checked + .l-toggle-slider::after {
-    background: #fff;
-    left: 22px;
-  }
-  .l-toggle-text { font-size: 13px; color: ${C.off}; }
-  .l-filters-actions {
-    display: flex;
-    gap: 10px;
-  }
-  .l-clear-btn {
-    background: ${C.elev};
-    border: 1px solid ${C.border};
-    border-radius: 10px;
-    padding: 8px 16px;
-    color: ${C.coral};
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    transition: all .2s;
-  }
-  .l-clear-btn:hover {
-    background: ${C.coralDim};
-    border-color: ${C.coral};
-  }
-
-  .l-active-filters {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 10px 24px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .l-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: ${C.indigoDim};
-    border: 1px solid ${C.indigoL}30;
-    color: ${C.indigoL};
-    font-size: 11px;
-    font-weight: 600;
-    padding: 5px 10px;
-    border-radius: 20px;
-  }
-  .l-chip button {
-    background: none;
-    border: none;
-    color: ${C.indigoL};
-    cursor: pointer;
-    font-size: 10px;
-    padding: 0;
-  }
-
-  .l-products-area {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 16px 24px 60px;
-  }
-  .l-products-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 14px;
-  }
-  .l-products-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  @media (max-width: 480px) {
-    .l-products-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-  }
-
-  .grid-card {
-    background: ${C.surf};
-    border: 1px solid ${C.border};
-    border-radius: 14px;
-    overflow: hidden;
-    text-decoration: none;
-    transition: all .2s;
-    display: flex;
-    flex-direction: column;
-  }
-  .grid-card:hover {
-    border-color: ${C.indigoL};
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,.3);
-  }
-  .grid-card-img-wrap {
-    position: relative;
-    aspect-ratio: 1;
-    background: ${C.elev};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-  .grid-card-img-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .grid-card-img-placeholder { font-size: 36px; }
-  .grid-card-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: ${C.coral};
-    color: #fff;
-    font-size: 10px;
-    font-weight: 800;
-    padding: 3px 7px;
-    border-radius: 6px;
-  }
-  .grid-card-cond-badge {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    background: ${C.elev};
-    color: ${C.off};
-    font-size: 9px;
-    font-weight: 700;
-    padding: 3px 7px;
-    border-radius: 6px;
-    text-transform: capitalize;
-    border: 1px solid ${C.border};
-  }
-  .grid-card-nego-badge {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    background: ${C.amberDim};
-    color: ${C.amber};
-    font-size: 9px;
-    font-weight: 700;
-    padding: 3px 7px;
-    border-radius: 6px;
-    border: 1px solid rgba(245,158,11,.25);
-  }
-  .grid-card-info {
-    padding: 10px 12px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-  }
-  .grid-card-name {
-    font-size: 13px;
-    font-weight: 700;
-    color: ${C.white};
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .grid-card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
-  .grid-card-campus {
-    font-size: 10px;
-    font-weight: 600;
-    color: ${C.indigoL};
-    background: ${C.indigoDim};
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .grid-card-footer {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-top: auto;
-  }
-  .grid-card-price {
-    font-size: 16px;
-    font-weight: 800;
-    color: ${C.amber};
-    font-family: 'JetBrains Mono', monospace;
-    display: block;
-  }
-  .grid-card-price.sale { color: ${C.coral}; }
-  .grid-card-original {
-    font-size: 11px;
-    color: ${C.muted};
-    text-decoration: line-through;
-    font-family: 'JetBrains Mono', monospace;
-    display: block;
-  }
-  .grid-card-view {
-    font-size: 11px;
-    font-weight: 700;
-    background: ${C.indigoDim};
-    color: ${C.indigoL};
-    padding: 5px 10px;
-    border-radius: 8px;
-    border: 1px solid ${C.indigo}20;
-    white-space: nowrap;
-  }
-
-  .list-card-h {
-    display: flex;
-    background: ${C.surf};
-    border: 1px solid ${C.border};
-    border-radius: 14px;
-    overflow: hidden;
-    text-decoration: none;
-    transition: all .2s;
-  }
-  .list-card-h:hover {
-    border-color: ${C.indigoL};
-    box-shadow: 0 4px 16px rgba(0,0,0,.2);
-  }
-  .list-card-img-wrap {
-    width: 140px;
-    min-height: 140px;
-    background: ${C.elev};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    position: relative;
-  }
-  .list-card-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-  .list-card-img-placeholder { font-size: 32px; }
-  .list-card-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background: ${C.coral};
-    color: #fff;
-    font-size: 10px;
-    font-weight: 800;
-    padding: 3px 7px;
-    border-radius: 6px;
-  }
-  .list-card-content {
-    flex: 1;
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 0;
-  }
-  .list-card-top { display: flex; justify-content: space-between; gap: 8px; }
-  .list-card-name {
-    font-size: 14px;
-    font-weight: 700;
-    color: ${C.white};
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .list-card-cat { font-size: 10px; color: ${C.muted}; white-space: nowrap; text-transform: capitalize; }
-  .list-card-meta { display: flex; gap: 6px; flex-wrap: wrap; }
-  .list-card-campus {
-    font-size: 10px;
-    font-weight: 600;
-    color: ${C.indigoL};
-    background: ${C.indigoDim};
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-  .list-card-cond {
-    font-size: 10px;
-    font-weight: 600;
-    color: ${C.off};
-    background: ${C.elev};
-    padding: 2px 6px;
-    border-radius: 4px;
-    text-transform: capitalize;
-  }
-  .list-card-nego {
-    font-size: 10px;
-    font-weight: 700;
-    color: ${C.amber};
-    background: ${C.amberDim};
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-  .list-card-bottom {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-top: auto;
-  }
-  .list-card-price {
-    font-size: 18px;
-    font-weight: 800;
-    color: ${C.amber};
-    font-family: 'JetBrains Mono', monospace;
-    display: block;
-  }
-  .list-card-price.sale { color: ${C.coral}; }
-  .list-card-original {
-    font-size: 12px;
-    color: ${C.muted};
-    text-decoration: line-through;
-    font-family: 'JetBrains Mono', monospace;
-    display: block;
-  }
-  .list-card-view {
-    font-size: 12px;
-    font-weight: 700;
-    background: ${C.indigoDim};
-    color: ${C.indigoL};
-    padding: 6px 12px;
-    border-radius: 8px;
-  }
-
-  .list-card-skel {
-    background: ${C.surf};
-    border: 1px solid ${C.border};
-    border-radius: 14px;
-    overflow: hidden;
-  }
-  .list-card-skel.list-view { display: flex; }
-  .list-card-skel.list-view .skel-img { width: 140px; min-height: 140px; flex-shrink: 0; }
-  .skel-img {
-    aspect-ratio: 1;
-    background: ${C.elev};
-    animation: shimmer 1.8s ease-in-out infinite;
-    background: linear-gradient(90deg, ${C.surf} 25%, ${C.elev} 50%, ${C.surf} 75%);
-    background-size: 400% 100%;
-  }
-  .skel-info { padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-  .skel-line {
-    height: 12px;
-    border-radius: 6px;
-    animation: shimmer 1.8s ease-in-out infinite;
-    background: linear-gradient(90deg, ${C.surf} 25%, ${C.elev} 50%, ${C.surf} 75%);
-    background-size: 400% 100%;
-  }
-  @keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
-  }
-
-  .l-empty { text-align: center; padding: 60px 20px; }
-  .l-empty-icon { font-size: 56px; margin-bottom: 16px; }
-  .l-empty h3 { font-size: 20px; margin-bottom: 8px; }
-  .l-empty p { color: ${C.muted}; margin-bottom: 20px; }
-
-  .l-load-more-wrap { display: flex; justify-content: center; padding: 24px 0; }
-  .l-load-more-btn {
-    background: ${C.surf};
-    border: 1.5px solid ${C.border};
-    color: ${C.off};
-    font-weight: 600;
-    font-size: 14px;
-    padding: 12px 28px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    transition: all .2s;
-  }
-  .l-load-more-btn:hover { border-color: ${C.emerald}; color: ${C.emerald}; }
-  .l-loading-more {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 20px;
-    color: ${C.muted};
-    font-size: 13px;
-  }
-  .l-spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid ${C.border};
-    border-top-color: ${C.emerald};
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  @media (max-width: 768px) {
-    .l-header { padding: 10px 16px; }
-    .l-search-bar { padding: 10px 16px; }
-    .l-cat-scroll { padding: 0 16px; }
-    .l-toolbar { padding: 10px 16px; }
-    .l-products-area { padding: 12px 16px 40px; }
-  }
-  @media (max-width: 480px) {
-    .list-card-img-wrap { width: 100px; min-height: 100px; }
-    .list-card-content { padding: 10px; }
-  }
-`;

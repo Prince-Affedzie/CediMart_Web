@@ -134,10 +134,10 @@ export default function GuestCheckout({ product, isOpen, onClose, onSuccess }) {
         location: location.trim(),
       };
 
-      const response = await createGuestOrder(orderData);
+      const response = await order(orderData);
       
       // Success
-      if (response?.data?.success || response?.status === 201) {
+      if (response?.data?.success || response?.status === 200) {
         const order = response.data?.data || response.data;
         setOrderId(order.orderId);
         setStep(2);
