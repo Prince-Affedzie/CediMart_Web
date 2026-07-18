@@ -1,7 +1,7 @@
 // src/app/product/[id]/page.js
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { getProductById, getProductsByCategory } from '@/apis/productApi';
@@ -41,6 +41,12 @@ const CONDITION_MAP = {
 const fmtPrice = (p) =>
   p == null ? '—' : `GH₵\u00A0${Number(p).toLocaleString('en-GH', { minimumFractionDigits: 0 })}`;
 
+const safeStr = (val) => {
+  if (!val) return null;
+  if (typeof val === 'object') return val.campusArea || val.name || val.hostel || null;
+  return String(val);
+};
+
 // ─── Download App Modal ────────────────────────────────────────────────────────
 function DownloadAppModal({ isOpen, onClose, action }) {
   if (!isOpen) return null;
@@ -74,11 +80,162 @@ function DownloadAppModal({ isOpen, onClose, action }) {
   );
 }
 
+// ─── Image Carousel ────────────────────────────────────────────────────────────
+function ImageCarousel({ images, productName, isOnSale, discountPct }) {
+  const [current, setCurrent] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const carouselRef = useRef(null);
+
+  const minSwipeDistance = 50;
+
+  const goTo = useCallback((index) => {
+    if (index >= 0 && index < images.length) {
+      setCurrent(index);
+    }
+  }, [images.length]);
+
+  const goNext = useCallback(() => {
+    setCurrent(prev => (prev + 1) % images.length);
+  }, [images.length]);
+
+  const goPrev = useCallback(() => {
+    setCurrent(prev => (prev - 1 + images.length) % images.length);
+  }, [images.length]);
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+    setIsDragging(true);
+    setDragOffset(0);
+  };
+
+  const onTouchMove = (e) => {
+    if (!touchStart) return;
+    const currentTouch = e.targetTouches[0].clientX;
+    setTouchEnd(currentTouch);
+    const diff = touchStart - currentTouch;
+    setDragOffset(diff);
+  };
+
+  const onTouchEnd = () => {
+    setIsDragging(false);
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      goNext();
+    } else if (isRightSwipe) {
+      goPrev();
+    }
+    
+    setDragOffset(0);
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === 'ArrowLeft') goPrev();
+      if (e.key === 'ArrowRight') goNext();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [goNext, goPrev]);
+
+  if (!images.length) {
+    return (
+      <div className="pd-carousel">
+        <div className="pd-carousel-track">
+          <div className="pd-carousel-slide">
+            <div className="pd-carousel-img-wrap">
+              <div className="pd-carousel-placeholder">📦</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="pd-carousel" 
+      ref={carouselRef}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* Sale badge */}
+      {isOnSale && <span className="pd-sale-badge">-{discountPct}% OFF</span>}
+
+      {/* Image counter */}
+      <div className="pd-carousel-counter">
+        {current + 1} / {images.length}
+      </div>
+
+      {/* Arrow buttons (hidden on mobile) */}
+      {images.length > 1 && (
+        <>
+          <button className="pd-carousel-arrow left" onClick={goPrev} aria-label="Previous image">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <button className="pd-carousel-arrow right" onClick={goNext} aria-label="Next image">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </>
+      )}
+
+      {/* Slides track */}
+      <div 
+        className="pd-carousel-track"
+        style={{ 
+          transform: `translateX(calc(-${current * 100}% - ${isDragging ? dragOffset : 0}px))`,
+          transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
+      >
+        {images.map((img, i) => (
+          <div key={i} className="pd-carousel-slide">
+            <div className="pd-carousel-img-wrap">
+              <img 
+                src={img} 
+                alt={`${productName} - ${i + 1}`}
+                className="pd-carousel-img"
+                draggable="false"
+                onError={e => { e.target.src = 'https://placehold.co/600x600/13131E/52525B?text=No+Image'; }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Dot indicators */}
+      {images.length > 1 && (
+        <div className="pd-carousel-dots">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              className={`pd-carousel-dot ${i === current ? 'active' : ''}`}
+              onClick={() => goTo(i)}
+              aria-label={`Go to image ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Skeleton ──────────────────────────────────────────────────────────────────
 function ProductSkeleton() {
   return (
     <div className="sk-wrapper">
-      <div className="sk-gallery"><div className="sk-main-img" /><div className="sk-thumbs">{[...Array(4)].map((_, i) => <div key={i} className="sk-thumb" />)}</div></div>
+      <div className="sk-gallery"><div className="sk-main-img" /></div>
       <div className="sk-details">
         <div className="sk-line" style={{ width: '30%', height: 12 }} />
         <div className="sk-line" style={{ width: '80%', height: 24, marginTop: 12 }} />
@@ -109,13 +266,6 @@ function RelatedProductCard({ product }) {
   );
 }
 
-// ─── Helper to safely get string value ─────────────────────────────────────────
-const safeStr = (val) => {
-  if (!val) return null;
-  if (typeof val === 'object') return val.campusArea || val.name || val.hostel || null;
-  return String(val);
-};
-
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function ProductDetailPage() {
   const params = useParams();
@@ -124,7 +274,6 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState('contact');
@@ -186,39 +335,29 @@ export default function ProductDetailPage() {
 
         <div className="pd-container">
           <div className="pd-grid">
-            {/* ── Image Gallery ── */}
+            {/* ── Image Carousel ── */}
             <div className="pd-gallery">
-              <div className="pd-main-img-wrap">
-                {isOnSale && <span className="pd-sale-badge">-{discountPct}% OFF</span>}
-                <img src={images[selectedImage]} alt={product.name} className="pd-main-img" onError={e => { e.target.src = 'https://placehold.co/600x600/13131E/52525B?text=No+Image'; }} />
-              </div>
-              {images.length > 1 && (
-                <div className="pd-thumb-strip">
-                  {images.map((img, i) => (
-                    <button key={i} className={`pd-thumb ${i === selectedImage ? 'active' : ''}`} onClick={() => setSelectedImage(i)}>
-                      <img src={img} alt={`${product.name} - ${i + 1}`} onError={e => { e.target.src = 'https://placehold.co/100x100/13131E/52525B?text=No+Image'; }} />
-                    </button>
-                  ))}
-                </div>
-              )}
+              <ImageCarousel 
+                images={images} 
+                productName={product.name}
+                isOnSale={isOnSale}
+                discountPct={discountPct}
+              />
             </div>
 
             {/* ── Product Details ── */}
             <div className="pd-details">
-              {/* Breadcrumb */}
               <div className="pd-breadcrumb">
                 <Link href="/">Home</Link><span>/</span>
                 <Link href="/listings">Listings</Link><span>/</span>
                 <span className="pd-breadcrumb-current">{product.name}</span>
               </div>
 
-              {/* Title + Condition */}
               <div className="pd-title-row">
                 <h1 className="pd-title">{product.name}</h1>
                 {cond && <span className="pd-condition" style={{ background: cond.bg, color: cond.color }}>{cond.label}</span>}
               </div>
 
-              {/* Inline meta: campus · category · negotiable · brand · stock */}
               <div className="pd-meta-inline">
                 {campusStr && <span>📍 {campusStr}</span>}
                 {product.category && <span>📂 {product.category.replace(/-/g, ' ')}</span>}
@@ -229,7 +368,6 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              {/* Price */}
               <div className="pd-price-section">
                 {isOnSale ? (
                   <>
@@ -244,20 +382,12 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              {/* Action Buttons */}
               <div className="pd-actions">
-                <button className="pd-buy-btn" onClick={() => setCheckoutOpen(true)}>
-                  🛒 Buy Now
-                </button>
-                <button className="pd-contact-btn-sm" onClick={() => handleAction('contact')}>
-                  💬 Chat Seller
-                </button>
-                <button className="pd-save-btn" onClick={() => handleAction('save')}>
-                  ♡
-                </button>
+                <button className="pd-buy-btn" onClick={() => setCheckoutOpen(true)}>🛒 Buy Now</button>
+                <button className="pd-contact-btn-sm" onClick={() => handleAction('contact')}>💬 Chat Seller</button>
+                <button className="pd-save-btn" onClick={() => handleAction('save')}>♡</button>
               </div>
 
-              {/* Description */}
               {product.description && (
                 <div className="pd-description">
                   <h3>Description</h3>
@@ -265,7 +395,6 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* Specifications */}
               {Object.keys(specs).length > 0 && (
                 <div className="pd-specs">
                   <h3>Specifications</h3>
@@ -280,7 +409,6 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* Location info - compact */}
               {locationStr && (
                 <div className="pd-location">
                   <span className="pd-location-icon">📍</span>
@@ -289,7 +417,6 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* Seller Card - compact */}
               {product.vendor && (
                 <div className="pd-seller-card">
                   <div className="pd-seller-avatar">{product.vendor?.name?.charAt(0) || 'S'}</div>
@@ -303,7 +430,6 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* Related Products */}
           {relatedProducts.length > 0 && (
             <div className="pd-related-section">
               <h2 className="pd-related-title">More in {product.category?.replace(/-/g, ' ') || 'this category'}</h2>
@@ -318,26 +444,23 @@ export default function ProductDetailPage() {
         </div>
       </div>
       <GuestCheckout 
-       product={product}
-       isOpen={checkoutOpen}
-       onClose={() => setCheckoutOpen(false)}
-      onSuccess={(order) => {
-      console.log('Order placed:', order);
-    // Track conversion
-  }}
-/>
+        product={product}
+        isOpen={checkoutOpen}
+        onClose={() => setCheckoutOpen(false)}
+        onSuccess={(order) => { console.log('Order placed:', order); }}
+      />
     </>
   );
 }
 
-// ─── Modal Styles (unchanged) ──────────────────────────────────────────────────
+// ─── Modal Styles ──────────────────────────────────────────────────────────────
 const modalStyles = `
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; animation: fadeIn .2s ease; }
   .modal-content { background: ${C.surf}; border: 1px solid ${C.border}; border-radius: 24px; padding: clamp(28px,4vw,40px); max-width: 480px; width: 100%; text-align: center; position: relative; animation: slideUp .3s ease; max-height: 90vh; overflow-y: auto; }
   .modal-close { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; border-radius: 50%; background: ${C.elev}; border: 1px solid ${C.border}; color: ${C.off}; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
   .modal-close:hover { color: ${C.white}; border-color: ${C.indigoL}; }
-  .modal-icon { font-size: 56px; margin-bottom: 16px; color: ${C.off}; }
-  .modal-title { font-size: clamp(20px,3vw,26px); font-weight: 800; margin-bottom: 10px; letter-spacing: -.5px;color: ${C.off} }
+  .modal-icon { font-size: 56px; margin-bottom: 16px; }
+  .modal-title { font-size: clamp(20px,3vw,26px); font-weight: 800; margin-bottom: 10px; letter-spacing: -.5px; }
   .modal-text { font-size: 14px; color: ${C.off}; line-height: 1.6; margin-bottom: 24px; }
   .modal-features { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 28px; }
   .modal-feature { display: flex; align-items: center; gap: 8px; background: ${C.elev}; border: 1px solid ${C.border}; border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: ${C.off}; }
@@ -359,25 +482,128 @@ const modalStyles = `
 const productStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
   *{box-sizing:border-box;margin:0;padding:0}
-  .pd-page{min-height:100vh;background:${C.void};color:${C.white};font-family:'Plus Jakarta Sans',sans-serif,overflowX:hidden;}
+  .pd-page{min-height:100vh;background:${C.void};color:${C.white};font-family:'Plus Jakarta Sans',sans-serif;overflow-x:hidden}
   .pd-nav{background:${C.surf};border-bottom:1px solid ${C.border};padding:12px 24px}
   .pd-nav-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:20px}
   .pd-nav-back{color:${C.off};text-decoration:none;font-size:14px;font-weight:600;transition:color .2s}
   .pd-nav-back:hover{color:${C.white}}
   .pd-nav-link{color:${C.muted};text-decoration:none;font-size:13px;transition:color .2s}
   .pd-nav-link:hover{color:${C.indigoL}}
-  .pd-container{max-width:1280px;margin:0 auto;padding:clamp(24px,4vw,48px) clamp(16px,4vw,32px),overflowX:hidden;}
+  .pd-container{max-width:1280px;margin:0 auto;padding:clamp(24px,4vw,48px) clamp(16px,4vw,32px);overflow-x:hidden}
   .pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,5vw,64px);align-items:start}
   @media(max-width:768px){.pd-grid{grid-template-columns:1fr;gap:24px}}
   .pd-gallery{position:sticky;top:80px}
   @media(max-width:768px){.pd-gallery{position:relative;top:0}}
-  .pd-main-img-wrap{position:relative;background:${C.elev};border-radius:20px;overflow:hidden;border:1px solid ${C.border};aspect-ratio:1}
-  .pd-main-img{width:100%;height:100%;object-fit:contain;padding:16px}
-  .pd-sale-badge{position:absolute;top:16px;left:16px;background:${C.coral};color:#fff;font-size:13px;font-weight:800;padding:6px 14px;border-radius:10px;z-index:2}
-  .pd-thumb-strip{display:flex;gap:10px;margin-top:12px;overflow-x:auto;padding-bottom:4px}
-  .pd-thumb{width:72px;height:72px;border-radius:12px;overflow:hidden;border:2px solid ${C.border};cursor:pointer;flex-shrink:0;transition:all .2s;background:${C.elev};padding:0}
-  .pd-thumb.active{border-color:${C.indigoL};box-shadow:0 0 0 2px ${C.indigoDim}}
-  .pd-thumb img{width:100%;height:100%;object-fit:cover}
+
+  /* ══════════════════════ IMAGE CAROUSEL ══════════════════════ */
+  .pd-carousel {
+    position: relative;
+    background: ${C.elev};
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid ${C.border};
+    aspect-ratio: 1;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y;
+  }
+  .pd-carousel-track {
+    display: flex;
+    height: 100%;
+    will-change: transform;
+  }
+  .pd-carousel-slide {
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pd-carousel-img-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .pd-carousel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+  }
+  .pd-carousel-placeholder {
+    font-size: 64px;
+    opacity: 0.5;
+  }
+  .pd-carousel-counter {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 20px;
+    z-index: 2;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pd-carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: all .2s;
+    backdrop-filter: blur(4px);
+  }
+  .pd-carousel-arrow:hover {
+    background: rgba(0,0,0,0.75);
+    border-color: rgba(255,255,255,0.3);
+  }
+  .pd-carousel-arrow.left { left: 12px; }
+  .pd-carousel-arrow.right { right: 12px; }
+  .pd-carousel-dots {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 2;
+  }
+  .pd-carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all .25s;
+  }
+  .pd-carousel-dot.active {
+    background: #fff;
+    transform: scale(1.3);
+    box-shadow: 0 0 8px rgba(255,255,255,0.4);
+  }
+  @media (max-width: 768px) {
+    .pd-carousel-arrow { display: none; }
+    .pd-carousel { border-radius: 16px; }
+  }
+
+  .pd-sale-badge{position:absolute;top:14px;left:14px;background:${C.coral};color:#fff;font-size:13px;font-weight:800;padding:6px 14px;border-radius:10px;z-index:3}
   .pd-details{display:flex;flex-direction:column;gap:14px}
   .pd-breadcrumb{display:flex;align-items:center;gap:8px;font-size:12px;color:${C.muted};flex-wrap:wrap}
   .pd-breadcrumb a{color:${C.off};text-decoration:none}
@@ -386,24 +612,18 @@ const productStyles = `
   .pd-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .pd-title{font-size:clamp(22px,3vw,28px);font-weight:800;line-height:1.2;letter-spacing:-.5px;flex:1;min-width:200px}
   .pd-condition{font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;white-space:nowrap}
-
-  /* ── Inline Meta ── */
   .pd-meta-inline{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12.5px;color:${C.off}}
   .pd-meta-inline span{display:inline-flex;align-items:center;gap:4px}
   .pd-meta-nego{color:${C.amber};font-weight:600}
   .pd-meta-stock{font-weight:600}
   .pd-meta-stock.in{color:${C.emerald}}
   .pd-meta-stock.out{color:${C.coral}}
-
-  /* ── Price ── */
   .pd-price-section{padding:12px 0;border-top:1px solid ${C.border};border-bottom:1px solid ${C.border}}
   .pd-price{font-size:clamp(28px,4vw,36px);font-weight:900;color:${C.amber};font-family:'JetBrains Mono',monospace}
   .pd-price.sale{color:${C.coral}}
   .pd-original-price{font-size:15px;color:${C.muted};text-decoration:line-through;font-family:'JetBrains Mono',monospace;display:block;margin-bottom:2px}
   .pd-price-row{display:flex;align-items:center;gap:12px}
   .pd-save-badge{font-size:11px;font-weight:700;background:${C.coralDim};color:${C.coral};padding:3px 8px;border-radius:6px}
-
-  /* ── Actions ── */
   .pd-actions{display:flex;gap:10px;align-items:center}
   .pd-buy-btn{flex:1;background:linear-gradient(135deg,${C.emerald},#34D399);color:#000;font-weight:700;font-size:15px;padding:14px 20px;border-radius:14px;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;box-shadow:0 6px 20px rgba(16,185,129,.25);transition:all .22s;white-space:nowrap}
   .pd-buy-btn:hover{filter:brightness(1.08);transform:translateY(-2px)}
@@ -411,12 +631,8 @@ const productStyles = `
   .pd-contact-btn-sm:hover{border-color:${C.indigoL};background:${C.elev}}
   .pd-save-btn{width:48px;height:48px;background:${C.surf};border:1px solid ${C.border};color:${C.coral};font-size:18px;border-radius:14px;cursor:pointer;transition:all .2s;flex-shrink:0}
   .pd-save-btn:hover{border-color:${C.coral};background:${C.coralDim}}
-
-  /* ── Description ── */
   .pd-description h3{font-size:14px;font-weight:700;margin-bottom:6px}
   .pd-description p{font-size:14px;color:${C.off};line-height:1.7}
-
-  /* ── Specifications ── */
   .pd-specs{margin-top:4px}
   .pd-specs h3{font-size:14px;font-weight:700;margin-bottom:8px}
   .pd-specs-list{display:flex;flex-direction:column;gap:6px}
@@ -424,21 +640,15 @@ const productStyles = `
   .pd-spec-item:last-child{border-bottom:none}
   .pd-spec-key{font-size:13px;color:${C.muted};text-transform:capitalize}
   .pd-spec-val{font-size:13px;font-weight:600;color:${C.white}}
-
-  /* ── Location ── */
   .pd-location{display:flex;align-items:center;gap:6px;font-size:13px;color:${C.off};background:${C.surf};border:1px solid ${C.border};border-radius:10px;padding:10px 14px}
   .pd-location-icon{font-size:15px}
   .pd-location-hostel{color:${C.muted}}
-
-  /* ── Seller ── */
   .pd-seller-card{display:flex;align-items:center;gap:12px;background:${C.surf};border:1px solid ${C.border};border-radius:14px;padding:12px 14px}
   .pd-seller-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,${C.indigo},${C.indigoL});display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0}
   .pd-seller-info{flex:1}
   .pd-seller-name{font-size:13px;font-weight:700}
   .pd-seller-stats{font-size:11px;color:${C.muted};margin-top:1px}
   .pd-verified-badge{font-size:10px;font-weight:700;color:${C.emerald};background:${C.emeraldDim};padding:4px 8px;border-radius:6px;white-space:nowrap}
-
-  /* ── Related ── */
   .pd-related-section{margin-top:clamp(48px,6vw,80px);padding-top:clamp(32px,4vw,48px);border-top:1px solid ${C.border}}
   .pd-related-title{font-size:clamp(20px,3vw,26px);font-weight:800;margin-bottom:24px;letter-spacing:-.5px}
   .pd-related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
@@ -455,25 +665,18 @@ const productStyles = `
   .pd-view-all-wrap{display:flex;justify-content:center;margin-top:28px}
   .pd-view-all-btn{border:1.5px solid ${C.border};color:${C.off};font-weight:600;font-size:14px;padding:11px 26px;border-radius:12px;text-decoration:none;transition:all .22s}
   .pd-view-all-btn:hover{border-color:${C.indigoL};color:${C.indigoL}}
-
-  /* ── Not Found ── */
   .pd-not-found{text-align:center;padding:80px 20px}
   .pd-not-found-icon{font-size:64px;margin-bottom:16px}
   .pd-not-found h2{font-size:24px;margin-bottom:8px}
   .pd-not-found p{color:${C.muted};margin-bottom:24px}
   .pd-back-btn{display:inline-flex;background:linear-gradient(135deg,${C.indigo},${C.indigoL});color:#fff;font-weight:700;padding:12px 24px;border-radius:12px;text-decoration:none;transition:all .22s}
   .pd-back-btn:hover{filter:brightness(1.1);transform:translateY(-2px)}
-
-  /* ── Skeleton ── */
   .sk-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:48px}
   @media(max-width:768px){.sk-wrapper{grid-template-columns:1fr}}
   .sk-gallery{display:flex;flex-direction:column;gap:12px}
   .sk-main-img{aspect-ratio:1;background:${C.surf};border-radius:20px;animation:shimmer 1.8s ease-in-out infinite;background:linear-gradient(90deg,${C.surf} 25%,${C.elev} 50%,${C.surf} 75%);background-size:400% 100%}
-  .sk-thumbs{display:flex;gap:10px}
-  .sk-thumb{width:72px;height:72px;border-radius:12px;background:${C.surf};animation:shimmer 1.8s ease-in-out infinite}
   .sk-details{display:flex;flex-direction:column}
   .sk-line{border-radius:8px;background:${C.surf};animation:shimmer 1.8s ease-in-out infinite;background:linear-gradient(90deg,${C.surf} 25%,${C.elev} 50%,${C.surf} 75%);background-size:400% 100%}
   @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
-
   @media(max-width:768px){.pd-nav{padding:10px 16px}.pd-actions{flex-wrap:wrap}.pd-buy-btn{min-width:100%}.pd-contact-btn-sm{flex:1}}
 `;
