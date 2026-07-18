@@ -61,7 +61,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body className="inter_396b12ce-module__rRjk0G__className bg-gray-50" suppressHydrationWarning>
         <Header />
         <main>{children}</main>

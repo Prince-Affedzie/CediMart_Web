@@ -293,7 +293,7 @@ export default function AiAssistantPage() {
           display: flex;
           flex-direction: column;
           gap: 20px;
-          scroll-behavior: smooth;
+          
         }
         .ai-chat-area::-webkit-scrollbar {
           width: 6px;
