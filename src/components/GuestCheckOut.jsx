@@ -128,15 +128,16 @@ export default function GuestCheckout({ product, isOpen, onClose, onSuccess }) {
         productId: product._id,
         productName: product.name,
         price: product.price,
-        buyerPhone: phone,
-        buyerName: name.trim(),
+        customerName: name.trim(),
+        phone,
         campus,
         location: location.trim(),
-        isGuest: true,
       };
 
-      const response = await order(orderData)
-      if (response.status ===200 || response.success){
+      const response = await createGuestOrder(orderData);
+      
+      // Success
+      if (response?.data?.success || response?.status === 201) {
         const order = response.data?.data || response.data;
         setOrderId(order.orderId);
         setStep(2);
@@ -152,14 +153,46 @@ export default function GuestCheckout({ product, isOpen, onClose, onSuccess }) {
           status: order.status || 'pending',
           createdAt: order.createdAt || new Date().toISOString(),
         });
-      }else{
-        const errorMsg = response?.data?.message || 'Failed to place order. Please try again.';
-        setError(errorMsg);
+        return;
       }
       
+      // If we got here, something went wrong — extract the server's message
+      const serverMsg = response?.data?.message;
+      if (serverMsg) {
+        setError(serverMsg);
+      } else {
+        setError('Unable to place your order right now. Please try again.');
+      }
       
-    } catch { 
-      setError('Failed to place order. Please try again.'); 
+    } catch (err) {
+      console.error('Order submission error:', err);
+      
+      // Extract error message from the response if available
+      const responseData = err?.response?.data;
+      const serverMessage = responseData?.message;
+      const statusCode = err?.response?.status;
+
+      // Map specific HTTP status codes to user-friendly messages
+      if (serverMessage) {
+        // Use the server's own message if available (best UX)
+        setError(serverMessage);
+      } else if (statusCode === 400) {
+        setError('Some information is missing or incorrect. Please check your details and try again.');
+      } else if (statusCode === 404) {
+        setError('This product is no longer available. It may have been sold or removed.');
+      } else if (statusCode === 409) {
+        setError('You already placed an order for this item. The seller will contact you at ' + phone + '.');
+      } else if (statusCode === 429) {
+        setError('Too many attempts. Please wait a moment and try again.');
+      } else if (statusCode >= 500) {
+        setError('Our server is having trouble. Please try again in a few minutes.');
+      } else if (err?.code === 'ERR_NETWORK' || err?.message?.includes('Network')) {
+        setError('Network connection lost. Please check your internet and try again.');
+      } else if (err?.code === 'ECONNABORTED' || err?.message?.includes('timeout')) {
+        setError('Request timed out. Please check your connection and try again.');
+      } else {
+        setError('Something unexpected happened. Please try again or contact support.');
+      }
     } finally { 
       setLoading(false); 
     }

@@ -336,8 +336,8 @@ const modalStyles = `
   .modal-content { background: ${C.surf}; border: 1px solid ${C.border}; border-radius: 24px; padding: clamp(28px,4vw,40px); max-width: 480px; width: 100%; text-align: center; position: relative; animation: slideUp .3s ease; max-height: 90vh; overflow-y: auto; }
   .modal-close { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; border-radius: 50%; background: ${C.elev}; border: 1px solid ${C.border}; color: ${C.off}; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
   .modal-close:hover { color: ${C.white}; border-color: ${C.indigoL}; }
-  .modal-icon { font-size: 56px; margin-bottom: 16px; }
-  .modal-title { font-size: clamp(20px,3vw,26px); font-weight: 800; margin-bottom: 10px; letter-spacing: -.5px; }
+  .modal-icon { font-size: 56px; margin-bottom: 16px; color: ${C.off}; }
+  .modal-title { font-size: clamp(20px,3vw,26px); font-weight: 800; margin-bottom: 10px; letter-spacing: -.5px;color: ${C.off} }
   .modal-text { font-size: 14px; color: ${C.off}; line-height: 1.6; margin-bottom: 24px; }
   .modal-features { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 28px; }
   .modal-feature { display: flex; align-items: center; gap: 8px; background: ${C.elev}; border: 1px solid ${C.border}; border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: ${C.off}; }
