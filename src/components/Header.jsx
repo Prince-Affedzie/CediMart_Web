@@ -11,6 +11,7 @@ export default function Header() {
   const navLinks = [
     { label: 'Listings', href: '/listings' },
     { label: 'AI Assistant', href: '/ai-assistant' },
+    { label: 'Sell', href: '/sell' },
     { label: 'About', href: '/about' },
     { label: 'Contact', href: '/contact' },
   ];
