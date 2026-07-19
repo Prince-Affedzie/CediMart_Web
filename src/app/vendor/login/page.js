@@ -97,7 +97,7 @@ export default function VendorLoginPage() {
     } finally { setLoading(false); }
   };
 
-  const handleVerifyOTP = async () => {
+ const handleVerifyOTP = async () => {
     if (otp.length < 6) { setError('Please enter the complete 6-digit code.'); return; }
     setLoading(true); setError(''); setSuccess('');
     try {
@@ -107,30 +107,51 @@ export default function VendorLoginPage() {
       if (response?.data?.success || response?.status === 200) {
         try {
           const vendorRes = await vendorLogin({ phone: trimmed });
-          if (vendorRes?.data?.success || vendorRes?.success) {
+          
+          console.log('Vendor login full response:', vendorRes);
+          console.log('Status:', vendorRes?.status);
+          console.log('Data:', vendorRes?.data);
+
+          // Check success properly
+          if (vendorRes?.data?.success === true || vendorRes?.status === 200) {
             setSuccess('Login successful! Redirecting to dashboard...');
+            
+            // Store token
             if (vendorRes?.data?.token) {
               localStorage.setItem('vendorToken', vendorRes.data.token);
             }
+            
+            // Store vendor data
             if (vendorRes?.data?.vendor) {
               localStorage.setItem('vendorData', JSON.stringify(vendorRes.data.vendor));
+            } else if (vendorRes?.data?.user) {
+              localStorage.setItem('vendorData', JSON.stringify(vendorRes.data.user));
             }
-            setTimeout(() => router.push('/vendor/dashboard'), 1500);
+
+            // Navigate
+            setTimeout(() => {
+              router.push('/vendor/dashboard');
+            }, 500);
           } else {
-            setError(vendorRes?.data?.message || vendorRes?.message || "You haven't created a vendor account yet.");
+            const errorMsg = vendorRes?.data?.message || 'Login failed. Please try again.';
+            setError(errorMsg);
             setStep(STEPS.PHONE);
             setOtp('');
           }
         } catch (loginErr) {
-          setError(loginErr?.response?.data?.message || 'Login failed. Please try again.');
+          console.error('Login error:', loginErr);
+          const errorMsg = loginErr?.response?.data?.message || 'Login failed. Please try again.';
+          setError(errorMsg);
           setStep(STEPS.PHONE);
           setOtp('');
         }
       } else {
-        setError('Invalid or expired code. Please try again.');
+        const errorMsg = response?.data?.message || 'Invalid or expired code. Please try again.';
+        setError(errorMsg);
       }
     } catch (err) {
-      setError(err?.response?.data?.message || 'Verification failed. Please try again.');
+      const errorMsg = err?.response?.data?.message || 'Verification failed. Please try again.';
+      setError(errorMsg);
     } finally { setLoading(false); }
   };
 

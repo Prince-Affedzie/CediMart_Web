@@ -207,7 +207,7 @@ export default function VendorDashboardPage() {
             </div>
             {products.length > 0 ? (
               <div className="vd-products-grid">
-                {products.slice(0, 6).map(p => <MiniProductCard key={p._id} product={p} />)}
+                {products.slice(0, 8).map(p => <MiniProductCard key={p._id} product={p} />)}
               </div>
             ) : (
               <div className="vd-empty">
