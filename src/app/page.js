@@ -2,27 +2,39 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { getAllProducts,getProductsByTag } from '@/apis/productApi';
+import { getAllProducts, getProductsByTag } from '@/apis/productApi';
 
-// ─── Design tokens ─────────────────────────────────────────────────────────────
+// ─── Design tokens (Teal + Coral Light Mode) ──────────────────────────────────
 const C = {
-  void:    '#09090F',
-  surf:    '#13131E',
-  elev:    '#1C1C2E',
-  indigo:  '#6366F1',
-  indigoL: '#818CF8',
-  indigoDim:'rgba(99,102,241,0.12)',
-  amber:   '#F59E0B',
-  amberL:  '#FCD34D',
-  amberDim:'rgba(245,158,11,0.12)',
-  coral:   '#F43F5E',
-  coralDim:'rgba(244,63,94,0.12)',
-  emerald: '#10B981',
-  emeraldDim:'rgba(16,185,129,0.12)',
-  white:   '#F1F0FF',
-  off:     '#A8A8B8',
-  muted:   '#52525B',
-  border:  '#27273A',
+  // Neutral foundation
+  void:    '#F8FAFC',
+  surf:    '#FFFFFF',
+  elev:    '#F1F5F9',
+  
+  // Text
+  white:   '#0F172A',
+  off:     '#475569',
+  muted:   '#94A3B8',
+  border:  '#E2E8F0',
+  
+  // Brand - Teal (primary interactions, buttons, links)
+  brand:   '#0D9488',
+  brandL:  '#14B8A6',
+  brandD:  '#0F766E',
+  brandBg: '#F0FDFA',
+  
+  // Accent - Coral (prices, urgency, negotiable)
+  accent:  '#F97316',
+  accentL: '#FB923C',
+  accentBg:'#FFF7ED',
+  
+  // Success - Emerald (verified, in-stock, safety)
+  emerald: '#059669',
+  emeraldBg:'#ECFDF5',
+  
+  // Danger - Red (sales, errors, out of stock)
+  coral:   '#DC2626',
+  coralBg: '#FEF2F2',
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -30,13 +42,13 @@ const fmtPrice = (p) =>
   p == null ? '—' : `GH₵\u00A0${Number(p).toLocaleString('en-GH', { minimumFractionDigits: 0 })}`;
 
 const CONDITION_MAP = {
-  'new':           { label: 'New',        bg: '#10B98118', color: '#10B981' },
-  'like-new':      { label: 'Like New',   bg: '#10B98118', color: '#10B981' },
-  'excellent':     { label: 'Excellent',  bg: '#6366F118', color: '#818CF8' },
-  'good':          { label: 'Good',       bg: '#F59E0B18', color: '#F59E0B' },
-  'fair':          { label: 'Fair',       bg: '#F43F5E18', color: '#F87171' },
-  'slightly-used': { label: 'Used',       bg: '#F43F5E18', color: '#F87171' },
-  'for-parts':     { label: 'Parts',      bg: '#71717A18', color: '#71717A' },
+  'new':           { label: 'New',        bg: '#05966915', color: C.emerald },
+  'like-new':      { label: 'Like New',   bg: '#05966915', color: C.emerald },
+  'excellent':     { label: 'Excellent',  bg: '#0D948815', color: C.brand },
+  'good':          { label: 'Good',       bg: '#F9731615', color: '#D97706' },
+  'fair':          { label: 'Fair',       bg: '#DC262615', color: C.coral },
+  'slightly-used': { label: 'Used',       bg: '#DC262615', color: C.coral },
+  'for-parts':     { label: 'Parts',      bg: '#64748B15', color: '#64748B' },
 };
 
 const CATEGORY_ICONS = {
@@ -77,24 +89,24 @@ const AI_DEMOS = [
 ];
 
 const WHY_ITEMS = [
-  { icon:'🛡️', title:'Verified Sellers',    color:C.indigo,
+  { icon:'🛡️', title:'Verified Sellers',    color:C.brand,
     desc:'Every vendor submits a national ID and student card. Green badge = fully checked.' },
-  { icon:'⚡', title:'List in 60 Seconds', color:C.amber,
+  { icon:'⚡', title:'List in 60 Seconds', color:C.accent,
     desc:'Photo, price, publish. Median listing time: 48 seconds. Your buyer could message within the hour.' },
   { icon:'🔒', title:'Private Messaging',   color:C.coral,
     desc:'Chat inside the app. Your phone number stays private until you choose to share it.' },
   { icon:'📊', title:'Live Analytics',      color:C.emerald,
     desc:'See real-time views, saves, and conversion rates on every product you list. No weekly reports.' },
-  { icon:'📍', title:'Campus-Precise',      color:C.indigoL,
+  { icon:'📍', title:'Campus-Precise',      color:C.brandL,
     desc:'Filter by campus, hostel, area. Find listings a 5-minute walk from your lecture hall.' },
-  { icon:'🤝', title:'Safe Meet-ups',       color:C.amberL,
+  { icon:'🤝', title:'Safe Meet-ups',       color:C.accentL,
     desc:'Guided safe-location suggestions and in-app incident reporting for every transaction.' },
 ];
 
 const STATS = [
-  { v:'10K+',   l:'Students',   c:C.indigo  },
-  { v:'2,500+', l:'Businesses', c:C.amber   },
-  { v:'50K+',   l:'Listings',   c:C.coral   },
+  { v:'10K+',   l:'Students',   c:C.brand  },
+  { v:'2,500+', l:'Businesses', c:C.accent },
+  { v:'50K+',   l:'Listings',   c:C.coral  },
   { v:'8',      l:'Campuses',   c:C.emerald },
 ];
 
@@ -163,8 +175,8 @@ function ProductCard({ product, index }) {
           animationDelay: `${index * 60}ms`,
           transform: isMobile ? 'none' : `perspective(900px) rotateY(${tilt.x}deg) rotateX(${tilt.y}deg) ${hovered ? 'translateY(-6px)' : 'translateY(0)'}`,
           boxShadow: hovered && !isMobile
-            ? `0 20px 50px rgba(0,0,0,.55), 0 0 0 1px ${C.indigo}40`
-            : `0 4px 16px rgba(0,0,0,.35)`,
+            ? `0 20px 50px rgba(0,0,0,.15), 0 0 0 1px ${C.brand}40`
+            : `0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.05)`,
         }}
         onMouseEnter={() => !isMobile && setHovered(true)}
         onMouseMove={onMove}
@@ -175,7 +187,7 @@ function ProductCard({ product, index }) {
         <div className="prod-img-wrap">
           {img ? (
             <img src={img} alt={product.name} className="prod-img"
-              onError={e => { e.target.src = 'https://placehold.co/400x300/13131E/52525B?text=No+Image'; }} />
+              onError={e => { e.target.src = 'https://placehold.co/400x300/F1F5F9/94A3B8?text=No+Image'; }} />
           ) : (
             <div className="prod-img-placeholder">{catIcon}</div>
           )}
@@ -196,12 +208,12 @@ function ProductCard({ product, index }) {
 
           {/* Negotiable */}
           {product.negotiable && (
-            <span className="prod-badge" style={{ background: C.amberDim, color: C.amber, bottom: 10, left: 10, border: `1px solid ${C.amber}30` }}>
+            <span className="prod-badge" style={{ background: '#F9731615', color: C.accent, bottom: 10, left: 10, border: `1px solid ${C.accent}30` }}>
               Nego.
             </span>
           )}
 
-          {/* Hover overlay - hidden on mobile */}
+          {/* Hover overlay */}
           <div className="prod-overlay" style={{ opacity: !isMobile && hovered ? 1 : 0 }}>
             <span className="prod-overlay-text">View listing →</span>
           </div>
@@ -221,7 +233,7 @@ function ProductCard({ product, index }) {
               {isOnSale && (
                 <s className="prod-original">{fmtPrice(product.discountInfo.originalPrice)}</s>
               )}
-              <span className="prod-price" style={{ color: isOnSale ? C.coral : C.amber }}>
+              <span className="prod-price" style={{ color: isOnSale ? C.coral : C.accent }}>
                 {fmtPrice(product.price)}
               </span>
             </div>
@@ -297,59 +309,29 @@ export default function HomePage() {
   }, []);
 
   const fetchProducts = useCallback(async (filter) => {
-  console.log('🔄 Fetching products for filter:', filter);
-  setLoadingProds(true);
-  try {
-    let res;
-    if (filter === 'all') {
-      console.log('📡 Calling getProductsByTag featured...');
-      try {
-        res = await getProductsByTag('featured');
-        console.log('✅ getProductsByTag response:', res);
-      } catch (tagError) {
-        console.warn('⚠️ Featured tag failed, falling back to getAllProducts');
-        console.error('Tag error:', tagError);
-        // Fallback to getAllProducts if tag endpoint fails
-        res = await getAllProducts({ limit: 8, sort: 'newest' });
-        console.log('✅ getAllProducts fallback response:', res);
+    setLoadingProds(true);
+    try {
+      let res;
+      if (filter === 'all') {
+        try {
+          res = await getProductsByTag('featured');
+        } catch (tagError) {
+          res = await getAllProducts({ limit: 8, sort: 'newest' });
+        }
+      } else {
+        const { getProductsByCategory } = await import('@/apis/productApi');
+        res = await getProductsByCategory(filter, { limit: 8, sort: 'newest' });
       }
-    } else {
-      console.log('📡 Calling getProductsByCategory for:', filter);
-      const { getProductsByCategory } = await import('@/apis/productApi');
-      res = await getProductsByCategory(filter, { limit: 8, sort: 'newest' });
-      console.log('✅ getProductsByCategory response:', res);
+      const responseData = res?.data;
+      const data = responseData?.data?.products || responseData?.data?.data || responseData?.products || responseData?.data || responseData || [];
+      setProducts(Array.isArray(data) ? data.slice(0, 10) : []);
+    } catch (err) {
+      console.error('Fetch error:', err);
+      setProducts([]);
+    } finally {
+      setLoadingProds(false);
     }
-    
-    // Handle axios response structure
-    const responseData = res?.data;
-    console.log('📦 Response data:', responseData);
-    
-    // Try multiple data paths
-    const data = responseData?.data?.products || 
-                 responseData?.data?.data || 
-                 responseData?.products || 
-                 responseData?.data || 
-                 responseData || 
-                 [];
-    
-    console.log('📦 Extracted data:', data);
-    console.log('📦 Is array?:', Array.isArray(data));
-    
-    setProducts(Array.isArray(data) ? data.slice(0, 10) : []);
-  } catch (err) {
-    console.error('❌ Fetch error:', err);
-    console.error('❌ Error details:', {
-      message: err.message,
-      code: err.code,
-      response: err.response?.data,
-      status: err.response?.status
-    });
-    setProducts([]);
-  } finally {
-    setLoadingProds(false);
-    console.log('🏁 Fetch complete');
-  }
-}, []);
+  }, []);
 
   useEffect(() => { fetchProducts(activeFilter); }, [activeFilter]);
 
@@ -361,14 +343,14 @@ export default function HomePage() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         body { background: ${C.void}; color: ${C.white}; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
-        ::selection { background: ${C.indigo}44; color: ${C.indigoL}; }
+        ::selection { background: ${C.brand}22; color: ${C.brand}; }
 
         @keyframes fadeUp    { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
         @keyframes ticker    { from{transform:translateX(0)} to{transform:translateX(-50%)} }
         @keyframes shimmer   { 0%{background-position:-200% center} 100%{background-position:200% center} }
         @keyframes cardIn    { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes orbPulse  { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.2)} 50%{box-shadow:0 0 0 20px rgba(16,185,129,0)} }
-        @keyframes indigoOrb { 0%,100%{opacity:.5;transform:scale(1)} 50%{opacity:1;transform:scale(1.05)} }
+        @keyframes orbPulse  { 0%,100%{box-shadow:0 0 0 0 rgba(13,148,136,.15)} 50%{box-shadow:0 0 0 20px rgba(13,148,136,0)} }
+        @keyframes tealOrb   { 0%,100%{opacity:.3;transform:scale(1)} 50%{opacity:.6;transform:scale(1.05)} }
         @keyframes dotPulse  { 0%{transform:scale(1);opacity:1} 100%{transform:scale(2.5);opacity:0} }
         @keyframes gradBG    { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
 
@@ -394,46 +376,45 @@ export default function HomePage() {
           position: absolute; pointer-events: none;
           border-radius: 50%; filter: blur(80px); z-index: 0;
         }
-        @media(max-width:640px){
-          .hero-glow{display: none;}
-        }
+        @media(max-width:640px){ .hero-glow{display: none;} }
         .hero-eyebrow {
           display: inline-flex; align-items: center; gap: 8px;
           font-size: clamp(9px,2vw,11px); font-weight: 700; letter-spacing: .14em;
-          text-transform: uppercase; color: ${C.indigoL};
-          background: ${C.indigoDim}; border: 1px solid ${C.indigo}30;
+          text-transform: uppercase; color: ${C.brand};
+          background: rgba(13,148,136,0.08); border: 1px solid ${C.brand}20;
           border-radius: 40px; padding: clamp(4px,1vw,6px) clamp(10px,2vw,14px); 
           margin-bottom: clamp(16px,3vw,24px);
         }
-        .live-dot { width: 6px; height: 6px; border-radius: 50%; background: ${C.indigo}; position: relative; }
-        .live-dot::after { content:''; position: absolute; inset: -3px; border-radius: 50%; background: ${C.indigo}; animation: dotPulse 1.8s ease-out infinite; }
+        .live-dot { width: 6px; height: 6px; border-radius: 50%; background: ${C.brand}; position: relative; }
+        .live-dot::after { content:''; position: absolute; inset: -3px; border-radius: 50%; background: ${C.brand}; animation: dotPulse 1.8s ease-out infinite; }
         .hero-h1 {
           font-size: clamp(28px,5vw,76px); font-weight: 900; line-height: 1.05;
           letter-spacing: -1.5px; margin-bottom: clamp(14px,2vw,22px);
+          color: ${C.white};
         }
-        .hero-h1-line2 { color: ${C.amber}; display: block; }
+        .hero-h1-line2 { color: ${C.accent}; display: block; }
         .hero-sub { 
           font-size: clamp(14px,2vw,17px); color: ${C.off}; line-height: 1.72; 
           max-width: 440px; margin-bottom: clamp(24px,4vw,36px); 
         }
         .hero-btns { display: flex; gap: clamp(8px,2vw,12px); flex-wrap: wrap; margin-bottom: clamp(32px,5vw,48px); }
         .btn-primary {
-          background: linear-gradient(135deg,${C.indigo},${C.indigoL});
+          background: linear-gradient(135deg,${C.brand},${C.brandL});
           color: #fff; font-weight: 700; font-size: clamp(12px,2vw,14px);
           padding: clamp(10px,2vw,14px) clamp(16px,3vw,26px); border-radius: 14px; 
           text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-          box-shadow: 0 8px 28px ${C.indigoDim}; transition: all .22s ease;
+          box-shadow: 0 4px 14px rgba(13,148,136,0.2); transition: all .22s ease;
         }
-        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 14px 36px ${C.indigoDim}; }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,148,136,0.28); }
         .btn-secondary {
           background: ${C.surf}; color: ${C.white}; font-weight: 600; 
           font-size: clamp(12px,2vw,14px); padding: clamp(10px,2vw,14px) clamp(16px,3vw,26px); 
           border-radius: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
           border: 1px solid ${C.border}; transition: all .22s ease;
         }
-        .btn-secondary:hover { border-color: ${C.amber}; color: ${C.amber}; }
+        .btn-secondary:hover { border-color: ${C.accent}; color: ${C.accent}; }
         .hero-trust { display: flex; align-items: center; gap: clamp(10px,2vw,20px); flex-wrap: wrap; }
-        .hero-stars { display: flex; gap: 2px; color: ${C.amber}; font-size: clamp(11px,2vw,13px); }
+        .hero-stars { display: flex; gap: 2px; color: ${C.accent}; font-size: clamp(11px,2vw,13px); }
         .hero-trust-text { font-size: clamp(10px,1.5vw,12.5px); color: ${C.muted}; }
         .hero-trust-text strong { color: ${C.white}; }
         .hero-campus-pills { display: flex; gap: clamp(4px,1vw,7px); flex-wrap: wrap; }
@@ -444,98 +425,62 @@ export default function HomePage() {
           font-family: 'JetBrains Mono', monospace;
         }
 
-        /* Hero visual — floating product stack */
         .hero-visual { position: relative; height: clamp(300px,40vw,480px); }
         .hero-card {
           position: absolute; background: ${C.surf}; border-radius: 18px;
           overflow: hidden; border: 1px solid ${C.border};
-          box-shadow: 0 20px 50px rgba(0,0,0,.55);
+          box-shadow: 0 4px 20px rgba(0,0,0,.1);
           transition: transform .4s cubic-bezier(.22,1,.36,1);
           cursor: pointer;
         }
-        .hero-card:hover { transform: translateY(-8px) scale(1.02) !important; z-index: 10 !important; }
+        .hero-card:hover { transform: translateY(-8px) scale(1.02) !important; z-index: 10 !important; box-shadow: 0 12px 40px rgba(0,0,0,.15) !important; }
         .hero-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .hero-card-label {
           position: absolute; bottom: 0; left: 0; right: 0;
-          background: linear-gradient(to top, rgba(0,0,0,.85), transparent);
+          background: linear-gradient(to top, rgba(255,255,255,.95), transparent);
           padding: 24px 14px 12px;
         }
-        .hero-card-price { font-family: 'JetBrains Mono',monospace; font-size: 13px; font-weight: 700; color: ${C.amber}; }
-        .hero-card-name  { font-size: 12px; color: rgba(255,255,255,.75); margin-top: 2px; }
+        .hero-card-price { font-family: 'JetBrains Mono',monospace; font-size: 13px; font-weight: 700; color: ${C.accent}; }
+        .hero-card-name  { font-size: 12px; color: ${C.off}; margin-top: 2px; }
 
         /* ── Ticker ── */
-        .ticker-outer { 
-          overflow: hidden; background: ${C.surf}; 
-          border-top: 1px solid ${C.border}; border-bottom: 1px solid ${C.border}; 
-          padding: clamp(8px,1.5vw,12px) 0; 
-        }
+        .ticker-outer { overflow: hidden; background: ${C.surf}; border-top: 1px solid ${C.border}; border-bottom: 1px solid ${C.border}; padding: clamp(8px,1.5vw,12px) 0; }
         .ticker-track { display: flex; gap: clamp(24px,4vw,48px); white-space: nowrap; animation: ticker 38s linear infinite; }
         .ticker-item  { font-size: clamp(11px,1.5vw,13px); color: ${C.off}; flex-shrink: 0; }
 
         /* ── Stats bar ── */
-        .stats-bar { 
-          background: ${C.surf}; border-bottom: 1px solid ${C.border}; 
-          padding: clamp(24px,4vw,36px) clamp(16px,4vw,80px); 
-        }
-        .stats-inner { 
-          max-width: 1280px; margin: 0 auto; 
-          display: grid; grid-template-columns: repeat(4,1fr); gap: clamp(12px,2vw,24px); 
-        }
-        @media(max-width:640px){ 
-          .stats-inner{grid-template-columns:repeat(2,1fr); gap: 20px;} 
-        }
+        .stats-bar { background: ${C.surf}; border-bottom: 1px solid ${C.border}; padding: clamp(24px,4vw,36px) clamp(16px,4vw,80px); }
+        .stats-inner { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: clamp(12px,2vw,24px); }
+        @media(max-width:640px){ .stats-inner{grid-template-columns:repeat(2,1fr); gap: 20px;} }
         .stat-item { border-left: 3px solid var(--sc); padding-left: clamp(12px,2vw,18px); }
-        .stat-val { 
-          font-size: clamp(24px,4vw,42px); font-weight: 900; 
-          color: var(--sc); letter-spacing: -1px; line-height: 1; 
-        }
-        .stat-lbl { 
-          font-size: clamp(9px,1.2vw,11px); font-weight: 600; color: ${C.muted}; 
-          margin-top: 4px; letter-spacing: .12em; text-transform: uppercase; 
-          font-family: 'JetBrains Mono',monospace; 
-        }
+        .stat-val { font-size: clamp(24px,4vw,42px); font-weight: 900; color: var(--sc); letter-spacing: -1px; line-height: 1; }
+        .stat-lbl { font-size: clamp(9px,1.2vw,11px); font-weight: 600; color: ${C.muted}; margin-top: 4px; letter-spacing: .12em; text-transform: uppercase; font-family: 'JetBrains Mono',monospace; }
 
         /* ── Listings section ── */
         .section { padding: clamp(40px,6vw,100px) clamp(16px,4vw,80px); overflow: hidden; width: 100%; max-width: 100vw; }
         .section-inner { max-width: 1280px; margin: 0 auto; }
-        .section-eyebrow { 
-          font-size: clamp(9px,1.3vw,10.5px); font-weight: 700; letter-spacing: .18em; 
-          text-transform: uppercase; color: var(--ec); margin-bottom: clamp(10px,2vw,14px); 
-          font-family: 'JetBrains Mono',monospace; 
-        }
-        .section-h2 { 
-          font-size: clamp(22px,3.5vw,48px); font-weight: 800; line-height: 1.1; 
-          letter-spacing: -1px; margin-bottom: clamp(10px,2vw,14px); 
-        }
-        .section-sub { 
-          font-size: clamp(13px,2vw,15px); color: ${C.off}; line-height: 1.7; 
-          max-width: 520px; margin-bottom: clamp(24px,4vw,36px); 
-        }
+        .section-eyebrow { font-size: clamp(9px,1.3vw,10.5px); font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ec); margin-bottom: clamp(10px,2vw,14px); font-family: 'JetBrains Mono',monospace; }
+        .section-h2 { font-size: clamp(22px,3.5vw,48px); font-weight: 800; line-height: 1.1; letter-spacing: -1px; margin-bottom: clamp(10px,2vw,14px); color: ${C.white}; }
+        .section-sub { font-size: clamp(13px,2vw,15px); color: ${C.off}; line-height: 1.7; max-width: 520px; margin-bottom: clamp(24px,4vw,36px); }
 
         /* Filter pills */
         .filter-row { display: flex; gap: clamp(4px,1vw,8px); flex-wrap: wrap; margin-bottom: clamp(20px,3vw,32px); }
         .filter-pill {
           font-size: clamp(11px,1.5vw,12.5px); font-weight: 600; 
           padding: clamp(5px,1vw,7px) clamp(12px,2vw,16px); border-radius: 40px; cursor: pointer;
-          border: 1.5px solid ${C.border}; background: none; color: ${C.off};
+          border: 1.5px solid ${C.border}; background: ${C.surf}; color: ${C.off};
           transition: all .22s ease; font-family: 'Plus Jakarta Sans',sans-serif;
           white-space: nowrap;
         }
-        .filter-pill:hover  { border-color: ${C.indigoL}; color: ${C.indigoL}; }
+        .filter-pill:hover  { border-color: ${C.brand}; color: ${C.brand}; }
         .filter-pill.active { 
-          background: linear-gradient(135deg,${C.indigo},${C.indigoL}); 
-          border-color: transparent; color: #fff; box-shadow: 0 4px 16px ${C.indigoDim}; 
+          background: linear-gradient(135deg,${C.brand},${C.brandL}); 
+          border-color: transparent; color: #fff; box-shadow: 0 4px 16px rgba(13,148,136,0.2); 
         }
 
         /* Product grid */
-        .prod-grid { 
-          display: grid; 
-          grid-template-columns: repeat(auto-fill,minmax(clamp(160px,25vw,220px),1fr)); 
-          gap: clamp(12px,2vw,18px); 
-        }
-        @media(max-width:480px){
-          .prod-grid{grid-template-columns: repeat(2,1fr); gap: 10px;}
-        }
+        .prod-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(clamp(160px,25vw,220px),1fr)); gap: clamp(12px,2vw,18px); }
+        @media(max-width:480px){ .prod-grid{grid-template-columns: repeat(2,1fr); gap: 10px;} }
         .prod-card {
           background: ${C.surf}; border-radius: clamp(12px,2vw,18px); overflow: hidden;
           border: 1px solid ${C.border};
@@ -543,81 +488,47 @@ export default function HomePage() {
           cursor: pointer; text-decoration: none; display: block;
           opacity: 0; animation: cardIn .5s ease forwards;
         }
-        .prod-img-wrap { 
-          position: relative; height: clamp(130px,20vw,180px); 
-          background: ${C.elev}; overflow: hidden; 
-        }
-        .prod-img { 
-          width: 100%; height: 100%; object-fit: cover; 
-          transition: transform .4s ease; display: block; 
-        }
+        .prod-img-wrap { position: relative; height: clamp(130px,20vw,180px); background: ${C.elev}; overflow: hidden; }
+        .prod-img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; display: block; }
         .prod-card:hover .prod-img { transform: scale(1.05); }
-        .prod-img-placeholder { 
-          width: 100%; height: 100%; display: flex; 
-          align-items: center; justify-content: center; 
-          font-size: clamp(28px,4vw,42px); 
-        }
+        .prod-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: clamp(28px,4vw,42px); }
         .prod-badge {
           position: absolute; font-size: clamp(8px,1.1vw,9.5px); font-weight: 800;
           padding: clamp(2px,0.5vw,3px) clamp(5px,1vw,8px); 
           border-radius: 8px; letter-spacing: .03em;
         }
         .prod-overlay {
-          position: absolute; inset: 0; background: rgba(99,102,241,.18);
+          position: absolute; inset: 0; background: rgba(13,148,136,.1);
           display: flex; align-items: center; justify-content: center;
           transition: opacity .22s;
         }
         .prod-overlay-text { 
           font-size: clamp(11px,1.5vw,13px); font-weight: 700; color: #fff; 
-          background: ${C.indigo}; padding: clamp(5px,1vw,7px) clamp(12px,2vw,16px); 
+          background: ${C.brand}; padding: clamp(5px,1vw,7px) clamp(12px,2vw,16px); 
           border-radius: 40px; 
         }
-        .prod-info { 
-          padding: clamp(10px,1.5vw,14px) clamp(12px,2vw,16px) clamp(12px,2vw,16px); 
-          display: flex; flex-direction: column; gap: clamp(4px,1vw,6px); 
-        }
+        .prod-info { padding: clamp(10px,1.5vw,14px) clamp(12px,2vw,16px) clamp(12px,2vw,16px); display: flex; flex-direction: column; gap: clamp(4px,1vw,6px); }
         .prod-meta-row{ display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
-        .prod-cat { 
-          font-size: clamp(9px,1.1vw,10px); font-weight: 700; 
-          color: ${C.muted}; text-transform: capitalize; 
-        }
-        .prod-campus { 
-          font-size: clamp(8px,1vw,9.5px); font-weight: 700; color: ${C.indigoL}; 
-          font-family: 'JetBrains Mono',monospace; background: ${C.indigoDim}; 
-          padding: 2px 7px; border-radius: 8px; white-space: nowrap;
-        }
-        .prod-name { 
-          font-size: clamp(12px,1.6vw,14px); font-weight: 700; color: ${C.white}; 
-          line-height: 1.38; display: -webkit-box; -webkit-line-clamp: 2; 
-          -webkit-box-orient: vertical; overflow: hidden; 
-        }
-        .prod-foot { 
-          display: flex; align-items: flex-end; justify-content: space-between; 
-          margin-top: clamp(2px,0.5vw,4px); 
-        }
-        .prod-original{ 
-          font-size: clamp(9px,1.2vw,10.5px); color: ${C.muted}; 
-          text-decoration: line-through; display: block; margin-bottom: 1px; 
-          font-family: 'JetBrains Mono',monospace; 
-        }
-        .prod-price { 
-          font-size: clamp(14px,2vw,17px); font-weight: 800; 
-          font-family: 'JetBrains Mono',monospace; display: block; 
-        }
+        .prod-cat { font-size: clamp(9px,1.1vw,10px); font-weight: 700; color: ${C.muted}; text-transform: capitalize; }
+        .prod-campus { font-size: clamp(8px,1vw,9.5px); font-weight: 700; color: ${C.brand}; font-family: 'JetBrains Mono',monospace; background: rgba(13,148,136,0.08); padding: 2px 7px; border-radius: 8px; white-space: nowrap; }
+        .prod-name { font-size: clamp(12px,1.6vw,14px); font-weight: 700; color: ${C.white}; line-height: 1.38; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .prod-foot { display: flex; align-items: flex-end; justify-content: space-between; margin-top: clamp(2px,0.5vw,4px); }
+        .prod-original{ font-size: clamp(9px,1.2vw,10.5px); color: ${C.muted}; text-decoration: line-through; display: block; margin-bottom: 1px; font-family: 'JetBrains Mono',monospace; }
+        .prod-price { font-size: clamp(14px,2vw,17px); font-weight: 800; font-family: 'JetBrains Mono',monospace; display: block; }
         .prod-view-btn{ 
           font-size: clamp(10px,1.3vw,12px); font-weight: 700; 
-          background: ${C.indigoDim}; color: ${C.indigoL}; 
-          border: 1px solid ${C.indigo}30; padding: clamp(5px,1vw,7px) clamp(10px,1.5vw,13px); 
+          background: rgba(13,148,136,0.08); color: ${C.brand}; 
+          border: 1px solid ${C.brand}20; padding: clamp(5px,1vw,7px) clamp(10px,1.5vw,13px); 
           border-radius: 10px; white-space: nowrap; transition: all .2s; 
         }
-        .prod-card:hover .prod-view-btn { background: ${C.indigo}; color: #fff; border-color: transparent; }
+        .prod-card:hover .prod-view-btn { background: ${C.brand}; color: #fff; border-color: transparent; }
 
         /* Skeleton */
         .sk-card { 
           background: ${C.surf}; border-radius: 18px; overflow: hidden; 
           border: 1px solid ${C.border}; 
           animation: shimmer 1.8s ease-in-out infinite; 
-          background: linear-gradient(90deg,${C.surf} 25%,${C.elev} 50%,${C.surf} 75%); 
+          background: linear-gradient(90deg,${C.elev} 25%,${C.surf} 50%,${C.elev} 75%); 
           background-size: 400% 100%; 
         }
         .sk-img  { height: clamp(130px,20vw,180px); background: ${C.elev}; }
@@ -625,200 +536,93 @@ export default function HomePage() {
 
         /* View all button */
         .view-all-wrap { display: flex; justify-content: center; margin-top: clamp(24px,4vw,36px); }
-        .view-all-btn { 
-          border: 1.5px solid ${C.border}; color: ${C.off}; 
-          font-weight: 600; font-size: clamp(12px,2vw,14px); 
-          padding: clamp(10px,2vw,12px) clamp(20px,3vw,28px); 
-          border-radius: 12px; text-decoration: none; transition: all .22s; 
-        }
-        .view-all-btn:hover { border-color: ${C.indigoL}; color: ${C.indigoL}; }
+        .view-all-btn { border: 1.5px solid ${C.border}; color: ${C.off}; font-weight: 600; font-size: clamp(12px,2vw,14px); padding: clamp(10px,2vw,12px) clamp(20px,3vw,28px); border-radius: 12px; text-decoration: none; transition: all .22s; }
+        .view-all-btn:hover { border-color: ${C.brand}; color: ${C.brand}; }
 
         /* ── Cedi AI section ── */
-        .ai-section {
-          background: radial-gradient(ellipse at 60% 0%, rgba(16,185,129,.08) 0%, transparent 60%), ${C.surf};
-          border-top: 1px solid ${C.border}; border-bottom: 1px solid ${C.border};
-        }
-        .ai-split { 
-          display: grid; grid-template-columns: 1fr 1fr; 
-          gap: clamp(24px,5vw,72px); align-items: center; 
-          max-width: 1280px; margin: 0 auto; 
-        }
-        @media(max-width:900px){ 
-          .ai-split{grid-template-columns:1fr; gap: 32px;} 
-          .ai-demos-stack{max-width: 500px; margin: 0 auto;}
-        }
+        .ai-section { background: linear-gradient(135deg, ${C.surf} 0%, ${C.elev} 100%); border-top: 1px solid ${C.border}; border-bottom: 1px solid ${C.border}; }
+        .ai-split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px,5vw,72px); align-items: center; max-width: 1280px; margin: 0 auto; }
+        @media(max-width:900px){ .ai-split{grid-template-columns:1fr; gap: 32px;} .ai-demos-stack{max-width: 500px; margin: 0 auto;} }
         .ai-orb {
           width: clamp(40px,5vw,56px); height: clamp(40px,5vw,56px); 
-          border-radius: 50%; background: rgba(16,185,129,.1); 
-          border: 1px solid rgba(16,185,129,.25);
+          border-radius: 50%; background: rgba(13,148,136,.08); 
+          border: 1px solid rgba(13,148,136,.2);
           display: flex; align-items: center; justify-content: center; 
           font-size: clamp(18px,2.5vw,24px);
           margin-bottom: clamp(14px,2vw,22px); 
           animation: orbPulse 3s ease-in-out infinite;
         }
-        .ai-feature-row { 
-          display: flex; align-items: flex-start; gap: clamp(10px,1.5vw,14px); 
-          padding: clamp(14px,2vw,18px) 0; border-bottom: 1px solid ${C.border}40; 
-        }
+        .ai-feature-row { display: flex; align-items: flex-start; gap: clamp(10px,1.5vw,14px); padding: clamp(14px,2vw,18px) 0; border-bottom: 1px solid ${C.border}; }
         .ai-feature-row:last-child { border-bottom: none; }
         .ai-feature-icon { 
           width: clamp(32px,3vw,38px); height: clamp(32px,3vw,38px); 
-          border-radius: 10px; background: rgba(16,185,129,.1); 
+          border-radius: 10px; background: rgba(13,148,136,.08); 
           display: flex; align-items: center; justify-content: center; 
           font-size: clamp(14px,2vw,17px); flex-shrink: 0; 
         }
         .ai-feature-title { font-size: clamp(13px,1.6vw,14px); font-weight: 700; color: ${C.white}; margin-bottom: 3px; }
         .ai-feature-desc  { font-size: clamp(11px,1.4vw,13px); color: ${C.off}; line-height: 1.6; }
         .ai-try-btn {
-          display: inline-flex; align-items: center; gap: 8px; 
-          margin-top: clamp(20px,3vw,28px);
-          background: ${C.emerald}; color: #000; font-weight: 800; 
+          display: inline-flex; align-items: center; gap: 8px; margin-top: clamp(20px,3vw,28px);
+          background: ${C.brand}; color: #fff; font-weight: 800; 
           font-size: clamp(12px,1.5vw,14px);
           padding: clamp(10px,1.5vw,13px) clamp(18px,2.5vw,24px); 
           border-radius: 14px; text-decoration: none;
-          transition: all .22s; box-shadow: 0 6px 22px rgba(16,185,129,.25);
+          transition: all .22s; box-shadow: 0 4px 16px rgba(13,148,136,.25);
         }
-        .ai-try-btn:hover { filter: brightness(1.08); transform: translateY(-2px); }
+        .ai-try-btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
-        /* Demo cards */
-        .ai-demo-card {
-          background: ${C.void}; border: 1px solid ${C.border};
-          border-radius: 18px; overflow: hidden;
-        }
-        .ai-demo-q {
-          display: flex; align-items: center; gap: 10px;
-          padding: clamp(10px,1.5vw,14px) clamp(12px,2vw,16px); 
-          border-bottom: 1px solid ${C.border}; background: ${C.elev};
-        }
+        .ai-demo-card { background: ${C.surf}; border: 1px solid ${C.border}; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+        .ai-demo-q { display: flex; align-items: center; gap: 10px; padding: clamp(10px,1.5vw,14px) clamp(12px,2vw,16px); border-bottom: 1px solid ${C.border}; background: ${C.elev}; }
         .ai-demo-icon    { font-size: clamp(16px,2vw,18px); }
         .ai-demo-q-text  { font-size: clamp(12px,1.5vw,14px); font-weight: 600; color: ${C.white}; }
         .ai-demo-a { padding: clamp(10px,1.5vw,14px) clamp(12px,2vw,16px) clamp(12px,2vw,16px); }
         .ai-demo-a-header { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
-        .ai-demo-sparkle { color: ${C.emerald}; font-size: 12px; }
-        .ai-demo-a-name  { font-size: clamp(10px,1.2vw,11px); font-weight: 700; color: ${C.emerald}; text-transform: uppercase; letter-spacing: .06em; }
+        .ai-demo-sparkle { color: ${C.brand}; font-size: 12px; }
+        .ai-demo-a-name  { font-size: clamp(10px,1.2vw,11px); font-weight: 700; color: ${C.brand}; text-transform: uppercase; letter-spacing: .06em; }
         .ai-demo-a-text  { font-size: clamp(11px,1.4vw,13.5px); color: ${C.off}; line-height: 1.65; margin-bottom: 12px; }
         .ai-demo-chips   { display: flex; gap: 7px; flex-wrap: wrap; }
-        .ai-demo-chip    { 
-          font-size: clamp(10px,1.2vw,11px); font-weight: 600; color: ${C.emerald}; 
-          background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.2); 
-          border-radius: 20px; padding: 4px 11px; 
-        }
+        .ai-demo-chip    { font-size: clamp(10px,1.2vw,11px); font-weight: 600; color: ${C.brand}; background: rgba(13,148,136,.08); border: 1px solid rgba(13,148,136,.15); border-radius: 20px; padding: 4px 11px; }
         .ai-demos-stack  { display: flex; flex-direction: column; gap: clamp(10px,1.5vw,14px); }
 
         /* ── Why section ── */
-        .why-grid { 
-          display: grid; 
-          grid-template-columns: repeat(auto-fill,minmax(clamp(250px,30vw,280px),1fr)); 
-          gap: clamp(12px,1.5vw,16px); 
-        }
-        @media(max-width:640px){
-          .why-grid{grid-template-columns: 1fr;}
-        }
+        .why-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(clamp(250px,30vw,280px),1fr)); gap: clamp(12px,1.5vw,16px); }
+        @media(max-width:640px){ .why-grid{grid-template-columns: 1fr;} }
         .why-card {
           background: ${C.surf}; border: 1px solid ${C.border}; 
           border-radius: 18px; padding: clamp(20px,3vw,26px); 
-          transition: all .28s ease;
+          transition: all .28s ease; box-shadow: 0 1px 3px rgba(0,0,0,.05);
         }
-        .why-card:hover { 
-          transform: translateY(-4px); border-color: var(--wc)30; 
-          background: ${C.elev}; box-shadow: 0 16px 40px rgba(0,0,0,.4); 
-        }
-        .why-icon { 
-          width: clamp(36px,4vw,44px); height: clamp(36px,4vw,44px); 
-          border-radius: 13px; background: var(--wb); 
-          display: flex; align-items: center; justify-content: center; 
-          font-size: clamp(16px,2vw,20px); margin-bottom: clamp(12px,2vw,16px); 
-        }
+        .why-card:hover { transform: translateY(-4px); border-color: var(--wc); background: ${C.surf}; box-shadow: 0 8px 30px rgba(0,0,0,.1); }
+        .why-icon { width: clamp(36px,4vw,44px); height: clamp(36px,4vw,44px); border-radius: 13px; background: var(--wb); display: flex; align-items: center; justify-content: center; font-size: clamp(16px,2vw,20px); margin-bottom: clamp(12px,2vw,16px); }
         .why-title{ font-size: clamp(13px,1.6vw,15px); font-weight: 700; color: ${C.white}; margin-bottom: 7px; }
         .why-desc { font-size: clamp(12px,1.4vw,13.5px); color: ${C.off}; line-height: 1.65; }
 
         /* ── CTA section ── */
         .cta-wrap {
-          background: linear-gradient(135deg,${C.indigo} 0%,#4F46E5 40%,${C.coral} 100%);
+          background: linear-gradient(135deg,${C.brand} 0%,${C.brandL} 40%,${C.accent} 100%);
           background-size: 200% 200%; animation: gradBG 8s ease infinite;
           border-radius: clamp(20px,3vw,28px); 
           padding: clamp(32px,5vw,80px) clamp(20px,4vw,80px);
           text-align: center; position: relative; overflow: hidden;
         }
-        .cta-noise {
-          position: absolute; inset: 0; pointer-events: none; opacity: .04;
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-        }
-        .cta-dot-grid {
-          position: absolute; inset: 0; pointer-events: none; opacity: .06;
-          background-image: radial-gradient(circle,#fff 1px,transparent 1px);
-          background-size: 28px 28px;
-        }
-        .cta-h2 { 
-          font-size: clamp(24px,4vw,58px); font-weight: 900; color: #fff; 
-          line-height: 1.05; letter-spacing: -1.5px; margin-bottom: clamp(12px,2vw,16px); 
-          position: relative; 
-        }
-        .cta-sub { 
-          font-size: clamp(13px,1.8vw,16px); color: rgba(255,255,255,.75); 
-          max-width: 440px; margin: 0 auto clamp(24px,4vw,36px); 
-          line-height: 1.7; position: relative; 
-        }
-        .cta-btns { 
-          display: flex; gap: clamp(8px,1.5vw,12px); justify-content: center; 
-          flex-wrap: wrap; position: relative; 
-        }
-        @media(max-width:480px){
-          .cta-btns{flex-direction: column; align-items: center;}
-          .cta-btns a{width: 100%; justify-content: center;}
-        }
-        .cta-btn-white { 
-          background: #fff; color: #000; font-weight: 800; 
-          font-size: clamp(12px,1.5vw,14px); 
-          padding: clamp(10px,1.5vw,14px) clamp(20px,3vw,28px); 
-          border-radius: 14px; text-decoration: none; 
-          display: inline-flex; align-items: center; gap: 8px; 
-          box-shadow: 0 8px 28px rgba(0,0,0,.2); transition: all .22s; 
-        }
-        .cta-btn-white:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,.3); }
-        .cta-btn-ghost { 
-          background: rgba(255,255,255,.12); color: #fff; font-weight: 700; 
-          font-size: clamp(12px,1.5vw,14px); 
-          padding: clamp(10px,1.5vw,14px) clamp(20px,3vw,28px); 
-          border-radius: 14px; text-decoration: none; 
-          display: inline-flex; align-items: center; gap: 8px; 
-          border: 1.5px solid rgba(255,255,255,.3); 
-          backdrop-filter: blur(8px); transition: all .22s; 
-        }
-        .cta-btn-ghost:hover { background: rgba(255,255,255,.2); }
+        .cta-h2 { font-size: clamp(24px,4vw,58px); font-weight: 900; color: #fff; line-height: 1.05; letter-spacing: -1.5px; margin-bottom: clamp(12px,2vw,16px); position: relative; }
+        .cta-sub { font-size: clamp(13px,1.8vw,16px); color: rgba(255,255,255,.9); max-width: 440px; margin: 0 auto clamp(24px,4vw,36px); line-height: 1.7; position: relative; }
+        .cta-btns { display: flex; gap: clamp(8px,1.5vw,12px); justify-content: center; flex-wrap: wrap; position: relative; }
+        @media(max-width:480px){ .cta-btns{flex-direction: column; align-items: center;} .cta-btns a{width: 100%; justify-content: center;} }
+        .cta-btn-white { background: #fff; color: ${C.brand}; font-weight: 800; font-size: clamp(12px,1.5vw,14px); padding: clamp(10px,1.5vw,14px) clamp(20px,3vw,28px); border-radius: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.15); transition: all .22s; }
+        .cta-btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,.25); }
+        .cta-btn-ghost { background: rgba(255,255,255,.15); color: #fff; font-weight: 700; font-size: clamp(12px,1.5vw,14px); padding: clamp(10px,1.5vw,14px) clamp(20px,3vw,28px); border-radius: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid rgba(255,255,255,.4); backdrop-filter: blur(8px); transition: all .22s; }
+        .cta-btn-ghost:hover { background: rgba(255,255,255,.25); }
 
-        /* ── Newsletter ── */
-        .nl-form { 
-          display: flex; gap: 8px; max-width: 400px; 
-          margin: clamp(18px,3vw,24px) auto 0; 
-        }
-        @media(max-width:480px){
-          .nl-form{flex-direction: column; gap: 12px;}
-        }
-        .nl-input { 
-          flex: 1; background: rgba(255,255,255,.1); 
-          border: 1.5px solid rgba(255,255,255,.2); border-radius: 12px; 
-          padding: clamp(10px,1.5vw,12px) clamp(12px,2vw,16px); 
-          color: #fff; font-size: clamp(12px,1.5vw,14px); 
-          font-family: 'Plus Jakarta Sans',sans-serif; outline: none; 
-          min-width: 0;
-        }
-        .nl-input::placeholder { color: rgba(255,255,255,.45); }
-        .nl-input:focus { 
-          border-color: rgba(255,255,255,.5); 
-          background: rgba(255,255,255,.14); 
-        }
-        .nl-btn { 
-          background: #fff; color: ${C.indigo}; font-weight: 800; 
-          font-size: clamp(11px,1.4vw,13px); 
-          padding: clamp(10px,1.5vw,12px) clamp(14px,2vw,18px); 
-          border-radius: 12px; border: none; cursor: pointer; 
-          transition: all .2s; font-family: 'Plus Jakarta Sans',sans-serif; 
-          flex-shrink: 0; white-space: nowrap;
-        }
+        .nl-form { display: flex; gap: 8px; max-width: 400px; margin: clamp(18px,3vw,24px) auto 0; }
+        @media(max-width:480px){ .nl-form{flex-direction: column; gap: 12px;} }
+        .nl-input { flex: 1; background: rgba(255,255,255,.15); border: 1.5px solid rgba(255,255,255,.3); border-radius: 12px; padding: clamp(10px,1.5vw,12px) clamp(12px,2vw,16px); color: #fff; font-size: clamp(12px,1.5vw,14px); font-family: 'Plus Jakarta Sans',sans-serif; outline: none; min-width: 0; }
+        .nl-input::placeholder { color: rgba(255,255,255,.6); }
+        .nl-input:focus { border-color: rgba(255,255,255,.6); background: rgba(255,255,255,.2); }
+        .nl-btn { background: #fff; color: ${C.brand}; font-weight: 800; font-size: clamp(11px,1.4vw,13px); padding: clamp(10px,1.5vw,12px) clamp(14px,2vw,18px); border-radius: 12px; border: none; cursor: pointer; transition: all .2s; font-family: 'Plus Jakarta Sans',sans-serif; flex-shrink: 0; white-space: nowrap; }
         .nl-btn:hover { transform: scale(1.03); }
 
-        /* Additional mobile optimizations */
         @media(max-width:480px){
           .hero-h1 br{display: none;}
           .filter-row{overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;}
@@ -830,9 +634,9 @@ export default function HomePage() {
       `}</style>
 
       {/* ══════════════════════ HERO ══════════════════════ */}
-      <section ref={heroRef} style={{ background: `radial-gradient(ellipse at 30% 50%, rgba(99,102,241,.09) 0%, transparent 55%), ${C.void}` }}>
-        <div className="hero-glow" style={{ width: isMobile ? 300 : 600, height: isMobile ? 300 : 600, top:'-20%', left:'-10%', background:`radial-gradient(circle, rgba(99,102,241,.08), transparent)`, animation:'indigoOrb 8s ease-in-out infinite' }}/>
-        <div className="hero-glow" style={{ width: isMobile ? 200 : 400, height: isMobile ? 200 : 400, bottom:'0', right:'5%', background:`radial-gradient(circle, rgba(245,158,11,.06), transparent)` }}/>
+      <section ref={heroRef} style={{ background: C.void }}>
+        <div className="hero-glow" style={{ width: isMobile ? 300 : 600, height: isMobile ? 300 : 600, top:'-20%', left:'-10%', background:`radial-gradient(circle, rgba(13,148,136,.06), transparent)`, animation:'tealOrb 8s ease-in-out infinite' }}/>
+        <div className="hero-glow" style={{ width: isMobile ? 200 : 400, height: isMobile ? 200 : 400, bottom:'0', right:'5%', background:`radial-gradient(circle, rgba(249,115,22,.04), transparent)` }}/>
 
         <div className={`hero reveal ${heroVis ? 'shown' : ''}`}>
           <div>
@@ -868,124 +672,58 @@ export default function HomePage() {
             </div>
           </div>
 
-
-<div className="hero-visual">
-  {products.length > 0 ? (
-    products.slice(0, 4).map((product, i) => {
-      const positions = [
-        { width: isMobile ? 140 : 200, height: isMobile ? 160 : 220, top: 0,   left: isMobile ? 30 : 60,  transform: 'rotate(-6deg)', zIndex: 2 },
-        { width: isMobile ? 130 : 185, height: isMobile ? 150 : 210, top: 40,  left: isMobile ? 150 : 240, transform: 'rotate(5deg)',  zIndex: 3 },
-        { width: isMobile ? 135 : 190, height: isMobile ? 155 : 215, top: 210, left: 20,  transform: 'rotate(-3deg)', zIndex: 1 },
-        { width: isMobile ? 125 : 175, height: isMobile ? 145 : 195, top: 220, left: 240, transform: 'rotate(8deg)',  zIndex: 0 },
-      ];
-      
-      const pos = positions[i] || positions[0];
-      const img = product.images?.[0] || product.image || null;
-      const fallbackImg = 'https://placehold.co/400x300/1C1C2E/6B7280?text=No+Image';
-      
-      return (
-        <Link 
-          key={product._id || i} 
-          href={`/product/${product._id}`}
-          className="hero-card" 
-          style={{ ...pos }}
-        >
-          <img 
-            src={img || fallbackImg} 
-            alt={product.name} 
-            onError={e => { e.target.src = fallbackImg; }} 
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-          />
-          <div className="hero-card-label">
-            <div className="hero-card-price">
-              GH₵ {Number(product.price).toLocaleString()}
-            </div>
-            <div className="hero-card-name">{product.name}</div>
+          <div className="hero-visual">
+            {products.length > 0 ? (
+              products.slice(0, 4).map((product, i) => {
+                const positions = [
+                  { width: isMobile ? 140 : 200, height: isMobile ? 160 : 220, top: 0,   left: isMobile ? 30 : 60,  transform: 'rotate(-6deg)', zIndex: 2 },
+                  { width: isMobile ? 130 : 185, height: isMobile ? 150 : 210, top: 40,  left: isMobile ? 150 : 240, transform: 'rotate(5deg)',  zIndex: 3 },
+                  { width: isMobile ? 135 : 190, height: isMobile ? 155 : 215, top: 210, left: 20,  transform: 'rotate(-3deg)', zIndex: 1 },
+                  { width: isMobile ? 125 : 175, height: isMobile ? 145 : 195, top: 220, left: 240, transform: 'rotate(8deg)',  zIndex: 0 },
+                ];
+                const pos = positions[i] || positions[0];
+                const img = product.images?.[0] || product.image || null;
+                const fallbackImg = 'https://placehold.co/400x300/F1F5F9/94A3B8?text=No+Image';
+                return (
+                  <Link key={product._id || i} href={`/product/${product._id}`} className="hero-card" style={{ ...pos }}>
+                    <img src={img || fallbackImg} alt={product.name} onError={e => { e.target.src = fallbackImg; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div className="hero-card-label">
+                      <div className="hero-card-price">GH₵ {Number(product.price).toLocaleString()}</div>
+                      <div className="hero-card-name">{product.name}</div>
+                    </div>
+                  </Link>
+                );
+              })
+            ) : (
+              [
+                { name: 'Loading...', price: '—', style: { width: isMobile ? 140 : 200, height: isMobile ? 160 : 220, top: 0, left: isMobile ? 30 : 60, transform: 'rotate(-6deg)', zIndex: 2 } },
+                { name: 'Loading...', price: '—', style: { width: isMobile ? 130 : 185, height: isMobile ? 150 : 210, top: 40, left: isMobile ? 150 : 240, transform: 'rotate(5deg)', zIndex: 3 } },
+                { name: 'Loading...', price: '—', style: { width: isMobile ? 135 : 190, height: isMobile ? 155 : 215, top: 210, left: 20, transform: 'rotate(-3deg)', zIndex: 1 } },
+                { name: 'Loading...', price: '—', style: { width: isMobile ? 125 : 175, height: isMobile ? 145 : 195, top: 220, left: 240, transform: 'rotate(8deg)', zIndex: 0 } },
+              ].map((card, i) => (
+                <div key={i} className="hero-card" style={{ ...card.style }}>
+                  <div style={{ width: '100%', height: '100%', background: C.elev, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>📦</div>
+                  <div className="hero-card-label"><div className="hero-card-price">{card.price}</div><div className="hero-card-name">{card.name}</div></div>
+                </div>
+              ))
+            )}
           </div>
-        </Link>
-      );
-    })
-  ) : (
-    // Fallback placeholder cards when no products loaded yet
-    [
-      { name: 'Loading...', price: '—', style: { width: isMobile ? 140 : 200, height: isMobile ? 160 : 220, top: 0, left: isMobile ? 30 : 60, transform: 'rotate(-6deg)', zIndex: 2 } },
-      { name: 'Loading...', price: '—', style: { width: isMobile ? 130 : 185, height: isMobile ? 150 : 210, top: 40, left: isMobile ? 150 : 240, transform: 'rotate(5deg)', zIndex: 3 } },
-      { name: 'Loading...', price: '—', style: { width: isMobile ? 135 : 190, height: isMobile ? 155 : 215, top: 210, left: 20, transform: 'rotate(-3deg)', zIndex: 1 } },
-      { name: 'Loading...', price: '—', style: { width: isMobile ? 125 : 175, height: isMobile ? 145 : 195, top: 220, left: 240, transform: 'rotate(8deg)', zIndex: 0 } },
-    ].map((card, i) => (
-      <div key={i} className="hero-card" style={{ ...card.style }}>
-        <div style={{ width: '100%', height: '100%', background: C.elev, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
-          📦
-        </div>
-        <div className="hero-card-label">
-          <div className="hero-card-price">{card.price}</div>
-          <div className="hero-card-name">{card.name}</div>
-        </div>
-      </div>
-    ))
-  )}
-</div>
         </div>
       </section>
 
       <Ticker />
-
-      <div className="stats-bar">
-        <div className="stats-inner">
-          {STATS.map((s, i) => (
-            <div key={i} className="stat-item" style={{ '--sc': s.c }}>
-              <div className="stat-val">{s.v}</div>
-              <div className="stat-lbl">{s.l}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <div className="stats-bar"><div className="stats-inner">{STATS.map((s, i) => (<div key={i} className="stat-item" style={{ '--sc': s.c }}><div className="stat-val">{s.v}</div><div className="stat-lbl">{s.l}</div></div>))}</div></div>
 
       <section id="listings" className="section" style={{ background: C.void }}>
         <div className="section-inner">
           <div ref={listRef} className={`reveal ${listVis ? 'shown' : ''}`}>
-            <p className="section-eyebrow" style={{ '--ec': C.amber }}>— Browse</p>
-            <h2 className="section-h2">
-              What's selling on campus
-              <span style={{ color: C.amber }}> right now.</span>
-            </h2>
-            <p className="section-sub">
-              Fresh listings added daily by verified student sellers — from course materials and electronics to food and fashion.
-            </p>
+            <p className="section-eyebrow" style={{ '--ec': C.accent }}>— Browse</p>
+            <h2 className="section-h2">What's selling on campus<span style={{ color: C.accent }}> right now.</span></h2>
+            <p className="section-sub">Fresh listings added daily by verified student sellers — from course materials and electronics to food and fashion.</p>
           </div>
-
-          <div className="filter-row">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat.key}
-                className={`filter-pill${activeFilter === cat.key ? ' active' : ''}`}
-                onClick={() => setActiveFilter(cat.key)}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {loadingProds ? (
-            <div className="prod-grid">
-              {[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}
-            </div>
-          ) : products.length === 0 ? (
-            <div style={{ textAlign:'center', padding:'48px 0', color: C.muted }}>
-              <p style={{ fontSize:42, marginBottom:12 }}>📦</p>
-              <p style={{ fontSize:16 }}>No listings found for this category right now.</p>
-            </div>
-          ) : (
-            <div className="prod-grid">
-              {products.map((product, i) => (
-                <ProductCard key={product._id || i} product={product} index={i} />
-              ))}
-            </div>
-          )}
-
-          <div className="view-all-wrap">
-            <Link href="/listings" className="view-all-btn">View all listings →</Link>
-          </div>
+          <div className="filter-row">{CATEGORIES.map(cat => (<button key={cat.key} className={`filter-pill${activeFilter === cat.key ? ' active' : ''}`} onClick={() => setActiveFilter(cat.key)}>{cat.label}</button>))}</div>
+          {loadingProds ? (<div className="prod-grid">{[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}</div>) : products.length === 0 ? (<div style={{ textAlign:'center', padding:'48px 0', color: C.muted }}><p style={{ fontSize:42, marginBottom:12 }}>📦</p><p style={{ fontSize:16 }}>No listings found for this category right now.</p></div>) : (<div className="prod-grid">{products.map((product, i) => (<ProductCard key={product._id || i} product={product} index={i} />))}</div>)}
+          <div className="view-all-wrap"><Link href="/listings" className="view-all-btn">View all listings →</Link></div>
         </div>
       </section>
 
@@ -994,39 +732,13 @@ export default function HomePage() {
           <div className="ai-split">
             <div className={`reveal ${aiVis ? 'shown' : ''}`}>
               <div className="ai-orb">✦</div>
-              <p className="section-eyebrow" style={{ '--ec': C.emerald }}>— Cedi AI</p>
-              <h2 className="section-h2" style={{ color: C.white }}>
-                CediAi — your{' '}
-                <span style={{ color: C.emerald }}>AI shopping assistant.</span>
-              </h2>
-              <p className="section-sub">
-                Type anything. "Find me a laptop under GH₵3000," "Who sells Jollof near Legon?" — Cedi reads your intent and surfaces the best matching listings from across campus, instantly.
-              </p>
-
-              {[
-                { icon:'🧠', title:'Natural language search', desc:'No keywords needed. Ask like you would a friend who knows every listing.' },
-                { icon:'📦', title:'Rich product results',    desc:'Gets back images, prices, conditions, and campus locations — not just links.' },
-                { icon:'💬', title:'Follow-up questions',    desc:'"Show me cheaper ones" or "only KNUST sellers" — Cedi remembers the context.' },
-              ].map((f, i) => (
-                <div key={i} className="ai-feature-row">
-                  <div className="ai-feature-icon">{f.icon}</div>
-                  <div>
-                    <div className="ai-feature-title">{f.title}</div>
-                    <div className="ai-feature-desc">{f.desc}</div>
-                  </div>
-                </div>
-              ))}
-
-              <Link href="/ai-assistant" className="ai-try-btn">
-                ✦ Try CediAi — it's free
-              </Link>
+              <p className="section-eyebrow" style={{ '--ec': C.brand }}>— Cedi AI</p>
+              <h2 className="section-h2">CediAi — your <span style={{ color: C.brand }}>AI shopping assistant.</span></h2>
+              <p className="section-sub">Type anything. "Find me a laptop under GH₵3000," "Who sells Jollof near Legon?" — Cedi reads your intent and surfaces the best matching listings from across campus, instantly.</p>
+              {[{ icon:'🧠', title:'Natural language search', desc:'No keywords needed. Ask like you would a friend who knows every listing.' },{ icon:'📦', title:'Rich product results', desc:'Gets back images, prices, conditions, and campus locations — not just links.' },{ icon:'💬', title:'Follow-up questions', desc:'"Show me cheaper ones" or "only KNUST sellers" — Cedi remembers the context.' }].map((f, i) => (<div key={i} className="ai-feature-row"><div className="ai-feature-icon">{f.icon}</div><div><div className="ai-feature-title">{f.title}</div><div className="ai-feature-desc">{f.desc}</div></div></div>))}
+              <Link href="/ai-assistant" className="ai-try-btn">✦ Try CediAi — it's free</Link>
             </div>
-
-            <div className="ai-demos-stack">
-              {AI_DEMOS.slice(0, 3).map((demo, i) => (
-                <AiDemoCard key={i} query={demo.q} icon={demo.icon} delay={i * 100} />
-              ))}
-            </div>
+            <div className="ai-demos-stack">{AI_DEMOS.slice(0, 3).map((demo, i) => (<AiDemoCard key={i} query={demo.q} icon={demo.icon} delay={i * 100} />))}</div>
           </div>
         </div>
       </section>
@@ -1035,53 +747,26 @@ export default function HomePage() {
         <div className="section-inner">
           <div className={`reveal ${whyVis ? 'shown' : ''}`} style={{ textAlign:'center', maxWidth:540, margin:'0 auto 52px' }}>
             <p className="section-eyebrow" style={{ '--ec': C.coral, textAlign:'center' }}>— Why CediMart</p>
-            <h2 className="section-h2">Built specifically<br/>
-              <span style={{ color: C.coral }}>for campus life.</span>
-            </h2>
-            <p className="section-sub" style={{ margin:'0 auto', textAlign:'center' }}>
-              Not a clone of Jumia. Not a WhatsApp group. A marketplace designed from the ground up for how students buy and sell.
-            </p>
+            <h2 className="section-h2">Built specifically<br/><span style={{ color: C.coral }}>for campus life.</span></h2>
+            <p className="section-sub" style={{ margin:'0 auto', textAlign:'center' }}>Not a clone of Jumia. Not a WhatsApp group. A marketplace designed from the ground up for how students buy and sell.</p>
           </div>
-
-          <div className="why-grid">
-            {WHY_ITEMS.map((item, i) => (
-              <div key={i} className={`why-card reveal ${whyVis ? 'shown' : ''}`}
-                style={{ '--wc': item.color, '--wb': item.color + '15', transitionDelay:`${i * 60}ms` }}>
-                <div className="why-icon">{item.icon}</div>
-                <div className="why-title">{item.title}</div>
-                <div className="why-desc">{item.desc}</div>
-              </div>
-            ))}
-          </div>
+          <div className="why-grid">{WHY_ITEMS.map((item, i) => (<div key={i} className={`why-card reveal ${whyVis ? 'shown' : ''}`} style={{ '--wc': item.color, '--wb': item.color + '12', transitionDelay:`${i * 60}ms` }}><div className="why-icon">{item.icon}</div><div className="why-title">{item.title}</div><div className="why-desc">{item.desc}</div></div>))}</div>
         </div>
       </section>
 
       <section id="download" className="section" ref={ctaRef} style={{ background: C.surf }}>
         <div className="section-inner">
           <div className={`cta-wrap reveal ${ctaVis ? 'shown' : ''}`}>
-            <div className="cta-noise" />
-            <div className="cta-dot-grid" />
+            <div className="cta-noise" /><div className="cta-dot-grid" />
             <h2 className="cta-h2">Your campus marketplace<br/>is waiting.</h2>
             <p className="cta-sub">Join 10,000+ students already buying, selling, and growing on CediMart. Free forever.</p>
             <div className="cta-btns">
-              <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="cta-btn-white">
-                🍎 App Store
-              </a>
-              <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="cta-btn-ghost">
-                ▶ Google Play
-              </a>
+              <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="cta-btn-white">🍎 App Store</a>
+              <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="cta-btn-ghost">▶ Google Play</a>
             </div>
-            <form
-              className="nl-form"
-              onSubmit={e => { e.preventDefault(); setEmailDone(true); setEmail(''); }}
-            >
-              <input
-                type="email" required placeholder="Get launch updates by email"
-                className="nl-input" value={email} onChange={e => setEmail(e.target.value)}
-              />
-              <button type="submit" className="nl-btn">
-                {emailDone ? '✓ Done' : 'Notify me'}
-              </button>
+            <form className="nl-form" onSubmit={e => { e.preventDefault(); setEmailDone(true); setEmail(''); }}>
+              <input type="email" required placeholder="Get launch updates by email" className="nl-input" value={email} onChange={e => setEmail(e.target.value)} />
+              <button type="submit" className="nl-btn">{emailDone ? '✓ Done' : 'Notify me'}</button>
             </form>
           </div>
         </div>

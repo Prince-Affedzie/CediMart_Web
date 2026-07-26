@@ -3,7 +3,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FaBars, FaTimes } from 'react-icons/fa';
+import icon from '@/app/icon.jpg';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -25,9 +27,10 @@ export default function Header() {
           justify-content: space-between;
           padding: 0 clamp(16px, 5vw, 80px);
           height: 64px;
-          background: rgba(9, 9, 15, 0.92);
+          background: rgba(255, 255, 255, 0.92);
           backdrop-filter: blur(20px) saturate(160%);
-          border-bottom: 1px solid #27273A;
+          border-bottom: 1px solid #E2E8F0;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .nav-logo {
@@ -40,23 +43,27 @@ export default function Header() {
         .nav-logo-mark {
           width: 34px;
           height: 34px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, #6366F1, #818CF8);
+          border-radius: 9px;
+          overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 900;
-          font-size: 17px;
-          color: #fff;
+          box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
+          flex-shrink: 0;
+        }
+        .nav-logo-mark img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
         .nav-logo-text {
           font-size: 18px;
           font-weight: 800;
-          color: #F1F0FF;
+          color: #0D9488 !important;
           letter-spacing: -0.3px;
         }
         .nav-logo-text span {
-          color: #818CF8;
+          color: #F97316 !important;
         }
 
         /* Desktop links */
@@ -68,18 +75,18 @@ export default function Header() {
         .nav-link {
           font-size: 13.5px;
           font-weight: 500;
-          color: #A8A8B8;
+          color: #475569;
           text-decoration: none;
           transition: color 0.2s;
           white-space: nowrap;
         }
         .nav-link:hover {
-          color: #F1F0FF;
+          color: #0D9488;
         }
 
         /* Desktop CTA */
         .nav-cta-desktop {
-          background: linear-gradient(135deg, #6366F1, #818CF8);
+          background: linear-gradient(135deg, #0D9488, #14B8A6);
           color: #fff;
           font-size: 13px;
           font-weight: 700;
@@ -90,14 +97,14 @@ export default function Header() {
           align-items: center;
           gap: 6px;
           transition: all 0.22s ease;
-          box-shadow: 0 4px 18px rgba(99, 102, 241, 0.15);
+          box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
           white-space: nowrap;
           flex-shrink: 0;
         }
         .nav-cta-desktop:hover {
-          filter: brightness(1.1);
+          filter: brightness(1.08);
           transform: translateY(-1px);
-          box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+          box-shadow: 0 6px 20px rgba(13, 148, 136, 0.35);
         }
 
         /* Hamburger */
@@ -105,7 +112,7 @@ export default function Header() {
           display: none;
           background: none;
           border: none;
-          color: #A8A8B8;
+          color: #475569;
           cursor: pointer;
           padding: 8px;
           z-index: 60;
@@ -116,7 +123,7 @@ export default function Header() {
           display: none;
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.6);
+          background: rgba(15, 23, 42, 0.3);
           backdrop-filter: blur(4px);
           z-index: 55;
         }
@@ -130,14 +137,14 @@ export default function Header() {
           bottom: 0;
           width: 280px;
           max-width: 80vw;
-          background: #13131E;
-          border-left: 1px solid #27273A;
+          background: #FFFFFF;
+          border-left: 1px solid #E2E8F0;
           z-index: 56;
           padding: 80px 24px 32px;
           flex-direction: column;
           gap: 4px;
           overflow-y: auto;
-          box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+          box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
         }
         .mobile-menu.active {
           display: flex;
@@ -153,14 +160,14 @@ export default function Header() {
           padding: 14px 16px;
           font-size: 15px;
           font-weight: 600;
-          color: #A8A8B8;
+          color: #475569;
           text-decoration: none;
           border-radius: 12px;
           transition: all 0.2s;
         }
         .mobile-nav-link:hover {
-          background: #1C1C2E;
-          color: #F1F0FF;
+          background: #F0FDFA;
+          color: #0D9488;
         }
         .mobile-nav-icon {
           font-size: 18px;
@@ -174,17 +181,17 @@ export default function Header() {
           gap: 8px;
           margin-top: 16px;
           padding: 14px;
-          background: linear-gradient(135deg, #6366F1, #818CF8);
+          background: linear-gradient(135deg, #0D9488, #14B8A6);
           color: #fff;
           font-size: 14px;
           font-weight: 700;
           text-decoration: none;
           border-radius: 14px;
-          box-shadow: 0 4px 18px rgba(99, 102, 241, 0.2);
+          box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
         }
         .mobile-menu-divider {
           height: 1px;
-          background: #27273A;
+          background: #E2E8F0;
           margin: 8px 0;
         }
 
@@ -201,16 +208,24 @@ export default function Header() {
             width: 40px;
             height: 40px;
             border-radius: 10px;
-            background: #1C1C2E;
-            border: 1px solid #27273A;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
           }
         }
       `}</style>
 
       <nav className="nav">
-        {/* Logo */}
+        {/* Logo — using real app icon */}
         <Link href="/" className="nav-logo">
-          <div className="nav-logo-mark">C</div>
+          <div className="nav-logo-mark">
+            <Image 
+              src={icon} 
+              alt="CediMart" 
+              width={34} 
+              height={34} 
+              priority
+            />
+          </div>
           <span className="nav-logo-text">
             Cedi<span>Mart</span>
           </span>
