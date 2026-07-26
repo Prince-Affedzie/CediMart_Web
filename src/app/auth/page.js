@@ -1,15 +1,18 @@
 // src/app/auth/page.js
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import icon from '@/app/icon.jpg';
-import GoogleLogo from '@/assets/Google-logo.png'; // Make sure this exists
+import GoogleLogo from '@/assets/Google-logo.png';
 
-// ─── API imports (use the same APIs as your app) ───────────────────────────
+// ─── API imports ───────────────────────────────────────────────────────────
 import { login as authLogin, loginByGoogle } from '@/apis/authApi';
+
+// ─── Force dynamic rendering (fixes Vercel build error) ────────────────────
+export const dynamic = 'force-dynamic';
 
 // ─── Teal + Coral Design Tokens ────────────────────────────────────────────
 const C = {
@@ -37,11 +40,11 @@ const C = {
   gray200:      '#E5E7EB',
 };
 
-export default function LoginPage() {
+// ─── Inner component (uses useSearchParams) ────────────────────────────────
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  // Get redirect URL from query params
   const nextUrl = searchParams.get('next') || '/';
   const refCode = searchParams.get('ref') || '';
 
@@ -52,13 +55,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [generalError, setGeneralError] = useState('');
 
-  // ── Build redirect URL preserving referral code ──────────────────────────
   const buildRedirectUrl = () => {
     const refParam = refCode ? `&ref=${refCode}` : '';
     return `${nextUrl}${nextUrl.includes('?') ? '&' : '?'}${refParam}`.replace(/[?&]$/, '');
   };
 
-  // ── Validation ───────────────────────────────────────────────────────────
   const validateForm = () => {
     const newErrors = {};
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
@@ -70,17 +71,12 @@ export default function LoginPage() {
 
   const isLoading = loading || googleLoading;
 
-  // ── Google Login ─────────────────────────────────────────────────────────
   const handleGoogleLogin = async () => {
     if (isLoading) return;
     setGoogleLoading(true);
     setGeneralError('');
     try {
-      // For web, Google Sign-In uses the standard OAuth flow
-      // You'll need to implement this with @react-oauth/google or Firebase
-      // For now, redirect to Google OAuth endpoint
-      const response = await loginByGoogle({ token: 'google_web_token' }); // Replace with actual web implementation
-      
+      const response = await loginByGoogle({ token: 'google_web_token' });
       if (response?.success) {
         localStorage.setItem('cm_token', response.token);
         localStorage.setItem('cm_user', JSON.stringify(response.user));
@@ -95,7 +91,6 @@ export default function LoginPage() {
     }
   };
 
-  // ── Phone + Password Login ───────────────────────────────────────────────
   const handleLogin = async () => {
     if (!validateForm()) return;
     setLoading(true);
@@ -107,11 +102,8 @@ export default function LoginPage() {
       });
       
       if (response?.success) {
-        // Store auth token
         localStorage.setItem('cm_token', response.token);
         localStorage.setItem('cm_user', JSON.stringify(response.user || response.data?.user));
-        
-        // Redirect to where the user was going
         router.push(buildRedirectUrl());
       } else {
         setGeneralError(response?.error || response?.message || "Login failed. Please check your credentials or internet connection.");
@@ -266,6 +258,41 @@ export default function LoginPage() {
   );
 }
 
+// ─── Loading fallback for Suspense ─────────────────────────────────────────
+function LoginFallback() {
+  return (
+    <>
+      <style>{loginStyles}</style>
+      <div className="login-page">
+        <div className="login-card" style={{ textAlign: 'center', padding: '40px' }}>
+          <div className="login-logo">
+            <Image src={icon} alt="CediMart" width={56} height={56} priority />
+          </div>
+          <div style={{
+            width: 36,
+            height: 36,
+            border: '3px solid #E2E8F0',
+            borderTopColor: '#0D9488',
+            borderRadius: '50%',
+            animation: 'spin .7s linear infinite',
+            margin: '20px auto'
+          }} />
+          <p style={{ marginTop: 12, color: '#475569', fontSize: 14 }}>Loading...</p>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Page export with Suspense boundary ────────────────────────────────────
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
 // ─── Styles ─────────────────────────────────────────────────────────────────
 const loginStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
@@ -315,7 +342,6 @@ const loginStyles = `
     margin-bottom: 24px;
   }
 
-  /* Google Button */
   .login-google-btn {
     width: 100%;
     display: flex;
@@ -347,7 +373,6 @@ const loginStyles = `
     height: 20px;
   }
 
-  /* Divider */
   .login-divider {
     display: flex;
     align-items: center;
@@ -365,7 +390,6 @@ const loginStyles = `
     font-weight: 500;
   }
 
-  /* Form */
   .login-form {
     display: flex;
     flex-direction: column;
@@ -406,6 +430,7 @@ const loginStyles = `
     border-radius: 12px;
     padding: 0 14px;
     transition: border-color .2s, box-shadow .2s;
+    position: relative;
   }
   .login-input-wrap:focus-within {
     border-color: ${C.brand};
@@ -455,9 +480,6 @@ const loginStyles = `
   }
   .login-eye-btn:hover {
     opacity: 1;
-  }
-  .login-input-wrap {
-    position: relative;
   }
 
   .login-error-text {

@@ -1,7 +1,7 @@
 // src/app/signup/page.js
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,8 +9,10 @@ import icon from '@/app/icon.jpg';
 import GoogleLogo from '@/assets/Google-logo.png';
 
 // ─── API imports ───────────────────────────────────────────────────────────
-//import { SignUp } from '@/apis/userApi';
-import { login as authLogin, signUpByGoogle,SignUp } from '@/apis/authApi';
+import { login as authLogin, signUpByGoogle, SignUp } from '@/apis/authApi';
+
+// ─── Force dynamic rendering (fixes Vercel build error) ────────────────────
+export const dynamic = 'force-dynamic';
 
 // ─── Teal + Coral Design Tokens ────────────────────────────────────────────
 const C = {
@@ -38,11 +40,11 @@ const C = {
   gray200:      '#E5E7EB',
 };
 
-export default function SignUpPage() {
+// ─── Inner component (uses useSearchParams) ────────────────────────────────
+function SignUpContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get redirect URL from query params
   const nextUrl = searchParams.get('next') || '/';
   const refCode = searchParams.get('ref') || '';
 
@@ -63,13 +65,11 @@ export default function SignUpPage() {
 
   const isLoading = loading || googleLoading;
 
-  // ── Build redirect URL preserving referral code ──────────────────────────
   const buildRedirectUrl = () => {
     const refParam = refCode ? `&ref=${refCode}` : '';
     return `${nextUrl}${nextUrl.includes('?') ? '&' : '?'}${refParam}`.replace(/[?&]$/, '');
   };
 
-  // ── Validation ───────────────────────────────────────────────────────────
   const validateForm = () => {
     const newErrors = {};
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
@@ -92,13 +92,11 @@ export default function SignUpPage() {
     setGeneralError('');
   };
 
-  // ── Google Sign-Up ───────────────────────────────────────────────────────
   const handleGoogleSignUp = async () => {
     if (isLoading) return;
     setGoogleLoading(true);
     setGeneralError('');
     try {
-      // Web Google OAuth — replace with your web implementation
       const response = await signUpByGoogle({ token: 'google_web_token' });
       if (response?.success) {
         localStorage.setItem('cm_token', response.token);
@@ -114,7 +112,6 @@ export default function SignUpPage() {
     }
   };
 
-  // ── Phone + Password Sign-Up ─────────────────────────────────────────────
   const handleSignUp = async () => {
     if (!validateForm()) return;
     if (!agreedToTerms) {
@@ -125,7 +122,6 @@ export default function SignUpPage() {
     setLoading(true);
     setGeneralError('');
     try {
-      // Step 1: Create account
       const signUpResponse = await SignUp({
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
@@ -139,7 +135,6 @@ export default function SignUpPage() {
         return;
       }
 
-      // Step 2: Auto-login after signup
       const loginResponse = await authLogin({
         phone: formData.phone.trim(),
         password: formData.password,
@@ -150,7 +145,6 @@ export default function SignUpPage() {
         localStorage.setItem('cm_user', JSON.stringify(loginResponse.user || loginResponse.data?.user));
         router.push(buildRedirectUrl());
       } else {
-        // Account created but auto-login failed
         setGeneralError('Account created! Please sign in to continue.');
         setTimeout(() => {
           router.push(`/auth?next=${encodeURIComponent(nextUrl)}${refCode ? `&ref=${refCode}` : ''}`);
@@ -169,7 +163,6 @@ export default function SignUpPage() {
 
       <div className="signup-page">
         <div className="signup-card">
-          {/* Logo */}
           <div className="signup-logo">
             <Image src={icon} alt="CediMart" width={56} height={56} priority />
           </div>
@@ -177,12 +170,7 @@ export default function SignUpPage() {
           <h1 className="signup-title">Create Account</h1>
           <p className="signup-subtitle">Join our community of buyers and sellers</p>
 
-          {/* Google Sign-Up */}
-          <button
-            className="signup-google-btn"
-            onClick={handleGoogleSignUp}
-            disabled={isLoading}
-          >
+          <button className="signup-google-btn" onClick={handleGoogleSignUp} disabled={isLoading}>
             {googleLoading ? (
               <span className="signup-btn-loading">
                 <span className="signup-spinner" /> Connecting...
@@ -195,21 +183,17 @@ export default function SignUpPage() {
             )}
           </button>
 
-          {/* Divider */}
           <div className="signup-divider">
             <span className="signup-divider-line" />
             <span className="signup-divider-text">OR</span>
             <span className="signup-divider-line" />
           </div>
 
-          {/* Form */}
           <form onSubmit={(e) => { e.preventDefault(); handleSignUp(); }} className="signup-form">
-            {/* Name Row */}
             <div className="signup-name-row">
               <div className="signup-input-group signup-half">
                 <label className="signup-label">First Name</label>
                 <div className={`signup-input-wrap ${errors.firstName ? 'signup-input-error' : ''}`}>
-                 
                   <input
                     type="text"
                     className="signup-input"
@@ -227,7 +211,6 @@ export default function SignUpPage() {
               <div className="signup-input-group signup-half">
                 <label className="signup-label">Last Name</label>
                 <div className={`signup-input-wrap ${errors.lastName ? 'signup-input-error' : ''}`}>
-                 
                   <input
                     type="text"
                     className="signup-input"
@@ -243,11 +226,9 @@ export default function SignUpPage() {
               </div>
             </div>
 
-            {/* Phone Number */}
             <div className="signup-input-group">
               <label className="signup-label">Phone Number</label>
               <div className={`signup-input-wrap ${errors.phone ? 'signup-input-error' : ''}`}>
-               
                 <input
                   type="tel"
                   className="signup-input"
@@ -262,7 +243,6 @@ export default function SignUpPage() {
               {errors.phone && <p className="signup-error-text">{errors.phone}</p>}
             </div>
 
-            {/* Password */}
             <div className="signup-input-group">
               <label className="signup-label">Password</label>
               <div className={`signup-input-wrap ${errors.password ? 'signup-input-error' : ''}`}>
@@ -290,7 +270,6 @@ export default function SignUpPage() {
               <p className="signup-hint">Must be at least 6 characters long</p>
             </div>
 
-            {/* Confirm Password */}
             <div className="signup-input-group">
               <label className="signup-label">Confirm Password</label>
               <div className={`signup-input-wrap ${errors.confirmPassword ? 'signup-input-error' : ''}`}>
@@ -317,7 +296,6 @@ export default function SignUpPage() {
               {errors.confirmPassword && <p className="signup-error-text">{errors.confirmPassword}</p>}
             </div>
 
-            {/* Terms Agreement */}
             <label className="signup-terms">
               <input
                 type="checkbox"
@@ -334,19 +312,13 @@ export default function SignUpPage() {
               </span>
             </label>
 
-            {/* General Error */}
             {generalError && (
               <div className="signup-general-error">
                 <span>⚠️</span> {generalError}
               </div>
             )}
 
-            {/* Submit */}
-            <button
-              type="submit"
-              className="signup-submit-btn"
-              disabled={isLoading}
-            >
+            <button type="submit" className="signup-submit-btn" disabled={isLoading}>
               {loading ? (
                 <span className="signup-btn-loading">
                   <span className="signup-spinner" /> Creating Account...
@@ -360,7 +332,6 @@ export default function SignUpPage() {
             </button>
           </form>
 
-          {/* Login Link */}
           <p className="signup-login-link">
             Already have an account?{' '}
             <Link href={`/auth?next=${encodeURIComponent(nextUrl)}${refCode ? `&ref=${refCode}` : ''}`}>
@@ -370,6 +341,40 @@ export default function SignUpPage() {
         </div>
       </div>
     </>
+  );
+}
+
+// ─── Loading fallback ─────────────────────────────────────────────────────
+function SignUpFallback() {
+  return (
+    <>
+      <style>{signupStyles}</style>
+      <div className="signup-page">
+        <div className="signup-card" style={{ textAlign: 'center', padding: '40px' }}>
+          <div className="signup-logo">
+            <Image src={icon} alt="CediMart" width={56} height={56} priority />
+          </div>
+          <div style={{
+            width: 36, height: 36,
+            border: '3px solid #E2E8F0',
+            borderTopColor: '#0D9488',
+            borderRadius: '50%',
+            animation: 'spin .7s linear infinite',
+            margin: '20px auto'
+          }} />
+          <p style={{ marginTop: 12, color: '#475569', fontSize: 14 }}>Loading...</p>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Page export with Suspense boundary ────────────────────────────────────
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<SignUpFallback />}>
+      <SignUpContent />
+    </Suspense>
   );
 }
 
@@ -422,7 +427,6 @@ const signupStyles = `
     margin-bottom: 24px;
   }
 
-  /* Google Button */
   .signup-google-btn {
     width: 100%;
     display: flex;
@@ -454,7 +458,6 @@ const signupStyles = `
     height: 20px;
   }
 
-  /* Divider */
   .signup-divider {
     display: flex;
     align-items: center;
@@ -472,7 +475,6 @@ const signupStyles = `
     font-weight: 500;
   }
 
-  /* Form */
   .signup-form {
     display: flex;
     flex-direction: column;
@@ -484,13 +486,9 @@ const signupStyles = `
     gap: 12px;
     margin-bottom: 0;
   }
-  .signup-half {
-    flex: 1;
-  }
+  .signup-half { flex: 1; }
 
-  .signup-input-group {
-    margin-bottom: 16px;
-  }
+  .signup-input-group { margin-bottom: 16px; }
   .signup-label {
     display: block;
     font-size: 13px;
@@ -538,12 +536,8 @@ const signupStyles = `
     background: transparent;
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
-  .signup-input::placeholder {
-    color: ${C.t3};
-  }
-  .signup-password-input {
-    padding-right: 40px;
-  }
+  .signup-input::placeholder { color: ${C.t3}; }
+  .signup-password-input { padding-right: 40px; }
   .signup-eye-btn {
     position: absolute;
     right: 14px;
@@ -555,9 +549,7 @@ const signupStyles = `
     opacity: .6;
     transition: opacity .15s;
   }
-  .signup-eye-btn:hover {
-    opacity: 1;
-  }
+  .signup-eye-btn:hover { opacity: 1; }
 
   .signup-error-text {
     font-size: 12px;
@@ -596,9 +588,7 @@ const signupStyles = `
     font-weight: 600;
     text-decoration: none;
   }
-  .signup-link:hover {
-    text-decoration: underline;
-  }
+  .signup-link:hover { text-decoration: underline; }
 
   .signup-general-error {
     background: ${C.dangerBg};
@@ -643,26 +633,17 @@ const signupStyles = `
     transform: none;
     box-shadow: none;
   }
-  .signup-submit-arrow {
-    font-size: 18px;
-  }
+  .signup-submit-arrow { font-size: 18px; }
 
-  .signup-btn-loading {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .signup-btn-loading { display: flex; align-items: center; gap: 8px; }
   .signup-spinner {
-    width: 18px;
-    height: 18px;
+    width: 18px; height: 18px;
     border: 2px solid rgba(255,255,255,.3);
     border-top-color: #fff;
     border-radius: 50%;
     animation: spin .7s linear infinite;
   }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
   .signup-login-link {
     text-align: center;
@@ -674,21 +655,11 @@ const signupStyles = `
     font-weight: 700;
     text-decoration: none;
   }
-  .signup-login-link a:hover {
-    text-decoration: underline;
-  }
+  .signup-login-link a:hover { text-decoration: underline; }
 
   @media (max-width: 480px) {
-    .signup-card {
-      padding: 24px 20px;
-      border-radius: 16px;
-    }
-    .signup-title {
-      font-size: 22px;
-    }
-    .signup-name-row {
-      flex-direction: column;
-      gap: 0;
-    }
+    .signup-card { padding: 24px 20px; border-radius: 16px; }
+    .signup-title { font-size: 22px; }
+    .signup-name-row { flex-direction: column; gap: 0; }
   }
 `;
