@@ -530,12 +530,10 @@ export default function ProductDetailPage() {
       </div>
 
       <GuestCheckout 
-        product={product}
-        isOpen={checkoutOpen}
-        onClose={() => setCheckoutOpen(false)}
-        referralCode={referralCode}
-        onSuccess={(order) => { console.log('Order placed:', order); }}
-      />
+  product={product}
+  isOpen={checkoutOpen}
+  onClose={() => setCheckoutOpen(false)}
+/>
     </>
   );
 }
