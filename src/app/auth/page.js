@@ -7,6 +7,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import icon from '@/app/icon.jpg';
 import GoogleLogo from '@/assets/Google-logo.png';
+import { 
+  Phone, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  AlertCircle, 
+  ArrowRight,
+  Loader2,
+  LogIn
+} from 'lucide-react';
 
 // ─── API imports ───────────────────────────────────────────────────────────
 import { login as authLogin, loginByGoogle } from '@/apis/authApi';
@@ -132,7 +142,7 @@ function LoginContent() {
           <h1 className="login-title">Welcome Back</h1>
           <p className="login-subtitle">Sign in to your account to continue</p>
 
-          {/* Google Login */}
+          {/* Google Login 
           <button 
             className="login-google-btn" 
             onClick={handleGoogleLogin} 
@@ -140,7 +150,7 @@ function LoginContent() {
           >
             {googleLoading ? (
               <span className="login-btn-loading">
-                <span className="login-spinner" /> Connecting...
+                <Loader2 className="login-spinner-icon" /> Connecting...
               </span>
             ) : (
               <>
@@ -148,14 +158,15 @@ function LoginContent() {
                 <span>Continue with Google</span>
               </>
             )}
-          </button>
+          </button>*/}
 
-          {/* Divider */}
+          {/* Divider 
           <div className="login-divider">
             <span className="login-divider-line" />
             <span className="login-divider-text">OR</span>
             <span className="login-divider-line" />
           </div>
+          */}
 
           {/* Form */}
           <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="login-form">
@@ -163,7 +174,7 @@ function LoginContent() {
             <div className="login-input-group">
               <label className="login-label">Phone Number</label>
               <div className={`login-input-wrap ${errors.phone ? 'login-input-error' : ''}`}>
-                <span className="login-input-icon">📱</span>
+                <Phone size={18} className="login-input-icon" />
                 <input
                   type="tel"
                   className="login-input"
@@ -187,7 +198,7 @@ function LoginContent() {
                 </Link>
               </div>
               <div className={`login-input-wrap ${errors.password ? 'login-input-error' : ''}`}>
-                <span className="login-input-icon">🔒</span>
+                <Lock size={18} className="login-input-icon" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   className="login-input login-password-input"
@@ -204,7 +215,7 @@ function LoginContent() {
                   disabled={isLoading}
                   tabIndex={-1}
                 >
-                  {showPassword ? '🙈' : '👁️'}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.password && <p className="login-error-text">{errors.password}</p>}
@@ -219,7 +230,7 @@ function LoginContent() {
             {/* General Error */}
             {generalError && (
               <div className="login-general-error">
-                <span>⚠️</span> {generalError}
+                <AlertCircle size={16} /> {generalError}
               </div>
             )}
 
@@ -231,12 +242,13 @@ function LoginContent() {
             >
               {loading ? (
                 <span className="login-btn-loading">
-                  <span className="login-spinner" /> Signing In...
+                  <Loader2 size={18} className="login-spinner-icon" /> Signing In...
                 </span>
               ) : (
                 <>
-                  <span>Sign In as Buyer</span>
-                  <span className="login-submit-arrow">→</span>
+                  <LogIn size={18} />
+                  <span>Sign In</span>
+                  <ArrowRight size={18} className="login-submit-arrow" />
                 </>
               )}
             </button>
@@ -265,15 +277,7 @@ function LoginFallback() {
           <div className="login-logo">
             <Image src={icon} alt="CediMart" width={56} height={56} priority />
           </div>
-          <div style={{
-            width: 36,
-            height: 36,
-            border: '3px solid #E2E8F0',
-            borderTopColor: '#0D9488',
-            borderRadius: '50%',
-            animation: 'spin .7s linear infinite',
-            margin: '20px auto'
-          }} />
+          <Loader2 size={36} className="login-spinner-icon" style={{ margin: '20px auto', display: 'block' }} />
           <p style={{ marginTop: 12, color: '#475569', fontSize: 14 }}>Loading...</p>
         </div>
       </div>
@@ -444,10 +448,17 @@ const loginStyles = `
   }
 
   .login-input-icon {
-    font-size: 16px;
+    color: ${C.t3};
     margin-right: 8px;
     flex-shrink: 0;
   }
+  .login-input-wrap:focus-within .login-input-icon {
+    color: ${C.brand};
+  }
+  .login-input-error .login-input-icon {
+    color: ${C.danger};
+  }
+  
   .login-input {
     flex: 1;
     border: none;
@@ -470,13 +481,15 @@ const loginStyles = `
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 16px;
+    color: ${C.t3};
     padding: 4px;
-    opacity: .6;
-    transition: opacity .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color .15s;
   }
   .login-eye-btn:hover {
-    opacity: 1;
+    color: ${C.t2};
   }
 
   .login-error-text {
@@ -546,21 +559,13 @@ const loginStyles = `
     transform: none;
     box-shadow: none;
   }
-  .login-submit-arrow {
-    font-size: 18px;
-  }
 
   .login-btn-loading {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  .login-spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(255,255,255,.3);
-    border-top-color: #fff;
-    border-radius: 50%;
+  .login-spinner-icon {
     animation: spin .7s linear infinite;
   }
   @keyframes spin {

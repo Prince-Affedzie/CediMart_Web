@@ -7,6 +7,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 import icon from '@/app/icon.jpg';
 import GoogleLogo from '@/assets/Google-logo.png';
+import { 
+  User, 
+  Phone, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  AlertCircle, 
+  ArrowRight,
+  Loader2,
+  UserPlus,
+  Check
+} from 'lucide-react';
 
 // ─── API imports ───────────────────────────────────────────────────────────
 import { login as authLogin, signUpByGoogle, SignUp } from '@/apis/authApi';
@@ -118,6 +130,7 @@ function SignUpContent() {
 
     setLoading(true);
     setGeneralError('');
+    
     try {
       const signUpResponse = await SignUp({
         firstName: formData.firstName.trim(),
@@ -126,29 +139,40 @@ function SignUpContent() {
         password: formData.password,
       });
 
-      if (signUpResponse.status !== 200 && !signUpResponse.success) {
-        setGeneralError(signUpResponse.error || signUpResponse.message || 'Registration failed. Please try again.');
-        setLoading(false);
-        return;
-      }
-
+      // Auto-login after successful signup
       const loginResponse = await authLogin({
         phone: formData.phone.trim(),
         password: formData.password,
       });
 
-      if (loginResponse?.success || loginResponse.status ===200) {
+      if (loginResponse?.success || loginResponse?.status === 200) {
         localStorage.setItem('cm_token', loginResponse.data.token);
         localStorage.setItem('cm_user', JSON.stringify(loginResponse.data?.user));
         router.push(buildRedirectUrl());
       } else {
-        setGeneralError('Account created! Please sign in to continue.');
+        setGeneralError('Account created successfully! Please sign in to continue.');
         setTimeout(() => {
-          router.push(`/auth?next=${encodeURIComponent(nextUrl)}${refCode ? `&ref=${refCode}` : ''}`);
+          router.push(`/auth?next=${encodeURIComponent(nextUrl)}`);
         }, 2000);
       }
     } catch (error) {
-      setGeneralError('An unexpected error occurred. Please try again.');
+      console.log('Full error object:', error);
+      console.log('Error response:', error?.response);
+      console.log('Error response data:', error?.response?.data);
+      
+      let errorMessage = 'Registration failed. Please try again.';
+      
+      if (error?.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error?.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error?.response?.data?.mesaage) {
+        errorMessage = error.response.data.mesaage;
+      } else if (error?.message && !error?.message.includes('status code')) {
+        errorMessage = error.message;
+      }
+      
+      setGeneralError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -167,10 +191,11 @@ function SignUpContent() {
           <h1 className="signup-title">Create Account</h1>
           <p className="signup-subtitle">Join our community of buyers and sellers</p>
 
+          {/* Google Sign Up - Commented out for now
           <button className="signup-google-btn" onClick={handleGoogleSignUp} disabled={isLoading}>
             {googleLoading ? (
               <span className="signup-btn-loading">
-                <span className="signup-spinner" /> Connecting...
+                <Loader2 size={18} className="signup-spinner-icon" /> Connecting...
               </span>
             ) : (
               <>
@@ -179,18 +204,20 @@ function SignUpContent() {
               </>
             )}
           </button>
-
+          
           <div className="signup-divider">
             <span className="signup-divider-line" />
             <span className="signup-divider-text">OR</span>
             <span className="signup-divider-line" />
           </div>
+          */}
 
           <form onSubmit={(e) => { e.preventDefault(); handleSignUp(); }} className="signup-form">
             <div className="signup-name-row">
               <div className="signup-input-group signup-half">
                 <label className="signup-label">First Name</label>
                 <div className={`signup-input-wrap ${errors.firstName ? 'signup-input-error' : ''}`}>
+                  <User size={18} className="signup-input-icon" />
                   <input
                     type="text"
                     className="signup-input"
@@ -208,6 +235,7 @@ function SignUpContent() {
               <div className="signup-input-group signup-half">
                 <label className="signup-label">Last Name</label>
                 <div className={`signup-input-wrap ${errors.lastName ? 'signup-input-error' : ''}`}>
+                  <User size={18} className="signup-input-icon" />
                   <input
                     type="text"
                     className="signup-input"
@@ -226,6 +254,7 @@ function SignUpContent() {
             <div className="signup-input-group">
               <label className="signup-label">Phone Number</label>
               <div className={`signup-input-wrap ${errors.phone ? 'signup-input-error' : ''}`}>
+                <Phone size={18} className="signup-input-icon" />
                 <input
                   type="tel"
                   className="signup-input"
@@ -243,7 +272,7 @@ function SignUpContent() {
             <div className="signup-input-group">
               <label className="signup-label">Password</label>
               <div className={`signup-input-wrap ${errors.password ? 'signup-input-error' : ''}`}>
-                <span className="signup-input-icon">🔒</span>
+                <Lock size={18} className="signup-input-icon" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   className="signup-input signup-password-input"
@@ -260,7 +289,7 @@ function SignUpContent() {
                   disabled={isLoading}
                   tabIndex={-1}
                 >
-                  {showPassword ? '🙈' : '👁️'}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.password && <p className="signup-error-text">{errors.password}</p>}
@@ -270,7 +299,7 @@ function SignUpContent() {
             <div className="signup-input-group">
               <label className="signup-label">Confirm Password</label>
               <div className={`signup-input-wrap ${errors.confirmPassword ? 'signup-input-error' : ''}`}>
-                <span className="signup-input-icon">🔒</span>
+                <Lock size={18} className="signup-input-icon" />
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   className="signup-input signup-password-input"
@@ -287,7 +316,7 @@ function SignUpContent() {
                   disabled={isLoading}
                   tabIndex={-1}
                 >
-                  {showConfirmPassword ? '🙈' : '👁️'}
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               {errors.confirmPassword && <p className="signup-error-text">{errors.confirmPassword}</p>}
@@ -311,19 +340,20 @@ function SignUpContent() {
 
             {generalError && (
               <div className="signup-general-error">
-                <span>⚠️</span> {generalError}
+                <AlertCircle size={16} /> {generalError}
               </div>
             )}
 
             <button type="submit" className="signup-submit-btn" disabled={isLoading}>
               {loading ? (
                 <span className="signup-btn-loading">
-                  <span className="signup-spinner" /> Creating Account...
+                  <Loader2 size={18} className="signup-spinner-icon" /> Creating Account...
                 </span>
               ) : (
                 <>
-                  <span>Create Buyer Account</span>
-                  <span className="signup-submit-arrow">→</span>
+                  <UserPlus size={18} />
+                  <span>Create Account</span>
+                  <ArrowRight size={18} className="signup-submit-arrow" />
                 </>
               )}
             </button>
@@ -351,14 +381,7 @@ function SignUpFallback() {
           <div className="signup-logo">
             <Image src={icon} alt="CediMart" width={56} height={56} priority />
           </div>
-          <div style={{
-            width: 36, height: 36,
-            border: '3px solid #E2E8F0',
-            borderTopColor: '#0D9488',
-            borderRadius: '50%',
-            animation: 'spin .7s linear infinite',
-            margin: '20px auto'
-          }} />
+          <Loader2 size={36} className="signup-spinner-icon" style={{ margin: '20px auto', display: 'block', animation: 'spin .7s linear infinite' }} />
           <p style={{ marginTop: 12, color: '#475569', fontSize: 14 }}>Loading...</p>
         </div>
       </div>
@@ -519,10 +542,17 @@ const signupStyles = `
   }
 
   .signup-input-icon {
-    font-size: 16px;
+    color: ${C.t3};
     margin-right: 8px;
     flex-shrink: 0;
   }
+  .signup-input-wrap:focus-within .signup-input-icon {
+    color: ${C.brand};
+  }
+  .signup-input-error .signup-input-icon {
+    color: ${C.danger};
+  }
+  
   .signup-input {
     flex: 1;
     border: none;
@@ -541,12 +571,14 @@ const signupStyles = `
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 16px;
+    color: ${C.t3};
     padding: 4px;
-    opacity: .6;
-    transition: opacity .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color .15s;
   }
-  .signup-eye-btn:hover { opacity: 1; }
+  .signup-eye-btn:hover { color: ${C.t2}; }
 
   .signup-error-text {
     font-size: 12px;
@@ -630,14 +662,9 @@ const signupStyles = `
     transform: none;
     box-shadow: none;
   }
-  .signup-submit-arrow { font-size: 18px; }
 
   .signup-btn-loading { display: flex; align-items: center; gap: 8px; }
-  .signup-spinner {
-    width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,.3);
-    border-top-color: #fff;
-    border-radius: 50%;
+  .signup-spinner-icon {
     animation: spin .7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
