@@ -55,10 +55,7 @@ function LoginContent() {
   const [showPassword, setShowPassword] = useState(false);
   const [generalError, setGeneralError] = useState('');
 
-  const buildRedirectUrl = () => {
-    const refParam = refCode ? `&ref=${refCode}` : '';
-    return `${nextUrl}${nextUrl.includes('?') ? '&' : '?'}${refParam}`.replace(/[?&]$/, '');
-  };
+  const buildRedirectUrl = () => nextUrl;
 
   const validateForm = () => {
     const newErrors = {};

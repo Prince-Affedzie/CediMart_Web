@@ -65,10 +65,7 @@ function SignUpContent() {
 
   const isLoading = loading || googleLoading;
 
-  const buildRedirectUrl = () => {
-    const refParam = refCode ? `&ref=${refCode}` : '';
-    return `${nextUrl}${nextUrl.includes('?') ? '&' : '?'}${refParam}`.replace(/[?&]$/, '');
-  };
+  const buildRedirectUrl = () => nextUrl;
 
   const validateForm = () => {
     const newErrors = {};
