@@ -117,6 +117,17 @@ function generateReferralUrl(productId, referralCode) {
   return `${base}/p/${productId}?ref=${referralCode}`;
 }
 
+
+function buildAppUrl(productId, action, referralCode) {
+  const params = new URLSearchParams();
+  if (action === 'contact') params.set('action', 'chat');
+  if (action === 'share') params.set('action', 'share');
+  if (referralCode) params.set('ref', referralCode);
+
+  const qs = params.toString();
+  return `cedimart://product/${productId}${qs ? `?${qs}` : ''}`;
+}
+
 // Update the AppPromptModal component
 
 function AppPromptModal({ isOpen, onClose, action, productId, referralCode }) {
@@ -133,29 +144,11 @@ function AppPromptModal({ isOpen, onClose, action, productId, referralCode }) {
 
   const handleOpenApp = () => {
     // Build the deep link URL based on the action
-    let appUrl;
-    
-    switch (action) {
-      case 'buy':
-        // Open product detail with buy intent
-        appUrl = `cedimart://product/${productId}?${referralCode ? `&ref=${referralCode}` : ''}`;
-        break;
-      case 'contact':
-        // Open product detail with chat intent
-        appUrl = `cedimart://product/${productId}?action=chat${referralCode ? `&ref=${referralCode}` : ''}`;
-        break;
-      case 'share':
-        // Open product detail with share intent
-        appUrl = `cedimart://product/${productId}?action=share${referralCode ? `&ref=${referralCode}` : ''}`;
-        break;
-      default:
-        // Default: just open the product
-        appUrl = `cedimart://product/${productId}${referralCode ? `?ref=${referralCode}` : ''}`;
-    }
-    
+    const appUrl = buildAppUrl(productId, action, referralCode);
+
     // Try to open the app
     window.location.href = appUrl;
-    
+
     // Fallback to store if app doesn't open
     setTimeout(() => {
       if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
