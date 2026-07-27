@@ -374,6 +374,19 @@ export default function ProductDetailPage() {
     }
   }, [referralCode]);
 
+
+  useEffect(() => {
+    if (!id) return;
+    const isMobile = /iPhone|iPad|iPod|Android/.test(navigator.userAgent);
+    if (!isMobile) return; // don't fire this on desktop browsers
+
+    const params = new URLSearchParams();
+    if (referralCode) params.set('ref', referralCode);
+    const qs = params.toString();
+
+    window.location.href = `cedimart://product/${id}${qs ? `?${qs}` : ''}`;
+  }, [id, referralCode]);
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
