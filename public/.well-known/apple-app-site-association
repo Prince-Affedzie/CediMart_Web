@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "53G2G7AF7L.com.freshyfood.factory.ios",
+        "paths": ["/product/*", "/g/product/*", "/vendor/*", "/tag/*", "/rewards", "/p/*"]
+      }
+    ]
+  }
+}

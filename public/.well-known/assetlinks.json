@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.freshyfood.factory",
+      "sha256_cert_fingerprints": [
+        "27:67:97:A7:1E:5A:41:AF:0E:81:7F:1B:2F:8B:79:57:2B:76:90:98:80:7D:77:54:42:8A:A3:3B:4E:42:01:B6",
+        "0A:91:CC:69:15:41:D5:42:45:DF:14:AA:15:96:B3:71:A8:19:05:BF:4B:73:73:15:8B:44:1F:A0:9B:72:7A:67"]
+    }
+  }
+]
