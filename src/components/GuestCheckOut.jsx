@@ -97,14 +97,14 @@ export default function GuestCheckout({ product, isOpen, onClose, referralCode }
               <span className="gco-option-arrow">→</span>
             </button>
 
-            <button className="gco-option-btn gco-guest" onClick={handleGuestContinue}>
+           {/* <button className="gco-option-btn gco-guest" onClick={handleGuestContinue}>
               <span className="gco-option-icon">⚡</span>
               <div className="gco-option-text">
                 <strong>Continue as guest</strong>
                 <span>No account needed — quick checkout</span>
               </div>
               <span className="gco-option-arrow">→</span>
-            </button>
+            </button>*/}
           </div>
         </div>
       </div>
