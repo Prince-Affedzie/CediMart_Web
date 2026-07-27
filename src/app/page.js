@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getAllProducts, getProductsByTag } from '@/apis/productApi';
+import GirlShopping from '@/assets/cedimartlandingpage_img_1.png'
+
 
 // ─── Design tokens (Teal + Coral Light Mode) ──────────────────────────────────
 const C = {
@@ -97,10 +100,8 @@ const WHY_ITEMS = [
     desc:'Chat inside the app. Your phone number stays private until you choose to share it.' },
   { icon:'📊', title:'Live Analytics',      color:C.emerald,
     desc:'See real-time views, saves, and conversion rates on every product you list. No weekly reports.' },
-  { icon:'📍', title:'Campus-Precise',      color:C.brandL,
-    desc:'Filter by campus, hostel, area. Find listings a 5-minute walk from your lecture hall.' },
-  { icon:'🤝', title:'Safe Meet-ups',       color:C.accentL,
-    desc:'Guided safe-location suggestions and in-app incident reporting for every transaction.' },
+  
+  
 ];
 
 const STATS = [
@@ -286,6 +287,16 @@ function AiDemoCard({ query, icon, delay = 0 }) {
   );
 }
 
+// ─── Floating "Shop with CediAi" launcher ──────────────────────────────────────
+function FloatingAiButton() {
+  return (
+    <Link href="/ai-assistant" className="floating-ai-btn" aria-label="Shop with CediAi">
+      <span className="floating-ai-sparkle">✦</span>
+      <span className="floating-ai-label">Shop with CediAi</span>
+    </Link>
+  );
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 export default function HomePage() {
   const [products,     setProducts]     = useState([]);
@@ -353,6 +364,7 @@ export default function HomePage() {
         @keyframes tealOrb   { 0%,100%{opacity:.3;transform:scale(1)} 50%{opacity:.6;transform:scale(1.05)} }
         @keyframes dotPulse  { 0%{transform:scale(1);opacity:1} 100%{transform:scale(2.5);opacity:0} }
         @keyframes gradBG    { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        @keyframes floatBob  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
 
         .reveal { transition: opacity .6s ease, transform .6s cubic-bezier(.22,1,.36,1); }
         .reveal:not(.shown) { opacity: 0; transform: translateY(22px); }
@@ -426,22 +438,45 @@ export default function HomePage() {
         }
 
         .hero-visual { position: relative; height: clamp(300px,40vw,480px); }
-        .hero-card {
-          position: absolute; background: ${C.surf}; border-radius: 18px;
-          overflow: hidden; border: 1px solid ${C.border};
-          box-shadow: 0 4px 20px rgba(0,0,0,.1);
-          transition: transform .4s cubic-bezier(.22,1,.36,1);
-          cursor: pointer;
+        .hero-visual-blob {
+          position: absolute; inset: 0; margin: auto; width: 82%; height: 82%;
+          background: radial-gradient(circle, rgba(13,148,136,.14), transparent 70%);
+          filter: blur(50px); z-index: 0;
         }
-        .hero-card:hover { transform: translateY(-8px) scale(1.02) !important; z-index: 10 !important; box-shadow: 0 12px 40px rgba(0,0,0,.15) !important; }
-        .hero-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .hero-card-label {
-          position: absolute; bottom: 0; left: 0; right: 0;
-          background: linear-gradient(to top, rgba(255,255,255,.95), transparent);
-          padding: 24px 14px 12px;
+        .hero-visual-img-wrap {
+          position: absolute; inset: clamp(4px,2vw,12px);
+          border-radius: clamp(18px,3vw,28px); overflow: hidden; z-index: 1;
+          box-shadow: 0 24px 60px rgba(15,23,42,.14), 0 4px 16px rgba(15,23,42,.06);
+          background: ${C.elev};
         }
-        .hero-card-price { font-family: 'JetBrains Mono',monospace; font-size: 13px; font-weight: 700; color: ${C.accent}; }
-        .hero-card-name  { font-size: 12px; color: ${C.off}; margin-top: 2px; }
+        .hero-float-badge {
+          position: absolute; z-index: 3; display: flex; align-items: center; gap: 8px;
+          background: ${C.surf}; border: 1px solid ${C.border}; border-radius: 40px;
+          padding: clamp(8px,1.4vw,11px) clamp(12px,2vw,16px);
+          font-size: clamp(11px,1.4vw,13px); font-weight: 700; color: ${C.white};
+          box-shadow: 0 10px 30px rgba(15,23,42,.12);
+          animation: floatBob 4s ease-in-out infinite;
+        }
+        .hero-float-badge--top { top: clamp(6%,4vw,10%); right: clamp(-6%,-2vw,-4%); }
+        .hero-float-badge--bottom { bottom: clamp(6%,4vw,10%); left: clamp(-6%,-2vw,-4%); animation-delay: 1.3s; }
+
+        /* ── Floating CediAi launcher ── */
+        .floating-ai-btn {
+          position: fixed; bottom: clamp(16px,3vw,28px); right: clamp(16px,3vw,28px); z-index: 500;
+          display: inline-flex; align-items: center; gap: 8px;
+          background: linear-gradient(135deg, ${C.brand}, ${C.brandL});
+          color: #fff; font-weight: 800; font-size: clamp(12px,1.6vw,14px);
+          padding: clamp(13px,2vw,16px) clamp(20px,2.5vw,24px); border-radius: 999px;
+          text-decoration: none; box-shadow: 0 10px 28px rgba(13,148,136,.35), 0 2px 8px rgba(0,0,0,.12);
+          transition: transform .22s ease, box-shadow .22s ease;
+          animation: floatBob 3.4s ease-in-out infinite;
+        }
+        .floating-ai-btn:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 16px 36px rgba(13,148,136,.45); }
+        .floating-ai-sparkle { font-size: 15px; }
+        @media(max-width:520px){
+          .floating-ai-btn { padding: 15px; border-radius: 50%; animation: none; }
+          .floating-ai-label { display: none; }
+        }
 
         /* ── Ticker ── */
         .ticker-outer { overflow: hidden; background: ${C.surf}; border-top: 1px solid ${C.border}; border-bottom: 1px solid ${C.border}; padding: clamp(8px,1.5vw,12px) 0; }
@@ -656,7 +691,7 @@ export default function HomePage() {
 
             <div className="hero-btns">
               <Link href="#listings" className="btn-primary">Browse Listings →</Link>
-              <Link href="ai-assistant" className="btn-secondary">✦ Try CediAi</Link>
+              <Link href="/ai-assistant" className="btn-secondary">✦ Try CediAi</Link>
             </div>
 
             <div className="hero-trust">
@@ -673,40 +708,23 @@ export default function HomePage() {
           </div>
 
           <div className="hero-visual">
-            {products.length > 0 ? (
-              products.slice(0, 4).map((product, i) => {
-                const positions = [
-                  { width: isMobile ? 140 : 200, height: isMobile ? 160 : 220, top: 0,   left: isMobile ? 30 : 60,  transform: 'rotate(-6deg)', zIndex: 2 },
-                  { width: isMobile ? 130 : 185, height: isMobile ? 150 : 210, top: 40,  left: isMobile ? 150 : 240, transform: 'rotate(5deg)',  zIndex: 3 },
-                  { width: isMobile ? 135 : 190, height: isMobile ? 155 : 215, top: 210, left: 20,  transform: 'rotate(-3deg)', zIndex: 1 },
-                  { width: isMobile ? 125 : 175, height: isMobile ? 145 : 195, top: 220, left: 240, transform: 'rotate(8deg)',  zIndex: 0 },
-                ];
-                const pos = positions[i] || positions[0];
-                const img = product.images?.[0] || product.image || null;
-                const fallbackImg = 'https://placehold.co/400x300/F1F5F9/94A3B8?text=No+Image';
-                return (
-                  <Link key={product._id || i} href={`/product/${product._id}`} className="hero-card" style={{ ...pos }}>
-                    <img src={img || fallbackImg} alt={product.name} onError={e => { e.target.src = fallbackImg; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <div className="hero-card-label">
-                      <div className="hero-card-price">GH₵ {Number(product.price).toLocaleString()}</div>
-                      <div className="hero-card-name">{product.name}</div>
-                    </div>
-                  </Link>
-                );
-              })
-            ) : (
-              [
-                { name: 'Loading...', price: '—', style: { width: isMobile ? 140 : 200, height: isMobile ? 160 : 220, top: 0, left: isMobile ? 30 : 60, transform: 'rotate(-6deg)', zIndex: 2 } },
-                { name: 'Loading...', price: '—', style: { width: isMobile ? 130 : 185, height: isMobile ? 150 : 210, top: 40, left: isMobile ? 150 : 240, transform: 'rotate(5deg)', zIndex: 3 } },
-                { name: 'Loading...', price: '—', style: { width: isMobile ? 135 : 190, height: isMobile ? 155 : 215, top: 210, left: 20, transform: 'rotate(-3deg)', zIndex: 1 } },
-                { name: 'Loading...', price: '—', style: { width: isMobile ? 125 : 175, height: isMobile ? 145 : 195, top: 220, left: 240, transform: 'rotate(8deg)', zIndex: 0 } },
-              ].map((card, i) => (
-                <div key={i} className="hero-card" style={{ ...card.style }}>
-                  <div style={{ width: '100%', height: '100%', background: C.elev, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>📦</div>
-                  <div className="hero-card-label"><div className="hero-card-price">{card.price}</div><div className="hero-card-name">{card.name}</div></div>
-                </div>
-              ))
-            )}
+            <div className="hero-visual-blob" />
+            <div className="hero-visual-img-wrap">
+              <Image
+                src={GirlShopping}
+                alt="Student shopping on CediMart"
+                fill
+                priority
+                sizes="(max-width: 900px) 80vw, 40vw"
+                style={{ objectFit: 'cover' }}
+              />
+            </div>
+            <div className="hero-float-badge hero-float-badge--top">
+              <span>✅</span> Verified Sellers
+            </div>
+            <div className="hero-float-badge hero-float-badge--bottom">
+              <span>🔥</span> 500+ new listings today
+            </div>
           </div>
         </div>
       </section>
@@ -727,7 +745,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="ai-assistant" className="section ai-section" ref={aiRef}>
+      <section id="ai-assistant-demo" className="section ai-section" ref={aiRef}>
         <div className="section-inner">
           <div className="ai-split">
             <div className={`reveal ${aiVis ? 'shown' : ''}`}>
@@ -771,6 +789,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <FloatingAiButton />
     </div>
   );
 }

@@ -467,11 +467,7 @@ export default function ProductDetailPage() {
                 )}
               </div>
 
-              <div className="pd-actions">
-                <button className="pd-buy-btn" onClick={() => setCheckoutOpen(true)}>🛒 Buy Now</button>
-                <button className="pd-contact-btn" onClick={() => handleAction('contact')}>💬 Chat Seller</button>
-                <button className="pd-share-btn" onClick={() => handleAction('share')}>💚 Share & Earn</button>
-              </div>
+             
 
               {product.description && (
                 <div className="pd-description">
@@ -501,6 +497,12 @@ export default function ProductDetailPage() {
                   {product.location?.hostel && <span className="pd-location-hostel"> · {product.location.hostel}</span>}
                 </div>
               )}
+
+               <div className="pd-actions">
+                <button className="pd-buy-btn" onClick={() => setCheckoutOpen(true)}>🛒 Buy Now</button>
+                <button className="pd-contact-btn" onClick={() => handleAction('contact')}>💬 Chat Seller</button>
+                <button className="pd-share-btn" onClick={() => handleAction('share')}>💚 Share & Earn</button>
+              </div>
 
               {product.vendor && (
                 <div className="pd-seller-card">

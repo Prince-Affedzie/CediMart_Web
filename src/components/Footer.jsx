@@ -24,7 +24,7 @@ export default function Footer() {
         .footer-link { font-size: 13.5px; color: #F1F0FF; text-decoration: none; transition: color .2s; }
         .footer-link:hover { color: #F1F0FF; }
         .footer-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px solid #27273A; padding-top: 24px; }
-        .footer-copy { font-size: 12px; color: #52525B; font-family: 'JetBrains Mono',monospace; }
+        .footer-copy { font-size: 12px; color: #fff; font-family: 'JetBrains Mono',monospace; }
         .footer-socials { display: flex; gap: 10px; }
         .footer-social { width: 32px; height: 32px; border-radius: 8px; background: #1C1C2E; border: 1px solid #27273A; display: flex; align-items: center; justify-content: center; font-size: 14px; text-decoration: none; transition: all .2s; }
         .footer-social:hover { border-color: #818CF8; background: rgba(99,102,241,0.12); }

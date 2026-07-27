@@ -77,9 +77,9 @@ function LoginContent() {
     setGeneralError('');
     try {
       const response = await loginByGoogle({ token: 'google_web_token' });
-      if (response?.success) {
-        localStorage.setItem('cm_token', response.token);
-        localStorage.setItem('cm_user', JSON.stringify(response.user));
+      if (response?.success || response.status ===200) {
+        localStorage.setItem('cm_token', response.data.token);
+        localStorage.setItem('cm_user', JSON.stringify(response.data.user));
         router.push(buildRedirectUrl());
       } else {
         setGeneralError(response?.error || response?.message || 'Google login failed. Please try phone login instead.');
@@ -101,9 +101,9 @@ function LoginContent() {
         password: formData.password 
       });
       
-      if (response?.success) {
-        localStorage.setItem('cm_token', response.token);
-        localStorage.setItem('cm_user', JSON.stringify(response.user || response.data?.user));
+      if (response?.success || response.status ===200) {
+        localStorage.setItem('cm_token', response.data.token);
+        localStorage.setItem('cm_user', JSON.stringify(response.data?.user));
         router.push(buildRedirectUrl());
       } else {
         setGeneralError(response?.error || response?.message || "Login failed. Please check your credentials or internet connection.");

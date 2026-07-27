@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const API = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000',
-  timeout: 15000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -14,7 +14,7 @@ const API = axios.create({
 API.interceptors.request.use(
   (config) => {
     // Get token from localStorage (for web)
-    const token = localStorage.getItem('vendorToken') || localStorage.getItem('token');
+    const token = localStorage.getItem('cm_token') || localStorage.getItem('token');
     
     // If token exists, add it to Authorization header
     if (token) {

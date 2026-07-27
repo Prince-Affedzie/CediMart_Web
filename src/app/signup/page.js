@@ -98,9 +98,9 @@ function SignUpContent() {
     setGeneralError('');
     try {
       const response = await signUpByGoogle({ token: 'google_web_token' });
-      if (response?.success) {
-        localStorage.setItem('cm_token', response.token);
-        localStorage.setItem('cm_user', JSON.stringify(response.user || response.data?.user));
+      if (response?.success || response.status ===200) {
+        localStorage.setItem('cm_token', response.data.token);
+        localStorage.setItem('cm_user', JSON.stringify(response.data?.user));
         router.push(buildRedirectUrl());
       } else {
         setGeneralError(response?.error || response?.message || 'Google sign-up failed. Please try phone sign-up instead.');
@@ -140,9 +140,9 @@ function SignUpContent() {
         password: formData.password,
       });
 
-      if (loginResponse?.success) {
-        localStorage.setItem('cm_token', loginResponse.token);
-        localStorage.setItem('cm_user', JSON.stringify(loginResponse.user || loginResponse.data?.user));
+      if (loginResponse?.success || loginResponse.status ===200) {
+        localStorage.setItem('cm_token', loginResponse.data.token);
+        localStorage.setItem('cm_user', JSON.stringify(loginResponse.data?.user));
         router.push(buildRedirectUrl());
       } else {
         setGeneralError('Account created! Please sign in to continue.');
