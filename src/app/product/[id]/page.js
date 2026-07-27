@@ -117,7 +117,8 @@ function generateReferralUrl(productId, referralCode) {
   return `${base}/p/${productId}?ref=${referralCode}`;
 }
 
-// ─── App Download / Open Modal ──────────────────────────────────────────────────
+// Update the AppPromptModal component
+
 function AppPromptModal({ isOpen, onClose, action, productId, referralCode }) {
   const { isInstalled, checked } = useAppInstalled();
   const [copied, setCopied] = useState(false);
@@ -131,7 +132,28 @@ function AppPromptModal({ isOpen, onClose, action, productId, referralCode }) {
       : 'chat with sellers and negotiate prices';
 
   const handleOpenApp = () => {
-    const appUrl = `cedimart://p/${productId}${referralCode ? `?ref=${referralCode}` : ''}`;
+    // Build the deep link URL based on the action
+    let appUrl;
+    
+    switch (action) {
+      case 'buy':
+        // Open product detail with buy intent
+        appUrl = `cedimart://product/${productId}?action=buy${referralCode ? `&ref=${referralCode}` : ''}`;
+        break;
+      case 'contact':
+        // Open product detail with chat intent
+        appUrl = `cedimart://product/${productId}?action=chat${referralCode ? `&ref=${referralCode}` : ''}`;
+        break;
+      case 'share':
+        // Open product detail with share intent
+        appUrl = `cedimart://product/${productId}?action=share${referralCode ? `&ref=${referralCode}` : ''}`;
+        break;
+      default:
+        // Default: just open the product
+        appUrl = `cedimart://product/${productId}${referralCode ? `?ref=${referralCode}` : ''}`;
+    }
+    
+    // Try to open the app
     window.location.href = appUrl;
     
     // Fallback to store if app doesn't open
