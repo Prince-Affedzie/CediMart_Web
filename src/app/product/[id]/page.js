@@ -138,7 +138,7 @@ function AppPromptModal({ isOpen, onClose, action, productId, referralCode }) {
     switch (action) {
       case 'buy':
         // Open product detail with buy intent
-        appUrl = `cedimart://product/${productId}?action=buy${referralCode ? `&ref=${referralCode}` : ''}`;
+        appUrl = `cedimart://product/${productId}?${referralCode ? `&ref=${referralCode}` : ''}`;
         break;
       case 'contact':
         // Open product detail with chat intent
