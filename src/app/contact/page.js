@@ -84,7 +84,7 @@ export default function ContactPage() {
   };
 
   const contactInfo = [
-    { icon: '📧', title: 'Email', value: 'hello@cedimart.com', desc: 'We reply within 24 hours', link: 'mailto:cedimart39@gmail.com' },
+    { icon: '📧', title: 'Email', value: 'cedimart39@gmail.com', desc: 'We reply within 24 hours', link: 'mailto:cedimart39@gmail.com' },
     { icon: '📱', title: 'Phone / WhatsApp', value: '+233 50 567 1577', desc: 'Mon–Fri, 9am–5pm GMT', link: 'https://wa.me/233505671577' },
     { icon: '📍', title: 'Office', value: 'University of Ghana, Legon', desc: 'Accra, Ghana', link: 'https://maps.google.com/?q=University+of+Ghana+Legon' },
     { icon: '🐦', title: 'Social Media', value: '@cedimart_official', desc: 'Follow us for updates', link: 'https://twitter.com/cedimart' },

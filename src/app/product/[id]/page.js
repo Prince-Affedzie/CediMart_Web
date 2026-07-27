@@ -535,6 +535,7 @@ export default function ProductDetailPage() {
   product={product}
   isOpen={checkoutOpen}
   onClose={() => setCheckoutOpen(false)}
+  referralCode={referralCode}
 />
     </>
   );

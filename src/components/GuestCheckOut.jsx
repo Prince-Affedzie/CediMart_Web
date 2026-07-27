@@ -2,7 +2,6 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useSearchParams } from 'next/navigation';
 
 const C = {
   surf:    '#FFFFFF',
@@ -17,25 +16,32 @@ const C = {
   border:  '#E2E8F0',
 };
 
-export default function GuestCheckout({ product, isOpen, onClose }) {
+export default function GuestCheckout({ product, isOpen, onClose, referralCode }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const referralCode = searchParams.get('ref') || null;
+  
+  // Remove the useSearchParams hook since we're getting referralCode as a prop now
+  // const searchParams = useSearchParams();
+  // const referralCode = searchParams.get('ref') || null;
+
+  const buildUrl = (baseUrl) => {
+    // Handle both query parameter formats
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    const refParam = referralCode ? `${separator}ref=${referralCode}` : '';
+    return `${baseUrl}${refParam}`;
+  };
 
   const handleLogin = () => {
-    const refParam = referralCode ? `&ref=${referralCode}` : '';
-    router.push(`/auth?next=/checkout/${product._id}${refParam}`);
+    const nextUrl = buildUrl(`/checkout/${product._id}`);
+    router.push(buildUrl(`/auth?next=${encodeURIComponent(nextUrl)}`));
   };
 
   const handleSignUp = () => {
-    const refParam = referralCode ? `&ref=${referralCode}` : '';
-    router.push(`/signup?next=/checkout/${product._id}${refParam}`);
+    const nextUrl = buildUrl(`/checkout/${product._id}`);
+    router.push(buildUrl(`/signup?next=${encodeURIComponent(nextUrl)}`));
   };
 
   const handleGuestContinue = () => {
-    // Option: Let them checkout without account (guest flow)
-    const refParam = referralCode ? `&ref=${referralCode}` : '';
-    router.push(`/checkout/${product._id}?guest=true${refParam}`);
+    router.push(buildUrl(`/checkout/${product._id}?guest=true`));
   };
 
   if (!isOpen) return null;
