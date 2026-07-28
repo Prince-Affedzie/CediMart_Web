@@ -6,6 +6,24 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getAllProducts, getProductsByTag } from '@/apis/productApi';
 import GirlShopping from '@/assets/cedimartlandingpage_img_1.png';
+import { 
+  Shield, 
+  MessageCircle, 
+  Bot, 
+  MapPin, 
+  Bell, 
+  TrendingUp,
+  Download,
+  Apple,
+  Play,
+  Star,
+  ChevronDown,
+  Smartphone,
+  PenLine,
+  Rocket,
+  Users,
+  Heart
+} from 'lucide-react';
 
 // ─── Design tokens (Teal + Coral Light Mode) ──────────────────────────────────
 const C = {
@@ -631,8 +649,8 @@ export default function HomePage() {
             <h2 className="cta-h2">Your campus marketplace<br/>is waiting.</h2>
             <p className="cta-sub">Join 10,000+ students already buying, selling, and growing on CediMart. Free forever.</p>
             <div className="cta-btns">
-              <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="cta-btn-white">🍎 App Store</a>
-              <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="cta-btn-ghost">▶ Google Play</a>
+              <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="cta-btn-white"> <Apple size={28} className="dl-btn-icon" /> App Store </a>
+              <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="cta-btn-ghost"><Play size={28} className="dl-btn-icon" fill="currentColor" /> Google Play</a>
             </div>
             <form className="nl-form" onSubmit={e => { e.preventDefault(); setEmailDone(true); setEmail(''); }}>
               <input type="email" required placeholder="Get launch updates by email" className="nl-input" value={email} onChange={e => setEmail(e.target.value)} />

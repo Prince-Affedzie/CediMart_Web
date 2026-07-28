@@ -3,14 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  Twitter, 
-  Instagram, 
-  Linkedin, 
-  Youtube,
-  ShoppingBag,
-  Heart
-} from 'lucide-react';
 
 export default function Footer() {
   const [currentYear, setCurrentYear] = useState('');
@@ -20,7 +12,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <div className='overflow-hidden'>
+    < div className='overflow-hidden'>
       <style>{`
         .footer { background: #13131E; border-top: 1px solid #27273A; padding: 60px clamp(20px,5vw,80px) 32px; }
         .footer-inner { max-width: 1280px; margin: 0 auto; }
@@ -32,20 +24,10 @@ export default function Footer() {
         .footer-link { font-size: 13.5px; color: #F1F0FF; text-decoration: none; transition: color .2s; }
         .footer-link:hover { color: #F1F0FF; }
         .footer-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-top: 1px solid #27273A; padding-top: 24px; }
-        .footer-copy { font-size: 12px; color: #fff; font-family: 'JetBrains Mono',monospace; display: flex; align-items: center; gap: 6px; }
+        .footer-copy { font-size: 12px; color: #fff; font-family: 'JetBrains Mono',monospace; }
         .footer-socials { display: flex; gap: 10px; }
-        .footer-social { 
-          width: 32px; height: 32px; border-radius: 8px; 
-          background: #1C1C2E; border: 1px solid #27273A; 
-          display: flex; align-items: center; justify-content: center; 
-          color: #F1F0FF; text-decoration: none; 
-          transition: all .2s; 
-        }
-        .footer-social:hover { 
-          border-color: #818CF8; 
-          background: rgba(99,102,241,0.12);
-          color: #818CF8;
-        }
+        .footer-social { width: 32px; height: 32px; border-radius: 8px; background: #1C1C2E; border: 1px solid #27273A; display: flex; align-items: center; justify-content: center; font-size: 14px; text-decoration: none; transition: all .2s; }
+        .footer-social:hover { border-color: #818CF8; background: rgba(99,102,241,0.12); }
         .nav-logo {
           display: flex; align-items: center; gap: 9px;
           text-decoration: none;
@@ -65,9 +47,7 @@ export default function Footer() {
           <div className="footer-grid">
             <div>
               <Link href="/" className="nav-logo" style={{ marginBottom:0 }}>
-                <div className="nav-logo-mark">
-                  <ShoppingBag size={16} />
-                </div>
+                <div className="nav-logo-mark">C</div>
                 <span className="nav-logo-text">Cedi<span>Mart</span></span>
               </Link>
               <p className="footer-brand-sub">Ghana's campus marketplace. Buy, sell, and discover from verified student sellers across the country.</p>
@@ -87,24 +67,12 @@ export default function Footer() {
           </div>
           <div className="footer-bottom">
             <span className="footer-copy">
-              {currentYear ? `© ${currentYear} CediMart` : '© CediMart'}
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                · Made with <Heart size={12} fill="#EF4444" color="#EF4444" /> in Ghana
-              </span>
+              {currentYear ? `© ${currentYear} CediMart · Made in Ghana 🇬🇭` : '© CediMart · Made in Ghana 🇬🇭'}
             </span>
             <div className="footer-socials">
-              <a href="#" className="footer-social" aria-label="Twitter">
-                <Twitter size={14} />
-              </a>
-              <a href="#" className="footer-social" aria-label="Instagram">
-                <Instagram size={14} />
-              </a>
-              <a href="#" className="footer-social" aria-label="LinkedIn">
-                <Linkedin size={14} />
-              </a>
-              <a href="#" className="footer-social" aria-label="YouTube">
-                <Youtube size={14} />
-              </a>
+              {['𝕏','📸','💼','▶'].map((icon, i) => (
+                <a key={i} href="#" className="footer-social">{icon}</a>
+              ))}
             </div>
           </div>
         </div>
