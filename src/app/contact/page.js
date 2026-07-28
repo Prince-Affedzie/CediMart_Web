@@ -3,6 +3,23 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { 
+  Mail, 
+  Phone, 
+  MapPin, 
+  MessageCircle, 
+  Send,
+  ShoppingBag, 
+  Bot, 
+  BookOpen,
+  Apple,
+  Play,
+  ChevronDown,
+  ChevronRight,
+  CheckCircle,
+  Loader2,
+  MessageSquare
+} from 'lucide-react';
 
 // ─── Teal + Coral Design Tokens ────────────────────────────────────────────
 const C = {
@@ -51,7 +68,7 @@ function FaqItem({ question, answer, delay = 0 }) {
     <div ref={ref} className={`faq-item reveal ${vis ? 'shown' : ''}`} style={{ transitionDelay: `${delay}ms` }}>
       <button className="faq-question" onClick={() => setOpen(!open)}>
         <span>{question}</span>
-        <span className={`faq-arrow ${open ? 'open' : ''}`}>▼</span>
+        <ChevronDown size={16} className={`faq-arrow ${open ? 'open' : ''}`} />
       </button>
       <div className={`faq-answer ${open ? 'open' : ''}`}>
         <p>{answer}</p>
@@ -84,10 +101,10 @@ export default function ContactPage() {
   };
 
   const contactInfo = [
-    { icon: '📧', title: 'Email', value: 'cedimart39@gmail.com', desc: 'We reply within 24 hours', link: 'mailto:cedimart39@gmail.com' },
-    { icon: '📱', title: 'Phone / WhatsApp', value: '+233 50 567 1577', desc: 'Mon–Fri, 9am–5pm GMT', link: 'https://wa.me/233505671577' },
-    { icon: '📍', title: 'Office', value: 'University of Ghana, Legon', desc: 'Accra, Ghana', link: 'https://maps.google.com/?q=University+of+Ghana+Legon' },
-    { icon: '🐦', title: 'Social Media', value: '@cedimart_official', desc: 'Follow us for updates', link: 'https://twitter.com/cedimart' },
+    { Icon: Mail, title: 'Email', value: 'cedimart39@gmail.com', desc: 'We reply within 24 hours', link: 'mailto:cedimart39@gmail.com', color: C.brand },
+    { Icon: Phone, title: 'Phone / WhatsApp', value: '+233 50 567 1577', desc: 'Mon–Fri, 9am–5pm GMT', link: 'https://wa.me/233505671577', color: C.success },
+    { Icon: MapPin, title: 'Office', value: 'University of Ghana, Legon', desc: 'Accra, Ghana', link: 'https://maps.google.com/?q=University+of+Ghana+Legon', color: C.accent },
+    { Icon: MessageCircle, title: 'Social Media', value: '@cedimart_official', desc: 'Follow us for updates', link: 'https://twitter.com/cedimart', color: C.info },
   ];
 
   const faqs = [
@@ -112,7 +129,9 @@ export default function ContactPage() {
           </div>
           
           <div className={`ct-hero-content reveal ${heroVis ? 'shown' : ''}`}>
-            <div className="ct-hero-icon">💬</div>
+            <div className="ct-hero-icon">
+              <MessageSquare size={48} color={C.brand} />
+            </div>
             <h1 className="ct-hero-title">Get in touch</h1>
             <p className="ct-hero-subtitle">
               Have a question, suggestion, or just want to say hello? We'd love to hear from you. Our team is here to help.
@@ -128,7 +147,9 @@ export default function ContactPage() {
               <div ref={formRef} className={`ct-form-wrap reveal ${formVis ? 'shown' : ''}`}>
                 {submitted ? (
                   <div className="ct-success">
-                    <div className="ct-success-icon">✅</div>
+                    <div className="ct-success-icon">
+                      <CheckCircle size={56} color={C.success} />
+                    </div>
                     <h2>Message Sent!</h2>
                     <p>Thank you for reaching out. We'll get back to you within 24 hours.</p>
                     <button className="ct-submit-btn" onClick={() => { setSubmitted(false); setFormState({ name: '', email: '', subject: '', message: '' }); }}>
@@ -174,7 +195,11 @@ export default function ContactPage() {
                       </div>
 
                       <button type="submit" className="ct-submit-btn" disabled={loading}>
-                        {loading ? (<><span className="ct-spinner" />Sending...</>) : ('Send Message →')}
+                        {loading ? (
+                          <><Loader2 size={18} className="ct-spinner" />Sending...</>
+                        ) : (
+                          <><Send size={16} />Send Message</>
+                        )}
                       </button>
                     </form>
                   </>
@@ -186,16 +211,21 @@ export default function ContactPage() {
                 <div className="ct-info-section">
                   <h3 className="ct-info-title">Contact Information</h3>
                   <div className="ct-info-cards">
-                    {contactInfo.map((info, i) => (
-                      <a key={i} href={info.link} target="_blank" rel="noopener noreferrer" className="ct-info-card">
-                        <div className="ct-info-icon">{info.icon}</div>
-                        <div className="ct-info-content">
-                          <span className="ct-info-label">{info.title}</span>
-                          <span className="ct-info-value">{info.value}</span>
-                          <span className="ct-info-desc">{info.desc}</span>
-                        </div>
-                      </a>
-                    ))}
+                    {contactInfo.map((info, i) => {
+                      const { Icon, title, value, desc, link, color } = info;
+                      return (
+                        <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="ct-info-card">
+                          <div className="ct-info-icon" style={{ color }}>
+                            <Icon size={22} />
+                          </div>
+                          <div className="ct-info-content">
+                            <span className="ct-info-label">{title}</span>
+                            <span className="ct-info-value">{value}</span>
+                            <span className="ct-info-desc">{desc}</span>
+                          </div>
+                        </a>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -203,19 +233,19 @@ export default function ContactPage() {
                   <h3 className="ct-info-title">Quick Links</h3>
                   <div className="ct-quick-links">
                     <Link href="/about" className="ct-quick-link">
-                      <span>📖</span>
+                      <span className="ct-quick-icon"><BookOpen size={20} /></span>
                       <div><strong>About Us</strong><p>Learn more about our story and mission</p></div>
-                      <span className="ct-link-arrow">→</span>
+                      <ChevronRight size={16} className="ct-link-arrow" />
                     </Link>
                     <Link href="/listings" className="ct-quick-link">
-                      <span>🛍️</span>
+                      <span className="ct-quick-icon"><ShoppingBag size={20} /></span>
                       <div><strong>Browse Listings</strong><p>Explore what's available on campus</p></div>
-                      <span className="ct-link-arrow">→</span>
+                      <ChevronRight size={16} className="ct-link-arrow" />
                     </Link>
                     <Link href="/ai-assistant" className="ct-quick-link">
-                      <span>🤖</span>
+                      <span className="ct-quick-icon"><Bot size={20} /></span>
                       <div><strong>Try CediAI</strong><p>Let AI help you find what you need</p></div>
-                      <span className="ct-link-arrow">→</span>
+                      <ChevronRight size={16} className="ct-link-arrow" />
                     </Link>
                   </div>
                 </div>
@@ -254,10 +284,10 @@ export default function ContactPage() {
               </p>
               <div className="ct-bottom-cta-btns">
                 <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="ct-bottom-btn primary">
-                  🍎 App Store
+                  <Apple size={16} /> App Store
                 </a>
                 <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="ct-bottom-btn secondary">
-                  ▶ Google Play
+                  <Play size={16} fill="currentColor" /> Google Play
                 </a>
               </div>
             </div>
@@ -289,7 +319,7 @@ const contactStyles = `
   .ct-hero-bg { position: absolute; inset: 0; pointer-events: none; }
   .ct-hero-orb { position: absolute; width: 400px; height: 400px; border-radius: 50%; filter: blur(80px); }
   .ct-hero-content { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; }
-  .ct-hero-icon { font-size: 56px; margin-bottom: 20px; }
+  .ct-hero-icon { margin-bottom: 20px; display: flex; justify-content: center; }
   .ct-hero-title { font-size: clamp(32px,5vw,56px); font-weight: 900; letter-spacing: -1.5px; margin-bottom: 14px; }
   .ct-hero-subtitle { font-size: clamp(14px,2vw,17px); color: ${C.off}; line-height: 1.7; }
 
@@ -315,15 +345,15 @@ const contactStyles = `
   .ct-input::placeholder { color: ${C.muted}; }
   .ct-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
   .ct-textarea { resize: vertical; min-height: 120px; }
-  .ct-error { background: ${C.dangerBg}; border: 1px solid ${C.dangerBorder}; color: ${C.danger}; font-size: 13px; font-weight: 600; padding: 10px 14px; border-radius: 10px; margin-bottom: 4px; }
+  .ct-error { background: ${C.dangerBg}; border: 1px solid ${C.dangerBorder}; color: ${C.danger}; font-size: 13px; font-weight: 600; padding: 10px 14px; border-radius: 10px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
   .ct-submit-btn { background: ${C.brand}; color: #fff; font-weight: 700; font-size: 15px; padding: 14px 28px; border-radius: 14px; border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all .22s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; align-self: flex-start; }
   .ct-submit-btn:hover:not(:disabled) { background: ${C.brandD}; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,148,136,.25); }
   .ct-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-  .ct-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .ct-spinner { animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .ct-success { text-align: center; padding: 20px 0; }
-  .ct-success-icon { font-size: 56px; margin-bottom: 16px; }
+  .ct-success-icon { margin-bottom: 16px; display: flex; justify-content: center; }
   .ct-success h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
   .ct-success p { font-size: 14px; color: ${C.off}; margin-bottom: 24px; }
 
@@ -333,7 +363,7 @@ const contactStyles = `
   .ct-info-cards { display: flex; flex-direction: column; gap: 10px; }
   .ct-info-card { display: flex; align-items: center; gap: 14px; padding: 14px; background: ${C.elev}; border: 1px solid ${C.border}; border-radius: 14px; text-decoration: none; transition: all .2s; }
   .ct-info-card:hover { border-color: ${C.brand}; transform: translateX(3px); box-shadow: 0 4px 16px rgba(0,0,0,.08); }
-  .ct-info-icon { font-size: 28px; flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: ${C.surf}; border-radius: 12px; }
+  .ct-info-icon { flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: ${C.surf}; border-radius: 12px; }
   .ct-info-content { display: flex; flex-direction: column; min-width: 0; }
   .ct-info-label { font-size: 10px; font-weight: 700; color: ${C.muted}; text-transform: uppercase; letter-spacing: 0.08em; }
   .ct-info-value { font-size: 14px; font-weight: 600; color: ${C.white}; margin: 2px 0; }
@@ -342,11 +372,11 @@ const contactStyles = `
   .ct-quick-links { display: flex; flex-direction: column; gap: 8px; }
   .ct-quick-link { display: flex; align-items: center; gap: 12px; padding: 14px; background: ${C.elev}; border: 1px solid ${C.border}; border-radius: 14px; text-decoration: none; transition: all .2s; }
   .ct-quick-link:hover { border-color: ${C.brand}; transform: translateX(3px); }
-  .ct-quick-link > span:first-child { font-size: 24px; flex-shrink: 0; }
+  .ct-quick-icon { flex-shrink: 0; color: ${C.brand}; display: flex; }
   .ct-quick-link div { flex: 1; min-width: 0; }
   .ct-quick-link strong { display: block; font-size: 13px; font-weight: 700; color: ${C.white}; }
   .ct-quick-link p { font-size: 11px; color: ${C.muted}; margin-top: 2px; }
-  .ct-link-arrow { color: ${C.muted}; font-size: 16px; transition: all .2s; }
+  .ct-link-arrow { color: ${C.muted}; flex-shrink: 0; transition: all .2s; }
   .ct-quick-link:hover .ct-link-arrow { color: ${C.brand}; transform: translateX(3px); }
 
   .ct-faq-section { background: ${C.surf}; border-top: 1px solid ${C.border}; border-bottom: 1px solid ${C.border}; }
@@ -354,7 +384,7 @@ const contactStyles = `
   .faq-item { background: ${C.void}; border: 1px solid ${C.border}; border-radius: 14px; overflow: hidden; }
   .faq-question { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; background: none; border: none; color: ${C.white}; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; text-align: left; transition: all .2s; }
   .faq-question:hover { background: ${C.elev}; }
-  .faq-arrow { font-size: 10px; color: ${C.muted}; transition: transform .3s; flex-shrink: 0; }
+  .faq-arrow { color: ${C.muted}; transition: transform .3s; flex-shrink: 0; }
   .faq-arrow.open { transform: rotate(180deg); color: ${C.brand}; }
   .faq-answer { max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .35s ease; }
   .faq-answer.open { max-height: 300px; padding: 0 20px 16px; }

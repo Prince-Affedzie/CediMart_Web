@@ -1,3 +1,4 @@
+// src/app/listings/page.js
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -97,7 +98,7 @@ function ProductCard({ product }) {
   );
 }
 
-// ─── Sidebar (unchanged) ──────────────────────────────────────────────────────
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
 function Sidebar({ activeCategory, activeSub, campus, onCategory, onSub, onClearAll, sticky = true }) {
   const [openKeys, setOpenKeys] = useState(() => { const initial = {}; if (activeCategory) initial[activeCategory] = true; return initial; });
   useEffect(() => { if (activeCategory) setOpenKeys(prev => ({ ...prev, [activeCategory]: true })); }, [activeCategory]);
@@ -137,7 +138,7 @@ function Sidebar({ activeCategory, activeSub, campus, onCategory, onSub, onClear
   );
 }
 
-// ─── Hero with search card OVERLAPPING the bottom ──────────────────────────────
+// ─── Hero with search card ────────────────────────────────────────────────────
 function Hero({ searchInput, setSearchInput, onSearch, campus, setCampus, onPickCategory }) {
   const [slide, setSlide] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -170,14 +171,20 @@ function Hero({ searchInput, setSearchInput, onSearch, campus, setCampus, onPick
         {HERO_SLIDES.map((s, i) => (<button key={s.id} type="button" aria-label={`Go to slide ${i + 1}`} className={`lp-hero-dot${i === slide ? ' active' : ''}`} onClick={() => goTo(i)} />))}
       </div>
 
-      {/* ── Search card — overlaps the hero bottom, very prominent ── */}
+      {/* ── Search card ── */}
       <div className="lp-hero-searchcard">
         <form className="lp-hero-search-row" onSubmit={onSearch}>
           <span className="lp-hero-search-icon">🔍</span>
           <input className="lp-hero-search-input" placeholder="Search for laptops, textbooks, sneakers…" value={searchInput} onChange={e => setSearchInput(e.target.value)} />
           <button type="submit" className="lp-hero-search-btn">Search</button>
         </form>
-       
+        <div className="lp-hero-quickcats">
+          {SIDEBAR_CATEGORIES.slice(0, 6).map(cat => (
+            <button key={cat.id} type="button" className="lp-hero-chip" onClick={() => { onPickCategory(cat.id); scrollToGrid(); }}>
+              <span>{cat.emoji}</span> {cat.label}
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -262,46 +269,57 @@ export default function ListingsPage() {
         }
         .lp-mobile-filter-btn {
           display: none; align-items: center; gap: 6px; background: ${C.elev};
-          border: 1px solid ${C.border}; border-radius: 10px; padding: 9px 13px;
+          border: 1px solid ${C.border}; border-radius: 12px; padding: 10px 14px;
           color: ${C.white}; font-weight: 700; font-size: 13px; cursor: pointer;
           white-space: nowrap; flex-shrink: 0; font-family: 'Plus Jakarta Sans', sans-serif;
+          transition: all .2s;
         }
-        .lp-mobile-filter-btn:hover { border-color: ${C.brand}; }
+        .lp-mobile-filter-btn:hover { border-color: ${C.brand}; background: ${C.brandDim}; color: ${C.brand}; }
 
         .lp-search-wrap { flex: 1; display: flex; justify-content: flex-start; min-width: 0; }
         .lp-search-form {
           display: flex; align-items: center; width: 100%; max-width: 640px;
-          background: ${C.surf}; border: 2px solid ${C.elev}; border-radius: 12px;
-          overflow: hidden; transition: border-color .15s;
+          background: ${C.void}; border: 2px solid ${C.border}; border-radius: 16px;
+          overflow: hidden; transition: all .25s; box-shadow: 0 1px 3px rgba(0,0,0,.04);
         }
-        .lp-search-form:focus-within { border-color: ${C.brand}; }
+        .lp-search-form:focus-within { 
+          border-color: ${C.brand}; 
+          box-shadow: 0 0 0 4px ${C.brandDim}, 0 2px 12px rgba(13,148,136,.1);
+        }
         .lp-search-input {
-          flex: 1; background: none; border: none; outline: none; padding: 10px 14px;
+          flex: 1; background: none; border: none; outline: none; padding: 11px 16px;
           font-size: 14px; color: ${C.white}; font-family: 'Plus Jakarta Sans', sans-serif; min-width: 0;
         }
-        .lp-search-input::placeholder { color: ${C.muted}; }
+        .lp-search-input::placeholder { color: ${C.muted}; font-size: 13.5px; }
         .lp-search-btn {
-          background: ${C.brand}; border: none; cursor: pointer; padding: 10px 18px;
-          color: #fff; font-size: 15px; font-weight: 700; transition: background .15s;
-          display: flex; align-items: center; flex-shrink: 0;
+          background: linear-gradient(135deg, ${C.brand}, ${C.brandL});
+          border: none; cursor: pointer; padding: 11px 20px;
+          color: #fff; font-size: 13px; font-weight: 700; transition: all .15s;
+          display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+          margin: 3px; border-radius: 12px;
         }
-        .lp-search-btn:hover { background: ${C.brandD}; }
+        .lp-search-btn:hover { filter: brightness(1.08); }
 
         .lp-topbar-utils { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .lp-select {
-          background: ${C.surf}; border: 1px solid ${C.border}; border-radius: 10px;
-          color: ${C.white}; font-size: 13px; font-weight: 600; padding: 9px 13px;
+          background: ${C.void}; border: 2px solid ${C.border}; border-radius: 12px;
+          color: ${C.white}; font-size: 13px; font-weight: 600; padding: 10px 14px;
           cursor: pointer; outline: none; font-family: 'Plus Jakarta Sans', sans-serif;
-          transition: border-color .15s; appearance: none;
+          transition: all .15s; appearance: none;
           background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
           background-repeat: no-repeat; background-position: right 11px center;
           padding-right: 32px; min-width: 128px;
         }
-        .lp-select:hover, .lp-select:focus { border-color: ${C.brand}; }
+        .lp-select:hover, .lp-select:focus { border-color: ${C.brand}; box-shadow: 0 0 0 3px ${C.brandDim}; }
         .lp-select option { background: ${C.surf}; }
         .lp-total-badge { font-size: 12px; font-weight: 600; color: ${C.muted}; white-space: nowrap; }
         .lp-topbar-brand { flex: 1; font-size: 14px; font-weight: 800; color: ${C.white}; letter-spacing: -.2px; }
-        @media (max-width: 900px) { .lp-topbar-brand { display: none; } }
+        @media (max-width: 900px) { 
+          .lp-topbar-brand { display: none; } 
+          .lp-mobile-filter-btn { display: flex !important; }
+          .lp-topbar-utils .lp-select:last-of-type,
+          .lp-topbar-utils .lp-total-badge { display: none; }
+        }
 
         /* ── Hero ── */
         .lp-hero {
@@ -333,7 +351,7 @@ export default function ListingsPage() {
           padding: 12px 22px; border-radius: 10px; cursor: pointer;
           transition: transform .15s, background .15s;
         }
-        .lp-hero-cta:hover { background: ${C.accent}; filter: brightness(1.1); transform: translateY(-1px); }
+        .lp-hero-cta:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
         .lp-hero-arrow {
           position: absolute; top: 42%; transform: translateY(-50%); z-index: 3;
@@ -351,35 +369,42 @@ export default function ListingsPage() {
         .lp-hero-dot { width: 7px; height: 7px; border-radius: 50%; border: none; background: rgba(255,255,255,.45); cursor: pointer; padding: 0; transition: background .2s, width .2s; }
         .lp-hero-dot.active { background: #fff; width: 20px; border-radius: 4px; }
 
-        /* ── Search card — OVERLAPS hero bottom, very prominent ── */
+        /* ── Search card ── */
         .lp-hero-searchcard {
           position: absolute; left: 50%; bottom: -40px; transform: translateX(-50%); z-index: 10;
-          width: min(94%, 820px); background: ${C.surf}; border-radius: 28px;
-          box-shadow: 0 12px 40px rgba(15,23,42,.12), 0 2px 8px rgba(15,23,42,.06);
+          width: min(94%, 820px); background: ${C.surf}; border-radius: 24px;
+          box-shadow: 0 20px 60px rgba(15,23,42,.15), 0 4px 16px rgba(15,23,42,.08);
           padding: 20px 22px; border: 1px solid ${C.border};
         }
         .lp-hero-search-row {
-          display: flex; align-items: center; gap: 8px;
+          display: flex; align-items: center; gap: 4px;
           background: ${C.void}; border: 2px solid ${C.border};
-          border-radius: 14px; padding: 4px 4px 4px 16px;
-          transition: border-color .2s, box-shadow .2s;
+          border-radius: 18px; padding: 6px 6px 6px 18px;
+          transition: all .25s cubic-bezier(.4,0,.2,1);
         }
         .lp-hero-search-row:focus-within {
           border-color: ${C.brand};
-          box-shadow: 0 0 0 4px ${C.brandDim};
+          box-shadow: 0 0 0 5px ${C.brandDim}, 0 4px 20px rgba(13,148,136,.12);
+          transform: scale(1.01);
         }
-        .lp-hero-search-icon { font-size: 18px; flex-shrink: 0; }
+        .lp-hero-search-icon { font-size: 20px; flex-shrink: 0; opacity: 0.5; }
         .lp-hero-search-input {
-          flex: 1; background: none; border: none; outline: none; padding: 14px 8px;
-          font-size: 15px; color: ${C.white}; font-family: 'Plus Jakarta Sans', sans-serif; min-width: 0;
+          flex: 1; background: none; border: none; outline: none; padding: 15px 10px;
+          font-size: 16px; color: ${C.white}; font-family: 'Plus Jakarta Sans', sans-serif; min-width: 0;
         }
-        .lp-hero-search-input::placeholder { color: ${C.muted}; }
+        .lp-hero-search-input::placeholder { color: ${C.muted}; font-size: 15px; }
         .lp-hero-search-btn {
-          background: ${C.brand}; border: none; color: #fff; font-weight: 800;
-          font-size: 14px; padding: 13px 24px; border-radius: 11px; cursor: pointer;
-          transition: background .15s, transform .15s; flex-shrink: 0;
+          background: linear-gradient(135deg, ${C.brand}, ${C.brandL});
+          border: none; color: #fff; font-weight: 800;
+          font-size: 14px; padding: 14px 28px; border-radius: 14px; cursor: pointer;
+          transition: all .2s; flex-shrink: 0;
+          box-shadow: 0 4px 14px rgba(13,148,136,.25);
         }
-        .lp-hero-search-btn:hover { background: ${C.brandD}; transform: scale(1.02); }
+        .lp-hero-search-btn:hover { 
+          filter: brightness(1.08); 
+          transform: translateY(-1px); 
+          box-shadow: 0 6px 20px rgba(13,148,136,.35);
+        }
 
         .lp-hero-quickcats {
           display: flex; gap: 8px; overflow-x: auto; margin-top: 14px; padding-bottom: 2px;
@@ -396,9 +421,11 @@ export default function ListingsPage() {
 
         @media (max-width: 640px) {
           .lp-hero { height: 320px; margin-bottom: 100px; }
-          .lp-hero-searchcard { bottom: -60px; padding: 14px; }
-          .lp-hero-search-row { padding: 6px; }
-          .lp-hero-search-btn { font-size: 13px; padding: 12px 18px; }
+          .lp-hero-searchcard { bottom: -60px; padding: 14px; border-radius: 18px; }
+          .lp-hero-search-row { padding: 4px; border-radius: 14px; }
+          .lp-hero-search-input { padding: 13px 8px; font-size: 14px; }
+          .lp-hero-search-input::placeholder { font-size: 13px; }
+          .lp-hero-search-btn { font-size: 13px; padding: 12px 18px; border-radius: 11px; }
         }
 
         /* ── Body ── */
@@ -409,9 +436,6 @@ export default function ListingsPage() {
         @media (max-width: 900px) {
           .lp-body { grid-template-columns: 1fr; }
           .lp-sidebar:not(.lp-sidebar-static) { display: none; }
-          .lp-mobile-filter-btn { display: flex; }
-          .lp-topbar-utils .lp-select:last-of-type,
-          .lp-topbar-utils .lp-total-badge { display: none; }
         }
 
         /* ── Sidebar ── */

@@ -4,6 +4,24 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
+import { 
+  Shield, 
+  MessageCircle, 
+  Bot, 
+  MapPin, 
+  Bell, 
+  TrendingUp,
+  Download,
+  Apple,
+  Play,
+  Star,
+  ChevronDown,
+  Smartphone,
+  PenLine,
+  Rocket,
+  Users,
+  Heart
+} from 'lucide-react';
 // ─── Teal + Coral Design Tokens ────────────────────────────────────────────
 const C = {
   void:       '#F8FAFC',
@@ -274,8 +292,8 @@ export default function AboutPage() {
               <h2 className="ab-cta-title">Ready to join the community?</h2>
               <p className="ab-cta-subtitle">Download the CediMart app and start buying, selling, and connecting with students across Ghana.</p>
               <div className="ab-cta-btns">
-                <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="ab-cta-btn primary">🍎 App Store</a>
-                <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="ab-cta-btn secondary">▶ Google Play</a>
+                <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="ab-cta-btn primary"><Apple size={28} className="dl-btn-icon" /> App Store</a>
+                <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="ab-cta-btn secondary"><Play size={28} className="dl-btn-icon" fill="currentColor" /> Google Play</a>
               </div>
               <div className="ab-cta-links">
                 <Link href="/listings">Browse Listings</Link>
