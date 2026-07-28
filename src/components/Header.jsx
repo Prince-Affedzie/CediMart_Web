@@ -4,15 +4,26 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaBars, FaTimes } from 'react-icons/fa';
+import { 
+  Menu, 
+  X, 
+  Package, 
+  Bot, 
+  Banknote, 
+  BookOpen, 
+  MessageCircle, 
+  Download,
+  ChevronRight,
+  Smartphone
+} from 'lucide-react';
 import icon from '@/app/icon.jpg';
 
 const NAV_LINKS = [
-  { label: 'Listings',     href: '/listings',     icon: '🛍️' },
-  { label: 'AI Assistant', href: '/ai-assistant',  icon: '🤖' },
-  //{ label: 'Sell',         href: '/sell',          icon: '💰' },
-  { label: 'About',        href: '/about',         icon: '📖' },
-  { label: 'Contact',      href: '/contact',       icon: '💬' },
+  { label: 'Listings',     href: '/listings',     icon: Package },
+  { label: 'AI Assistant', href: '/ai-assistant',  icon: Bot },
+  //{ label: 'Sell',         href: '/sell',          icon: Banknote },
+  { label: 'About',        href: '/about',         icon: BookOpen },
+  { label: 'Contact',      href: '/contact',       icon: MessageCircle },
 ];
 
 export default function Header() {
@@ -87,9 +98,17 @@ export default function Header() {
           text-decoration: none;
           transition: color 0.2s;
           white-space: nowrap;
+          display: flex;
+          align-items: center;
+          gap: 6px;
         }
         .nav-link:hover {
           color: #0D9488;
+        }
+        .nav-link-icon {
+          width: 16px;
+          height: 16px;
+          flex-shrink: 0;
         }
 
         /* Desktop CTA */
@@ -126,7 +145,7 @@ export default function Header() {
           z-index: 60;
         }
 
-        /* Mobile menu overlay — fades rather than hard-toggling so the drawer feels smooth */
+        /* Mobile menu overlay */
         .mobile-menu-overlay {
           position: fixed;
           inset: 0;
@@ -142,8 +161,7 @@ export default function Header() {
           pointer-events: auto;
         }
 
-        /* Mobile menu panel — slides in from the LEFT, the conventional side for
-           primary navigation (right-side panels read as notifications/cart). */
+        /* Mobile menu panel */
         .mobile-menu {
           position: fixed;
           top: 0;
@@ -225,8 +243,8 @@ export default function Header() {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 16px;
           flex-shrink: 0;
+          color: #0D9488;
         }
 
         .mobile-menu-foot {
@@ -274,7 +292,7 @@ export default function Header() {
       `}</style>
 
       <nav className="nav">
-        {/* Logo — using real app icon */}
+        {/* Logo */}
         <Link href="/" className="nav-logo">
           <div className="nav-logo-mark">
             <Image 
@@ -292,16 +310,21 @@ export default function Header() {
 
         {/* Desktop links */}
         <div className="nav-links">
-          {NAV_LINKS.map((link) => (
-            <Link key={link.label} href={link.href} className="nav-link">
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const IconComponent = link.icon;
+            return (
+              <Link key={link.label} href={link.href} className="nav-link">
+                <IconComponent size={16} className="nav-link-icon" />
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
 
         {/* Desktop CTA */}
         <Link href="/download" className="nav-cta-desktop">
-          Download App ↗
+          <Download size={15} />
+          Download App
         </Link>
 
         {/* Hamburger */}
@@ -310,7 +333,7 @@ export default function Header() {
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? 'Close menu' : 'Open menu'}
         >
-          {menuOpen ? <FaTimes size={18} /> : <FaBars size={18} />}
+          {menuOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
       </nav>
 
@@ -330,28 +353,34 @@ export default function Header() {
             <span className="nav-logo-text">Cedi<span>Mart</span></span>
           </Link>
           <button className="mobile-menu-close" onClick={closeMenu} aria-label="Close menu">
-            <FaTimes size={15} />
+            <X size={15} />
           </button>
         </div>
 
         <div className="mobile-menu-body">
-          {NAV_LINKS.map((link, i) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="mobile-nav-link"
-              style={{ transitionDelay: menuOpen ? `${i * 45}ms` : '0ms' }}
-              onClick={closeMenu}
-            >
-              <span className="mobile-nav-icon-chip">{link.icon}</span>
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link, i) => {
+            const IconComponent = link.icon;
+            return (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="mobile-nav-link"
+                style={{ transitionDelay: menuOpen ? `${i * 45}ms` : '0ms' }}
+                onClick={closeMenu}
+              >
+                <span className="mobile-nav-icon-chip">
+                  <IconComponent size={16} />
+                </span>
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
 
         <div className="mobile-menu-foot">
           <Link href="/download" className="mobile-nav-cta" onClick={closeMenu}>
-            📲 Download App
+            <Smartphone size={16} />
+            Download App
           </Link>
         </div>
       </div>

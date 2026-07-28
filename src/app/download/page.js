@@ -3,6 +3,24 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { 
+  Shield, 
+  MessageCircle, 
+  Bot, 
+  MapPin, 
+  Bell, 
+  TrendingUp,
+  Download,
+  Apple,
+  Play,
+  Star,
+  ChevronDown,
+  Smartphone,
+  PenLine,
+  Rocket,
+  Users,
+  Heart
+} from 'lucide-react';
 
 // ─── Teal + Coral Design Tokens ────────────────────────────────────────────
 const C = {
@@ -42,12 +60,12 @@ function useReveal(threshold = 0.1) {
   return [ref, vis];
 }
 
-function FeatureCard({ icon, title, description, color, delay = 0 }) {
+function FeatureCard({ Icon, title, description, color, delay = 0 }) {
   const [ref, vis] = useReveal(0.15);
   return (
     <div ref={ref} className={`dl-feature-card reveal ${vis ? 'shown' : ''}`} style={{ '--fc': color, transitionDelay: `${delay}ms` }}>
       <div className="dl-feature-icon" style={{ background: `${color}18`, color }}>
-        {icon}
+        <Icon size={22} />
       </div>
       <h3 className="dl-feature-title">{title}</h3>
       <p className="dl-feature-desc">{description}</p>
@@ -55,26 +73,35 @@ function FeatureCard({ icon, title, description, color, delay = 0 }) {
   );
 }
 
-function StepCard({ number, title, description, emoji, delay = 0 }) {
+function StepCard({ number, title, description, Icon, delay = 0 }) {
   const [ref, vis] = useReveal(0.15);
   return (
     <div ref={ref} className={`dl-step-card reveal ${vis ? 'shown' : ''}`} style={{ transitionDelay: `${delay}ms` }}>
       <div className="dl-step-number">{number}</div>
-      <div className="dl-step-emoji">{emoji}</div>
+      <div className="dl-step-icon">
+        <Icon size={36} color={C.brand} />
+      </div>
       <h3 className="dl-step-title">{title}</h3>
       <p className="dl-step-desc">{description}</p>
     </div>
   );
 }
 
-function ReviewCard({ name, campus, rating, text, emoji, delay = 0 }) {
+function ReviewCard({ name, campus, rating, text, delay = 0 }) {
   const [ref, vis] = useReveal(0.15);
+  const avatarColor = ['#0D9488', '#F97316', '#059669', '#0284C7'][Math.floor(Math.random() * 4)];
   return (
     <div ref={ref} className={`dl-review-card reveal ${vis ? 'shown' : ''}`} style={{ transitionDelay: `${delay}ms` }}>
-      <div className="dl-review-stars">{'★'.repeat(rating)}{'☆'.repeat(5 - rating)}</div>
+      <div className="dl-review-stars">
+        {[...Array(5)].map((_, i) => (
+          <Star key={i} size={14} fill={i < rating ? C.accent : 'none'} color={i < rating ? C.accent : C.muted} />
+        ))}
+      </div>
       <p className="dl-review-text">"{text}"</p>
       <div className="dl-review-author">
-        <div className="dl-review-avatar">{emoji}</div>
+        <div className="dl-review-avatar" style={{ background: `${avatarColor}18`, color: avatarColor }}>
+          <Users size={18} />
+        </div>
         <div>
           <span className="dl-review-name">{name}</span>
           <span className="dl-review-campus">{campus}</span>
@@ -102,25 +129,25 @@ export default function DownloadPage() {
   }, []);
 
   const features = [
-    { icon: '🛡️', title: 'Verified Sellers', description: 'Every seller submits a national ID and student card. Shop with confidence knowing you\'re dealing with real students.', color: C.brand },
-    { icon: '💬', title: 'In-App Chat', description: 'Message sellers directly within the app. Negotiate prices, ask questions, and arrange meet-ups without sharing your number.', color: C.success },
-    { icon: '🤖', title: 'CediAI Assistant', description: 'Our AI shopping assistant helps you find exactly what you need. Just type what you\'re looking for in plain English.', color: C.accent },
-    { icon: '📍', title: 'Campus Filtering', description: 'Filter listings by campus, hostel, or area. Find items within walking distance of your lecture hall.', color: C.danger },
-    { icon: '🔔', title: 'Price Alerts', description: 'Save products and get notified when prices drop. Never miss a deal on the items you want.', color: C.brandL },
-    { icon: '📊', title: 'Sell & Earn', description: 'List items in under 60 seconds. Track views, manage listings, and grow your side hustle while in school.', color: '#14B8A6' },
+    { Icon: Shield, title: 'Verified Sellers', description: 'Every seller submits a national ID and student card. Shop with confidence knowing you\'re dealing with real students.', color: C.brand },
+    { Icon: MessageCircle, title: 'In-App Chat', description: 'Message sellers directly within the app. Negotiate prices, ask questions, and arrange meet-ups without sharing your number.', color: C.success },
+    { Icon: Bot, title: 'CediAI Assistant', description: 'Our AI shopping assistant helps you find exactly what you need. Just type what you\'re looking for in plain English.', color: C.accent },
+    { Icon: MapPin, title: 'Campus Filtering', description: 'Filter listings by campus, hostel, or area. Find items within walking distance of your lecture hall.', color: C.danger },
+    { Icon: Bell, title: 'Price Alerts', description: 'Save products and get notified when prices drop. Never miss a deal on the items you want.', color: C.brandL },
+    { Icon: TrendingUp, title: 'Sell & Earn', description: 'List items in under 60 seconds. Track views, manage listings, and grow your side hustle while in school.', color: '#14B8A6' },
   ];
 
   const steps = [
-    { number: '01', title: 'Download the App', description: 'Get CediMart from the App Store or Google Play. It\'s free and takes less than a minute.', emoji: '📲' },
-    { number: '02', title: 'Create Your Account', description: 'Sign up with your phone number and start browsing instantly.', emoji: '✍️' },
-    { number: '03', title: 'Start Exploring', description: 'Browse listings, chat with sellers, or list your first item. Your campus marketplace is ready!', emoji: '🚀' },
+    { number: '01', title: 'Download the App', description: 'Get CediMart from the App Store or Google Play. It\'s free and takes less than a minute.', Icon: Download },
+    { number: '02', title: 'Create Your Account', description: 'Sign up with your phone number and start browsing instantly.', Icon: PenLine },
+    { number: '03', title: 'Start Exploring', description: 'Browse listings, chat with sellers, or list your first item. Your campus marketplace is ready!', Icon: Rocket },
   ];
 
   const reviews = [
-    { name: 'Akua S.', campus: 'University of Ghana', rating: 5, text: 'CediMart made Hall Week shopping so easy! Found a beautiful dress from a seller in my own hall. The chat feature is seamless.', emoji: '👩🏾' },
-    { name: 'Kofi M.', campus: 'KNUST', rating: 5, text: 'Sold my old textbooks in 2 days. The listing process is super fast and I got paid directly. Way better than WhatsApp groups!', emoji: '👨🏾' },
-    { name: 'Ama D.', campus: 'UCC', rating: 5, text: 'CediAI helped me find a laptop within my budget in seconds. I didn\'t even know there were so many options on campus!', emoji: '👩🏾' },
-    { name: 'Yaw B.', campus: 'UPSA', rating: 4, text: 'Great app for student entrepreneurs. I\'ve built a small phone accessories business just by listing on CediMart.', emoji: '👨🏾' },
+    { name: 'Akua S.', campus: 'University of Ghana', rating: 5, text: 'CediMart made Hall Week shopping so easy! Found a beautiful dress from a seller in my own hall. The chat feature is seamless.' },
+    { name: 'Kofi M.', campus: 'KNUST', rating: 5, text: 'Sold my old textbooks in 2 days. The listing process is super fast and I got paid directly. Way better than WhatsApp groups!' },
+    { name: 'Ama D.', campus: 'UCC', rating: 5, text: 'CediAI helped me find a laptop within my budget in seconds. I didn\'t even know there were so many options on campus!' },
+    { name: 'Yaw B.', campus: 'UPSA', rating: 4, text: 'Great app for student entrepreneurs. I\'ve built a small phone accessories business just by listing on CediMart.' },
   ];
 
   const faqs = [
@@ -158,14 +185,14 @@ export default function DownloadPage() {
 
             <div className="dl-hero-btns">
               <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="dl-hero-btn dl-btn-ios">
-                <span className="dl-btn-icon">🍎</span>
+                <Apple size={28} className="dl-btn-icon" />
                 <div className="dl-btn-text">
                   <span className="dl-btn-label">Download on the</span>
                   <span className="dl-btn-store">App Store</span>
                 </div>
               </a>
               <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="dl-hero-btn dl-btn-android">
-                <span className="dl-btn-icon">▶</span>
+                <Play size={28} className="dl-btn-icon" fill="currentColor" />
                 <div className="dl-btn-text">
                   <span className="dl-btn-label">Get it on</span>
                   <span className="dl-btn-store">Google Play</span>
@@ -175,7 +202,11 @@ export default function DownloadPage() {
 
             <div className="dl-hero-trust">
               <div className="dl-trust-item">
-                <span className="dl-trust-stars">★★★★★</span>
+                <div className="dl-trust-stars">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={13} fill={C.accent} color={C.accent} />
+                  ))}
+                </div>
                 <span className="dl-trust-text">4.9 rating</span>
               </div>
               <div className="dl-trust-divider" />
@@ -185,7 +216,7 @@ export default function DownloadPage() {
               </div>
               <div className="dl-trust-divider" />
               <div className="dl-trust-item">
-                <span className="dl-trust-icon">🇬🇭</span>
+                <Heart size={16} fill="#DC2626" color="#DC2626" />
                 <span className="dl-trust-text">Made in Ghana</span>
               </div>
             </div>
@@ -195,7 +226,9 @@ export default function DownloadPage() {
             <div className="dl-phone-frame">
               <div className="dl-phone-notch" />
               <div className="dl-phone-screen">
-                <div className="dl-phone-app-icon">C</div>
+                <div className="dl-phone-app-icon">
+                  <Smartphone size={22} color="#fff" />
+                </div>
                 <div className="dl-phone-app-name">CediMart</div>
                 <div className="dl-phone-preview-grid">
                   {[...Array(6)].map((_, i) => (
@@ -275,7 +308,7 @@ export default function DownloadPage() {
                 <div key={i} className={`dl-faq-item ${activeFaq === i ? 'open' : ''}`}>
                   <button className="dl-faq-q" onClick={() => setActiveFaq(activeFaq === i ? null : i)}>
                     <span>{faq.q}</span>
-                    <span className="dl-faq-arrow">▼</span>
+                    <ChevronDown size={16} className={`dl-faq-arrow ${activeFaq === i ? 'open' : ''}`} />
                   </button>
                   <div className="dl-faq-a"><p>{faq.a}</p></div>
                 </div>
@@ -293,8 +326,12 @@ export default function DownloadPage() {
               <h2 className="dl-bottom-cta-title">Ready to get started?</h2>
               <p className="dl-bottom-cta-sub">Download CediMart now and discover why 10,000+ students trust us for campus buying and selling.</p>
               <div className="dl-bottom-cta-btns">
-                <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="dl-bottom-btn white">🍎 Download for iOS</a>
-                <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="dl-bottom-btn ghost">▶ Download for Android</a>
+                <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="dl-bottom-btn white">
+                  <Apple size={16} /> Download for iOS
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="dl-bottom-btn ghost">
+                  <Play size={16} fill="currentColor" /> Download for Android
+                </a>
               </div>
               <div className="dl-bottom-links">
                 <Link href="/listings">Browse Web Version →</Link>
@@ -339,17 +376,16 @@ const downloadStyles = `
   .dl-btn-ios:hover { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(0,0,0,.15); }
   .dl-btn-android { background: rgba(15,23,42,.06); color: ${C.white}; border: 1.5px solid ${C.border}; }
   .dl-btn-android:hover { background: rgba(15,23,42,.1); transform: translateY(-3px); }
-  .dl-btn-icon { font-size: 28px; flex-shrink: 0; }
+  .dl-btn-icon { flex-shrink: 0; }
   .dl-btn-text { display: flex; flex-direction: column; text-align: left; }
   .dl-btn-label { font-size: 11px; opacity: .7; font-weight: 500; }
   .dl-btn-store { font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
 
   .dl-hero-trust { display: flex; align-items: center; gap: clamp(16px,3vw,24px); flex-wrap: wrap; }
   @media (max-width: 900px) { .dl-hero-trust { justify-content: center; } }
-  .dl-trust-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-  .dl-trust-stars { color: ${C.accent}; font-size: 13px; letter-spacing: 1px; }
+  .dl-trust-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .dl-trust-stars { display: flex; gap: 1px; }
   .dl-trust-num { font-size: 16px; font-weight: 800; color: ${C.white}; font-family: 'JetBrains Mono', monospace; }
-  .dl-trust-icon { font-size: 18px; }
   .dl-trust-text { font-size: 11px; color: ${C.muted}; font-weight: 600; }
   .dl-trust-divider { width: 1px; height: 32px; background: ${C.border}; }
 
@@ -357,7 +393,7 @@ const downloadStyles = `
   .dl-phone-frame { width: 260px; height: 520px; background: ${C.surf}; border: 3px solid ${C.border}; border-radius: 36px; overflow: hidden; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,.1); }
   .dl-phone-notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 80px; height: 24px; background: ${C.void}; border-radius: 12px; z-index: 3; }
   .dl-phone-screen { padding: 52px 16px 16px; height: 100%; display: flex; flex-direction: column; align-items: center; }
-  .dl-phone-app-icon { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, ${C.brand}, ${C.brandL}); display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 8px; }
+  .dl-phone-app-icon { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, ${C.brand}, ${C.brandL}); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
   .dl-phone-app-name { font-size: 14px; font-weight: 700; margin-bottom: 20px; }
   .dl-phone-preview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }
   .dl-phone-preview-item { animation: phoneFadeIn .6s ease forwards; opacity: 0; }
@@ -376,7 +412,7 @@ const downloadStyles = `
   @media (max-width: 480px) { .dl-features-grid { grid-template-columns: 1fr; } }
   .dl-feature-card { background: ${C.surf}; border: 1px solid ${C.border}; border-radius: 20px; padding: clamp(20px,3vw,28px); transition: all .3s; border-top: 3px solid var(--fc, ${C.brand}); box-shadow: 0 2px 8px rgba(0,0,0,.04); }
   .dl-feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.08); }
-  .dl-feature-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
+  .dl-feature-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
   .dl-feature-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
   .dl-feature-desc { font-size: 13.5px; color: ${C.off}; line-height: 1.65; }
 
@@ -386,7 +422,7 @@ const downloadStyles = `
   .dl-step-card { text-align: center; padding: 28px 20px; background: ${C.void}; border: 1px solid ${C.border}; border-radius: 20px; position: relative; z-index: 1; transition: all .3s; }
   .dl-step-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.08); }
   .dl-step-number { font-size: 12px; font-weight: 800; color: ${C.brand}; font-family: 'JetBrains Mono', monospace; margin-bottom: 12px; }
-  .dl-step-emoji { font-size: 40px; margin-bottom: 14px; }
+  .dl-step-icon { margin-bottom: 14px; display: flex; align-items: center; justify-content: center; }
   .dl-step-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
   .dl-step-desc { font-size: 13px; color: ${C.off}; line-height: 1.6; }
 
@@ -394,10 +430,10 @@ const downloadStyles = `
   @media (max-width: 480px) { .dl-reviews-grid { grid-template-columns: 1fr; } }
   .dl-review-card { background: ${C.surf}; border: 1px solid ${C.border}; border-radius: 20px; padding: clamp(20px,3vw,24px); transition: all .3s; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
   .dl-review-card:hover { border-color: ${C.accent}; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
-  .dl-review-stars { color: ${C.accent}; font-size: 14px; letter-spacing: 1px; margin-bottom: 12px; }
+  .dl-review-stars { display: flex; gap: 2px; margin-bottom: 12px; }
   .dl-review-text { font-size: 14px; color: ${C.off}; line-height: 1.65; margin-bottom: 16px; font-style: italic; }
   .dl-review-author { display: flex; align-items: center; gap: 10px; }
-  .dl-review-avatar { width: 40px; height: 40px; border-radius: 50%; background: ${C.elev}; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .dl-review-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
   .dl-review-name { display: block; font-size: 13px; font-weight: 700; color: ${C.white}; }
   .dl-review-campus { font-size: 11px; color: ${C.muted}; }
 
@@ -406,8 +442,9 @@ const downloadStyles = `
   .dl-faq-item { background: ${C.void}; border: 1px solid ${C.border}; border-radius: 14px; overflow: hidden; }
   .dl-faq-q { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; background: none; border: none; color: ${C.white}; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; text-align: left; transition: background .2s; }
   .dl-faq-q:hover { background: ${C.elev}; }
-  .dl-faq-arrow { font-size: 10px; color: ${C.muted}; transition: transform .3s; flex-shrink: 0; }
-  .dl-faq-item.open .dl-faq-arrow { transform: rotate(180deg); color: ${C.brand}; }
+  .dl-faq-arrow { color: ${C.muted}; transition: transform .3s; flex-shrink: 0; }
+  .dl-faq-arrow.open { transform: rotate(180deg); color: ${C.brand}; }
+  .dl-faq-item.open .dl-faq-q { background: ${C.elev}; }
   .dl-faq-a { max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .35s ease; }
   .dl-faq-item.open .dl-faq-a { max-height: 200px; padding: 0 20px 16px; }
   .dl-faq-a p { font-size: 13.5px; color: ${C.off}; line-height: 1.7; }
