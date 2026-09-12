@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, ChevronRight, X, MapPin, ArrowUpDown, Menu, ChevronDown, Package } from 'lucide-react';
+import { ChevronRight, X, MapPin, Search, Menu, Package } from 'lucide-react';
 import { getAllProducts, getProductsByCategory } from '@/apis/productApi';
 
 import { CATEGORIES } from '@/constants/listings/categories';
@@ -76,7 +76,19 @@ export default function ListingsPage() {
 
   return (
     <div className="lp-page">
-      <Hero onPickCategory={handleCatChange} />
+      <Hero
+        onPickCategory={handleCatChange}
+        searchInput={searchInput}
+        onSearchInputChange={setSearchInput}
+        onSearchSubmit={handleSearch}
+        onClearSearch={() => { setSearchInput(''); setSearch(''); }}
+        campus={campus}
+        onCampusChange={(v) => { setCampus(v); setPage(1); }}
+        sort={sort}
+        onSortChange={(v) => { setSort(v); setPage(1); }}
+        total={total}
+        loading={loading}
+      />
 
       <div className="lp-shell">
         <Sidebar activeCategory={activeCategory} activeSub={activeSub} onCategory={handleCatChange} onSub={handleSubChange} />
@@ -86,46 +98,9 @@ export default function ListingsPage() {
             <div className="lp-topbar-row">
               <button className="lp-hamburger" onClick={() => setSheetOpen(true)} aria-label="Open category filter" aria-expanded={sheetOpen}>
                 <Menu size={19} strokeWidth={2} />
-                <span className="lp-hamburger-label">Filters</span>
+                <span className="lp-hamburger-label">Categories</span>
                 {activeFilterCount > 0 && <span className="lp-hamburger-badge">{activeFilterCount}</span>}
               </button>
-
-              <form className="lp-search-form" onSubmit={handleSearch}>
-                <span className="lp-search-icon-wrap"><Search size={16} strokeWidth={2} /></span>
-                <input
-                  className="lp-search-input"
-                  placeholder="Search for laptops, textbooks, sneakers…"
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  aria-label="Search listings"
-                />
-                {searchInput && (
-                  <button type="button" className="lp-search-clear" onClick={() => { setSearchInput(''); setSearch(''); }} aria-label="Clear search">
-                    <X size={14} strokeWidth={2.5} />
-                  </button>
-                )}
-                <button type="submit" className="lp-search-btn">Search</button>
-              </form>
-            </div>
-
-            <div className="lp-topbar-row lp-topbar-row-filters">
-              <div className="lp-select-wrap">
-                <span className="lp-select-icon"><MapPin size={13} strokeWidth={2} /></span>
-                <select className="lp-select" value={campus} onChange={(e) => { setCampus(e.target.value); setPage(1); }} aria-label="Filter by campus">
-                  {CAMPUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-                <span className="lp-select-chevron"><ChevronDown size={13} strokeWidth={2} /></span>
-              </div>
-
-              <div className="lp-select-wrap">
-                <span className="lp-select-icon"><ArrowUpDown size={13} strokeWidth={2} /></span>
-                <select className="lp-select" value={sort} onChange={(e) => { setSort(e.target.value); setPage(1); }} aria-label="Sort by">
-                  {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-                <span className="lp-select-chevron"><ChevronDown size={13} strokeWidth={2} /></span>
-              </div>
-
-              <span className="lp-topbar-divider" />
               {!loading && <span className="lp-total-badge">{total.toLocaleString()} listing{total !== 1 ? 's' : ''}</span>}
             </div>
           </div>

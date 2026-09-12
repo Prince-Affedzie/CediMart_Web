@@ -323,69 +323,249 @@ export default function HomePage() {
         .reveal.shown { opacity: 1; transform: translateY(0); }
 
         /* ── Hero ── */
+        .hero-section {
+          position: relative;
+          overflow: hidden;
+          background:
+            radial-gradient(120% 100% at 8% 0%, #F0FDFA 0%, #F8FAFC 45%, #FFFFFF 100%);
+          padding: clamp(40px, 6vw, 80px) clamp(16px, 4vw, 80px) clamp(40px, 6vw, 72px);
+        }
+
+        /* Soft coral glow behind the image side */
+        .hero-section::before {
+          content: '';
+          position: absolute;
+          top: -140px;
+          right: -140px;
+          width: 480px;
+          height: 480px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(249,115,22,0.10) 0%, rgba(249,115,22,0) 70%);
+          filter: blur(4px);
+          pointer-events: none;
+          z-index: 0;
+        }
+
         .hero {
-          position: relative; overflow: hidden;
-          padding: clamp(40px,8vw,140px) clamp(16px,4vw,80px) clamp(40px,8vw,100px);
-          display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px,4vw,60px); align-items: center;
-          max-width: 1280px; margin: 0 auto; z-index: 1;
+          position: relative;
+          z-index: 1;
+          max-width: 1280px;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+          gap: clamp(28px, 5vw, 72px);
+          align-items: center;
         }
-        @media(max-width:900px){ 
-          .hero{grid-template-columns:1fr; text-align: center; padding: clamp(32px,6vw,60px) 16px;}
-          .hero-visual{display:none!important;}
-          .hero-sub{margin-left: auto; margin-right: auto;}
-          .hero-trust{justify-content: center;}
-          .hero-btns{justify-content: center;}
+
+        /* Left: the copy */
+        .hero-copy {
+          min-width: 0;
         }
-        .hero-glow {
-          position: absolute; pointer-events: none;
-          border-radius: 50%; filter: blur(80px); z-index: 0;
-        }
+
         .hero-eyebrow {
           display: inline-flex; align-items: center; gap: 8px;
-          font-size: clamp(9px,2vw,11px); font-weight: 700; letter-spacing: .14em;
+          font-size: clamp(9px, 1.6vw, 11px); font-weight: 700; letter-spacing: .14em;
           text-transform: uppercase; color: ${C.brand};
           background: rgba(13,148,136,0.08); border: 1px solid ${C.brand}20;
-          border-radius: 40px; padding: clamp(4px,1vw,6px) clamp(10px,2vw,14px); 
-          margin-bottom: clamp(16px,3vw,24px);
+          border-radius: 40px; padding: clamp(4px,1vw,6px) clamp(10px,2vw,14px);
+          margin-bottom: clamp(16px,3vw,22px);
         }
         .live-dot { width: 6px; height: 6px; border-radius: 50%; background: ${C.brand}; position: relative; }
         .live-dot::after { content:''; position: absolute; inset: -3px; border-radius: 50%; background: ${C.brand}; animation: dotPulse 1.8s ease-out infinite; }
+
         .hero-h1 {
-          font-size: clamp(28px,5vw,76px); font-weight: 900; line-height: 1.05;
-          letter-spacing: -1.5px; margin-bottom: clamp(14px,2vw,22px); color: ${C.white};
+          font-size: clamp(30px, 5vw, 68px); font-weight: 900; line-height: 1.05;
+          letter-spacing: -1.5px; margin-bottom: clamp(14px,2vw,20px); color: ${C.white};
         }
         .hero-h1-line2 { color: ${C.accent}; display: block; }
-        .hero-sub { font-size: clamp(14px,2vw,17px); color: ${C.off}; line-height: 1.72; max-width: 440px; margin-bottom: clamp(24px,4vw,36px); }
-        .hero-btns { display: flex; gap: clamp(8px,2vw,12px); flex-wrap: wrap; margin-bottom: clamp(32px,5vw,48px); }
-        .btn-primary {
-          background: linear-gradient(135deg,${C.brand},${C.brandL});
-          color: #fff; font-weight: 700; font-size: clamp(12px,2vw,14px);
-          padding: clamp(10px,2vw,14px) clamp(16px,3vw,26px); border-radius: 14px; 
-          text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-          box-shadow: 0 4px 14px rgba(13,148,136,0.2); transition: all .22s ease;
+
+        .hero-sub {
+          font-size: clamp(14px, 1.7vw, 17px); color: ${C.off}; line-height: 1.65;
+          max-width: 520px; margin-bottom: clamp(24px,3vw,32px);
         }
-        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,148,136,0.28); }
+
+        .hero-btns {
+          display: flex; gap: clamp(8px,1.5vw,12px); flex-wrap: wrap;
+          margin-bottom: clamp(28px,4vw,40px);
+        }
+        .btn-primary {
+          background: linear-gradient(135deg, ${C.brand}, ${C.brandL});
+          color: #fff; font-weight: 700; font-size: clamp(12px,1.5vw,14px);
+          padding: clamp(11px,1.6vw,14px) clamp(18px,2.4vw,26px); border-radius: 14px;
+          text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+          box-shadow: 0 6px 18px rgba(13,148,136,0.25); transition: all .22s ease;
+        }
+        .btn-primary:hover { filter: brightness(1.08); transform: translateY(-2px); box-shadow: 0 10px 26px rgba(13,148,136,0.35); }
         .btn-secondary {
-          background: ${C.surf}; color: ${C.white}; font-weight: 600; 
-          font-size: clamp(12px,2vw,14px); padding: clamp(10px,2vw,14px) clamp(16px,3vw,26px); 
+          background: ${C.surf}; color: ${C.white}; font-weight: 600;
+          font-size: clamp(12px,1.5vw,14px); padding: clamp(11px,1.6vw,14px) clamp(18px,2.4vw,26px);
           border-radius: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
           border: 1px solid ${C.border}; transition: all .22s ease;
         }
-        .btn-secondary:hover { border-color: ${C.accent}; color: ${C.accent}; }
-        .hero-trust { display: flex; align-items: center; gap: clamp(10px,2vw,20px); flex-wrap: wrap; }
-        .hero-stars { display: flex; gap: 2px; color: ${C.accent}; font-size: clamp(11px,2vw,13px); }
-        .hero-trust-text { font-size: clamp(10px,1.5vw,12.5px); color: ${C.muted}; }
+        .btn-secondary:hover { border-color: ${C.accent}; color: ${C.accent}; transform: translateY(-2px); }
+
+        .hero-trust { display: flex; align-items: center; gap: clamp(10px,2vw,18px); flex-wrap: wrap; }
+        .hero-stars { display: flex; gap: 2px; color: ${C.accent}; font-size: clamp(11px,1.4vw,13px); }
+        .hero-trust-text { font-size: clamp(10px,1.3vw,12.5px); color: ${C.muted}; }
         .hero-trust-text strong { color: ${C.white}; }
-        .hero-campus-pills { display: flex; gap: clamp(4px,1vw,7px); flex-wrap: wrap; }
-        .campus-pill { font-size: clamp(8px,1.2vw,10px); font-weight: 700; color: ${C.off}; background: ${C.elev}; border: 1px solid ${C.border}; border-radius: 20px; padding: clamp(3px,0.5vw,4px) clamp(6px,1vw,10px); font-family: 'JetBrains Mono', monospace; }
+        .hero-campus-pills { display: flex; gap: clamp(4px,0.8vw,7px); flex-wrap: wrap; }
+        .campus-pill {
+          font-size: clamp(8px,1vw,10px); font-weight: 700; color: ${C.off};
+          background: ${C.elev}; border: 1px solid ${C.border}; border-radius: 20px;
+          padding: clamp(3px,0.5vw,4px) clamp(6px,1vw,10px);
+          font-family: 'JetBrains Mono', monospace;
+        }
 
-        .hero-visual { position: relative; height: clamp(300px,40vw,480px); }
-        .hero-visual-blob { position: absolute; inset: 0; margin: auto; width: 82%; height: 82%; background: radial-gradient(circle, rgba(13,148,136,.14), transparent 70%); filter: blur(50px); z-index: 0; }
-        .hero-float-badge { position: absolute; z-index: 3; display: flex; align-items: center; gap: 8px; background: ${C.surf}; border: 1px solid ${C.border}; border-radius: 40px; padding: clamp(8px,1.4vw,11px) clamp(12px,2vw,16px); font-size: clamp(11px,1.4vw,13px); font-weight: 700; color: ${C.white}; box-shadow: 0 10px 30px rgba(15,23,42,.12); animation: floatBob 4s ease-in-out infinite; }
-        .hero-float-badge--top { top: clamp(6%,4vw,10%); right: clamp(-6%,-2vw,-4%); }
-        .hero-float-badge--bottom { bottom: clamp(6%,4vw,10%); left: clamp(-6%,-2vw,-4%); animation-delay: 1.3s; }
+        /* Right: the image card */
+        .hero-visual {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 4 / 5;
+          max-height: 560px;
+          border-radius: 28px;
+          overflow: hidden;
+          background: ${C.elev};
+          box-shadow:
+            0 30px 60px -20px rgba(15, 23, 42, 0.22),
+            0 8px 24px -8px rgba(15, 23, 42, 0.12);
+          isolation: isolate;
+        }
 
-        /* ── Floating CediAi launcher — visible label on all sizes ── */
+        /* Subtle teal ring around the image */
+        .hero-visual::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 28px;
+          box-shadow: inset 0 0 0 1px rgba(13, 148, 136, 0.15);
+          pointer-events: none;
+          z-index: 2;
+        }
+
+        .hero-visual-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 20%;
+          display: block;
+        }
+
+        /* Bottom gradient to make floating badges legible over the photo */
+        .hero-visual::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, transparent 55%, rgba(8, 15, 35, 0.35) 100%);
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        /* Floating badges that sit over the image edges */
+        .hero-float-badge {
+          position: absolute;
+          z-index: 3;
+          display: flex; align-items: center; gap: 8px;
+          background: rgba(255, 255, 255, 0.96);
+          backdrop-filter: blur(10px) saturate(150%);
+          -webkit-backdrop-filter: blur(10px) saturate(150%);
+          border: 1px solid rgba(255, 255, 255, 0.7);
+          border-radius: 40px;
+          padding: clamp(9px,1.3vw,12px) clamp(14px,1.8vw,18px);
+          font-size: clamp(11px,1.2vw,13px); font-weight: 700; color: ${C.white};
+          box-shadow: 0 12px 28px rgba(15,23,42,.18), 0 2px 8px rgba(15,23,42,.08);
+          animation: floatBob 4s ease-in-out infinite;
+          white-space: nowrap;
+        }
+        .hero-float-badge--top {
+          top: clamp(16px, 2.5vw, 28px);
+          left: clamp(-24px, -2vw, -12px);
+        }
+        .hero-float-badge--bottom {
+          bottom: clamp(20px, 3vw, 36px);
+          right: clamp(-24px, -2vw, -12px);
+          animation-delay: 1.3s;
+        }
+
+        .hero-copy-text {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .hero-copy-actions {
+          display: flex;
+          flex-direction: column;
+          gap: 0; /* spacing handled by .hero-btns / .hero-trust margins */
+        }
+
+        /* ── Hero responsive ── */
+@media (max-width: 900px) {
+  .hero {
+    /* Single column on mobile */
+    grid-template-columns: 1fr;
+    gap: 28px;
+    text-align: center;
+  }
+
+  /* Use flex order so we can interleave the image between the copy's
+     text block and its action block: eyebrow/title/subtitle → image →
+     buttons/trust. Desktop is unaffected because these orders only
+     apply inside this breakpoint. */
+  .hero {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero-copy {
+    display: contents; /* let its children be direct flex items of .hero */
+  }
+
+  .hero-copy-text {
+    order: 1;
+    align-items: center;
+    text-align: center;
+  }
+
+  .hero-visual {
+    order: 2;
+    aspect-ratio: 4 / 5;
+    max-height: 460px;
+    max-width: 420px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .hero-copy-actions {
+    order: 3;
+    align-items: center;
+    width: 100%;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  /* Center the child rows inside the actions block */
+  .hero-btns {
+    justify-content: center;
+    width: 100%;
+  }
+  .hero-trust {
+    justify-content: center;
+  }
+
+  .hero-sub { margin-left: auto; margin-right: auto; }
+  .hero-h1 br { display: none; }
+
+  .hero-float-badge--top { left: 12px; top: 16px; }
+  .hero-float-badge--bottom { right: 12px; bottom: 16px; }
+}
+
+        @media (max-width: 480px) {
+          .hero-section { padding: 32px 16px 40px; }
+          .hero-h1 { font-size: 30px; letter-spacing: -0.6px; }
+          .hero-visual { aspect-ratio: 4 / 5; border-radius: 22px; }
+          .hero-float-badge { padding: 8px 12px; font-size: 11px; }
+        }
+
+        /* ── Floating CediAi launcher ── */
         .floating-ai-btn {
           position: fixed; bottom: clamp(16px,3vw,28px); right: clamp(16px,3vw,28px); z-index: 500;
           display: inline-flex; align-items: center; gap: 8px;
@@ -435,7 +615,7 @@ export default function HomePage() {
 
         .filter-row { display: flex; gap: clamp(4px,1vw,8px); flex-wrap: wrap; margin-bottom: clamp(20px,3vw,32px); }
         .filter-pill {
-          font-size: clamp(11px,1.5vw,12.5px); font-weight: 600; 
+          font-size: clamp(11px,1.5vw,12.5px); font-weight: 600;
           padding: clamp(5px,1vw,7px) clamp(12px,2vw,16px); border-radius: 40px; cursor: pointer;
           border: 1.5px solid ${C.border}; background: ${C.surf}; color: ${C.off};
           transition: all .22s ease; font-family: 'Plus Jakarta Sans',sans-serif; white-space: nowrap;
@@ -527,7 +707,6 @@ export default function HomePage() {
         .nl-btn:hover { transform: scale(1.03); }
 
         @media(max-width:480px){
-          .hero-h1 br{display: none;}
           .filter-row{overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;}
           .filter-row::-webkit-scrollbar{display: none;}
           .filter-pill{flex-shrink: 0;}
@@ -537,82 +716,61 @@ export default function HomePage() {
       `}</style>
 
       {/* ══════════════════════ HERO ══════════════════════ */}
-      <section ref={heroRef} style={{ background: C.void, position: 'relative', overflow: 'hidden' }}>
-        {/* ── Full background image — clearer on all screens ── */}
-        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          <Image
-            src={GirlShopping}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            style={{
-              objectFit: 'cover',
-              objectPosition: isMobile ? 'center top' : 'right center',
-              opacity: isMobile ? 0.55 : 0.4,
-            }}
-          />
-          {/* Desktop gradient — dims only the left/text side, keeps image visible on the right */}
-          {!isMobile && (
-            <>
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: `linear-gradient(90deg, ${C.void}f2 0%, ${C.void}e0 30%, ${C.void}90 50%, transparent 75%)`
-              }} />
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: `linear-gradient(180deg, transparent 60%, ${C.void}cc 100%)`
-              }} />
-            </>
-          )}
-          {/* Mobile gradient — lighter top-to-bottom veil so the image stays readable behind centered text */}
-          {isMobile && (
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: `linear-gradient(180deg, ${C.void}b8 0%, ${C.void}70 35%, ${C.void}90 100%)`
-            }} />
-          )}
-        </div>
+      <section ref={heroRef} className="hero-section">
+        <div className={`hero reveal ${heroVis ? 'shown' : ''}`}>
+          {/* Left: copy */}
+          {/* Left: copy */}
+<div className="hero-copy">
+  <div className="hero-copy-text">
+    <div className="hero-eyebrow">
+      <span className="live-dot" />
+      Live across 8 campuses in Ghana
+    </div>
 
-        <div className="hero-glow" style={{ width: isMobile ? 300 : 600, height: isMobile ? 300 : 600, top:'-20%', left:'-10%', background:`radial-gradient(circle, rgba(13,148,136,.08), transparent)`, animation:'tealOrb 8s ease-in-out infinite' }}/>
-        <div className="hero-glow" style={{ width: isMobile ? 200 : 400, height: isMobile ? 200 : 400, bottom:'0', right:'5%', background:`radial-gradient(circle, rgba(249,115,22,.06), transparent)` }}/>
+    <h1 className="hero-h1">
+      Your Campus.<br />
+      <span className="hero-h1-line2">Your Marketplace.</span>
+    </h1>
 
-        <div className={`hero reveal ${heroVis ? 'shown' : ''}`} style={{ position: 'relative', zIndex: 1 }}>
-          <div>
-            <div className="hero-eyebrow">
-              <span className="live-dot"/>
-              Live across 8 campuses in Ghana
-            </div>
+    <p className="hero-sub">
+      CediMart connects students across Ghana's top universities — buy
+      textbooks, sell electronics, discover food vendors, and grow a real
+      business, all within walking distance.
+    </p>
+  </div>
 
-            <h1 className="hero-h1" style={{ textShadow: '0 2px 20px rgba(15,23,42,.15)' }}>
-              Your Campus.<br/>
-              <span className="hero-h1-line2">Your Marketplace.</span>
-            </h1>
+  <div className="hero-copy-actions">
+    <div className="hero-btns">
+      <Link href="#listings" className="btn-primary">Browse Listings →</Link>
+      <Link href="/ai-assistant" className="btn-secondary">✦ Try CediAi</Link>
+    </div>
 
-            <p className="hero-sub">
-              CediMart connects students across Ghana's top universities — buy textbooks, sell electronics, discover food vendors, and grow a real business, all within walking distance.
-            </p>
+    <div className="hero-trust">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="hero-stars">{'★★★★★'}</div>
+        <span className="hero-trust-text">
+          <strong>4.9</strong> / 10K+ students
+        </span>
+      </div>
+      <div className="hero-campus-pills">
+        {['UG', 'KNUST', 'UCC', 'UPSA', 'GIMPA', 'ATU'].map((c) => (
+          <span key={c} className="campus-pill">{c}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>
 
-            <div className="hero-btns">
-              <Link href="#listings" className="btn-primary">Browse Listings →</Link>
-              <Link href="/ai-assistant" className="btn-secondary">✦ Try CediAi</Link>
-            </div>
-
-            <div className="hero-trust">
-              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <div className="hero-stars">{'★★★★★'}</div>
-                <span className="hero-trust-text"><strong>4.9</strong> / 10K+ students</span>
-              </div>
-              <div className="hero-campus-pills">
-                {['UG','KNUST','UCC','UPSA','GIMPA','ATU'].map(c => (
-                  <span key={c} className="campus-pill">{c}</span>
-                ))}
-              </div>
-            </div>
-          </div>
-
+          {/* Right: image card */}
           <div className="hero-visual">
-            <div className="hero-visual-blob" />
+            <Image
+              src={GirlShopping}
+              alt="Student shopping on CediMart"
+              fill
+              priority
+              sizes="(max-width: 900px) 100vw, 50vw"
+              className="hero-visual-img"
+            />
             <div className="hero-float-badge hero-float-badge--top">
               <span>✅</span> Verified Sellers
             </div>
@@ -639,7 +797,6 @@ export default function HomePage() {
       </div>
 
       {/* ══════════════════════ BROWSE BY CATEGORY ══════════════════════ */}
-      {/* Placed right after the hero/ticker/stats — natural discovery flow */}
       <BrowseByCategory />
 
       {/* ══════════════════════ LISTINGS ══════════════════════ */}
