@@ -1,7 +1,7 @@
 // src/app/categories/[category]/page.js
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Suspense, useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -22,7 +22,41 @@ import './category.css';
 
 const PAGE_LIMIT = 20;
 
+// ─── Loading fallback for the Suspense boundary ────────────────────────────
+// Covers the brief moment before useSearchParams resolves on the client.
+function CategoryPageSkeleton() {
+  return (
+    <div className="cat-page">
+      <section className="cat-hero">
+        <div className="cat-hero-bg" />
+        <div className="cat-hero-inner">
+          <div className="cat-hero-title-row">
+            <div className="cat-hero-icon-badge" />
+            <div>
+              <h1 className="cat-hero-title">&nbsp;</h1>
+              <p className="cat-hero-sub">Loading listings…</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <main className="cat-main">
+        <div className="cat-grid">
+          {[...Array(12)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+      </main>
+    </div>
+  );
+}
+
 export default function CategoryPage() {
+  return (
+    <Suspense fallback={<CategoryPageSkeleton />}>
+      <CategoryPageContent />
+    </Suspense>
+  );
+}
+
+function CategoryPageContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();

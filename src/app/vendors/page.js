@@ -1,7 +1,7 @@
 // src/app/vendors/page.js
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Suspense, useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -73,6 +73,16 @@ const SORT_OPTIONS = [
   { key: 'createdAt',  order: 'desc', label: 'Newest first',    Icon: Clock },
   { key: 'rating',     order: 'desc', label: 'Top rated',       Icon: Star },
   { key: 'totalSales', order: 'desc', label: 'Most sales',      Icon: TrendingUp },
+];
+
+// Small scattered icon set used purely for the hero's decorative mosaic —
+// picked to read as "campus marketplace" rather than generic ecommerce.
+const HERO_MOSAIC_ICONS = [
+  { Icon: BookOpen,        className: 'm1' },
+  { Icon: Smartphone,      className: 'm2' },
+  { Icon: UtensilsCrossed, className: 'm3' },
+  { Icon: Shirt,           className: 'm4' },
+  { Icon: Bike,            className: 'm5' },
 ];
 
 const isRealImageUrl = (val) => !!val && /^https?:\/\//i.test(val);
@@ -211,8 +221,91 @@ function SkeletonVendorCard() {
   );
 }
 
+// ─── Loading fallback for the Suspense boundary ────────────────────────────
+// Shown for the brief moment before useSearchParams can resolve on the client.
+// Keeping the hero + stats strip static here means there's no layout jump
+// once VendorsPageContent takes over.
+function VendorsPageSkeleton() {
+  return (
+    <div className="vd-page">
+      <VendorsHero />
+      <VendorsStatsStrip stats={null} />
+      <main className="vd-main">
+        <div className="vd-grid">
+          {[...Array(8)].map((_, i) => <SkeletonVendorCard key={i} />)}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// ─── Hero ───────────────────────────────────────────────────────────────────
+function VendorsHero() {
+  return (
+    <section className="vd-hero">
+      <div className="vd-hero-inner">
+        <div className="vd-hero-copy">
+          <div className="vd-hero-badge">
+            <Shield size={13} strokeWidth={2.4} />
+            <span>Verified vendors</span>
+          </div>
+          <h1 className="vd-hero-title">
+            Trusted shops, run by
+            <br />
+            students like you
+          </h1>
+          <p className="vd-hero-sub">
+            Buy and book from vendors on your own campus — every one of them
+            a fellow student.
+          </p>
+        </div>
+
+        <div className="vd-hero-visual" aria-hidden="true">
+          <div className="vd-hero-orb" />
+          {HERO_MOSAIC_ICONS.map(({ Icon, className }, i) => (
+            <div key={i} className={`vd-hero-chip ${className}`}>
+              <Icon size={20} strokeWidth={2} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Stats strip (kept separate from the hero, per design direction) ──────
+function VendorsStatsStrip({ stats }) {
+  const items = [
+    { label: 'Active vendors', value: stats?.totalVendors != null ? stats.totalVendors.toLocaleString() : null },
+    { label: 'Categories', value: String(CATEGORIES.length - 1) },
+    { label: 'Campuses', value: String(CAMPUSES.length - 1) },
+  ];
+
+  return (
+    <section className="vd-stats-strip">
+      <div className="vd-stats-inner">
+        {items.map((item, i) => (
+          <div className="vd-stat" key={item.label}>
+            <span className="vd-stat-value">{item.value ?? '—'}</span>
+            <span className="vd-stat-label">{item.label}</span>
+            {i < items.length - 1 && <span className="vd-stat-divider" aria-hidden="true" />}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 // ─── Main Page ──────────────────────────────────────────────────────────────
 export default function VendorsPage() {
+  return (
+    <Suspense fallback={<VendorsPageSkeleton />}>
+      <VendorsPageContent />
+    </Suspense>
+  );
+}
+
+function VendorsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -317,22 +410,8 @@ export default function VendorsPage() {
 
   return (
     <div className="vd-page">
-      {/* ── Hero ── */}
-      <section className="vd-hero">
-        <div className="vd-hero-inner">
-          <div className="vd-hero-badge">
-            <Shield size={12} strokeWidth={2.4} />
-            <span>Verified vendors</span>
-          </div>
-          <h1 className="vd-hero-title">
-            Trusted shops,
-            <br />
-            run by students like you
-          </h1>
-          <p className="vd-hero-sub">Buy and book from vendors on your own campus</p>
-          <ShoppingBag className="vd-hero-decor" size={160} strokeWidth={0.8} />
-        </div>
-      </section>
+      <VendorsHero />
+      <VendorsStatsStrip stats={stats} />
 
       {/* ── Controls ── */}
       <div className="vd-controls">
