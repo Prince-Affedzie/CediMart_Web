@@ -20,7 +20,8 @@ export const createVendorProfile = async (data) => {
     throw error;
   }
 };
-
+export const getVendors =(params = {}) => API.get('/api/vendor', { params });
+export const getVendorById =(id)=>API.get(`/api/vendor/${id}`)
 export const vendorLogin =(data)=>API.post('/api/vendor/login',data)
 export const getMyProfileDetails =()=>API.get('/api/vendor_profile')
 export const getMyProducts = ()=>API.get("/api/vendor/my_products")

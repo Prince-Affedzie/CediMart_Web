@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getAllProducts, getProductsByTag } from '@/apis/productApi';
 import GirlShopping from '@/assets/cedimartlandingpage_img_1.png';
+import BrowseByCategory from '@/components/Home/BrowseByCategory';
 import { 
   Shield, 
   MessageCircle, 
@@ -24,8 +25,6 @@ import {
   Users,
   Heart
 } from 'lucide-react';
-
-
 
 // ─── Design tokens (Teal + Coral Light Mode) ──────────────────────────────────
 const C = {
@@ -247,12 +246,12 @@ function AiDemoCard({ query, icon, delay = 0 }) {
   );
 }
 
-// ─── Floating "Shop with CediAi" launcher ──────────────────────────────────────
+// ─── Floating "Find faster with CediAi" launcher ───────────────────────────────
 function FloatingAiButton() {
   return (
-    <Link href="/ai-assistant" className="floating-ai-btn" aria-label="Shop with CediAi">
+    <Link href="/ai-assistant" className="floating-ai-btn" aria-label="Find faster with CediAi">
       <span className="floating-ai-sparkle">✦</span>
-      <span className="floating-ai-label">Shop with CediAi</span>
+      <span className="floating-ai-label">Find faster with CediAi</span>
     </Link>
   );
 }
@@ -386,7 +385,7 @@ export default function HomePage() {
         .hero-float-badge--top { top: clamp(6%,4vw,10%); right: clamp(-6%,-2vw,-4%); }
         .hero-float-badge--bottom { bottom: clamp(6%,4vw,10%); left: clamp(-6%,-2vw,-4%); animation-delay: 1.3s; }
 
-        /* ── Floating CediAi launcher ── */
+        /* ── Floating CediAi launcher — visible label on all sizes ── */
         .floating-ai-btn {
           position: fixed; bottom: clamp(16px,3vw,28px); right: clamp(16px,3vw,28px); z-index: 500;
           display: inline-flex; align-items: center; gap: 8px;
@@ -396,10 +395,23 @@ export default function HomePage() {
           text-decoration: none; box-shadow: 0 10px 28px rgba(13,148,136,.35), 0 2px 8px rgba(0,0,0,.12);
           transition: transform .22s ease, box-shadow .22s ease;
           animation: floatBob 3.4s ease-in-out infinite;
+          white-space: nowrap;
+          max-width: calc(100vw - 32px);
         }
         .floating-ai-btn:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 16px 36px rgba(13,148,136,.45); }
-        .floating-ai-sparkle { font-size: 15px; }
-        @media(max-width:520px){ .floating-ai-btn { padding: 15px; border-radius: 50%; animation: none; } .floating-ai-label { display: none; } }
+        .floating-ai-sparkle { font-size: 15px; flex-shrink: 0; }
+        @media(max-width:520px) {
+          .floating-ai-btn {
+            padding: 12px 16px;
+            font-size: 12px;
+            gap: 6px;
+            animation: none;
+          }
+          .floating-ai-sparkle { font-size: 13px; }
+        }
+        @media(max-width:380px) {
+          .floating-ai-label { font-size: 11px; }
+        }
 
         /* ── Ticker ── */
         .ticker-outer { overflow: hidden; background: ${C.surf}; border-top: 1px solid ${C.border}; border-bottom: 1px solid ${C.border}; padding: clamp(8px,1.5vw,12px) 0; }
@@ -524,86 +536,113 @@ export default function HomePage() {
         }
       `}</style>
 
-     {/* ══════════════════════ HERO ══════════════════════ */}
-<section ref={heroRef} style={{ background: C.void, position: 'relative', overflow: 'hidden' }}>
-  {/* ── Full background image — more visible ── */}
-  <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-    <Image
-      src={GirlShopping}
-      alt=""
-      fill
-      priority
-      sizes="100vw"
-      style={{ 
-        objectFit: 'cover', 
-        objectPosition: 'right center',
-        opacity: 0.25,
-      }}
-    />
-    {/* Lighter gradient overlays — more image visible */}
-    <div style={{ 
-      position: 'absolute', inset: 0, 
-      background: `linear-gradient(135deg, ${C.void}ee 0%, ${C.void}aa 35%, transparent 60%)` 
-    }} />
-    <div style={{ 
-      position: 'absolute', inset: 0, 
-      background: `linear-gradient(to top, ${C.void}cc 0%, transparent 35%)` 
-    }} />
-  </div>
-
-  <div className="hero-glow" style={{ width: isMobile ? 300 : 600, height: isMobile ? 300 : 600, top:'-20%', left:'-10%', background:`radial-gradient(circle, rgba(13,148,136,.08), transparent)`, animation:'tealOrb 8s ease-in-out infinite' }}/>
-  <div className="hero-glow" style={{ width: isMobile ? 200 : 400, height: isMobile ? 200 : 400, bottom:'0', right:'5%', background:`radial-gradient(circle, rgba(249,115,22,.06), transparent)` }}/>
-
-  <div className={`hero reveal ${heroVis ? 'shown' : ''}`} style={{ position: 'relative', zIndex: 1 }}>
-    <div>
-      <div className="hero-eyebrow">
-        <span className="live-dot"/>
-        Live across 8 campuses in Ghana
-      </div>
-
-      <h1 className="hero-h1" style={{ textShadow: '0 2px 20px rgba(15,23,42,.3)' }}>
-        Your Campus.<br/>
-        <span className="hero-h1-line2">Your Marketplace.</span>
-      </h1>
-
-      <p className="hero-sub">
-        CediMart connects students across Ghana's top universities — buy textbooks, sell electronics, discover food vendors, and grow a real business, all within walking distance.
-      </p>
-
-      <div className="hero-btns">
-        <Link href="#listings" className="btn-primary">Browse Listings →</Link>
-        <Link href="/ai-assistant" className="btn-secondary">✦ Try CediAi</Link>
-      </div>
-
-      <div className="hero-trust">
-        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-          <div className="hero-stars">{'★★★★★'}</div>
-          <span className="hero-trust-text"><strong>4.9</strong> / 10K+ students</span>
+      {/* ══════════════════════ HERO ══════════════════════ */}
+      <section ref={heroRef} style={{ background: C.void, position: 'relative', overflow: 'hidden' }}>
+        {/* ── Full background image — clearer on all screens ── */}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+          <Image
+            src={GirlShopping}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            style={{
+              objectFit: 'cover',
+              objectPosition: isMobile ? 'center top' : 'right center',
+              opacity: isMobile ? 0.55 : 0.4,
+            }}
+          />
+          {/* Desktop gradient — dims only the left/text side, keeps image visible on the right */}
+          {!isMobile && (
+            <>
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: `linear-gradient(90deg, ${C.void}f2 0%, ${C.void}e0 30%, ${C.void}90 50%, transparent 75%)`
+              }} />
+              <div style={{
+                position: 'absolute', inset: 0,
+                background: `linear-gradient(180deg, transparent 60%, ${C.void}cc 100%)`
+              }} />
+            </>
+          )}
+          {/* Mobile gradient — lighter top-to-bottom veil so the image stays readable behind centered text */}
+          {isMobile && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: `linear-gradient(180deg, ${C.void}b8 0%, ${C.void}70 35%, ${C.void}90 100%)`
+            }} />
+          )}
         </div>
-        <div className="hero-campus-pills">
-          {['UG','KNUST','UCC','UPSA','GIMPA','ATU'].map(c => (
-            <span key={c} className="campus-pill">{c}</span>
+
+        <div className="hero-glow" style={{ width: isMobile ? 300 : 600, height: isMobile ? 300 : 600, top:'-20%', left:'-10%', background:`radial-gradient(circle, rgba(13,148,136,.08), transparent)`, animation:'tealOrb 8s ease-in-out infinite' }}/>
+        <div className="hero-glow" style={{ width: isMobile ? 200 : 400, height: isMobile ? 200 : 400, bottom:'0', right:'5%', background:`radial-gradient(circle, rgba(249,115,22,.06), transparent)` }}/>
+
+        <div className={`hero reveal ${heroVis ? 'shown' : ''}`} style={{ position: 'relative', zIndex: 1 }}>
+          <div>
+            <div className="hero-eyebrow">
+              <span className="live-dot"/>
+              Live across 8 campuses in Ghana
+            </div>
+
+            <h1 className="hero-h1" style={{ textShadow: '0 2px 20px rgba(15,23,42,.15)' }}>
+              Your Campus.<br/>
+              <span className="hero-h1-line2">Your Marketplace.</span>
+            </h1>
+
+            <p className="hero-sub">
+              CediMart connects students across Ghana's top universities — buy textbooks, sell electronics, discover food vendors, and grow a real business, all within walking distance.
+            </p>
+
+            <div className="hero-btns">
+              <Link href="#listings" className="btn-primary">Browse Listings →</Link>
+              <Link href="/ai-assistant" className="btn-secondary">✦ Try CediAi</Link>
+            </div>
+
+            <div className="hero-trust">
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <div className="hero-stars">{'★★★★★'}</div>
+                <span className="hero-trust-text"><strong>4.9</strong> / 10K+ students</span>
+              </div>
+              <div className="hero-campus-pills">
+                {['UG','KNUST','UCC','UPSA','GIMPA','ATU'].map(c => (
+                  <span key={c} className="campus-pill">{c}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="hero-visual">
+            <div className="hero-visual-blob" />
+            <div className="hero-float-badge hero-float-badge--top">
+              <span>✅</span> Verified Sellers
+            </div>
+            <div className="hero-float-badge hero-float-badge--bottom">
+              <span>🔥</span> 500+ new listings today
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Ticker ── */}
+      <Ticker />
+
+      {/* ── Stats bar ── */}
+      <div className="stats-bar">
+        <div className="stats-inner">
+          {STATS.map((s, i) => (
+            <div key={i} className="stat-item" style={{ '--sc': s.c }}>
+              <div className="stat-val">{s.v}</div>
+              <div className="stat-lbl">{s.l}</div>
+            </div>
           ))}
         </div>
       </div>
-    </div>
 
-    {/* Right visual — removed the duplicate image card, just keep floating badges */}
-    <div className="hero-visual">
-      <div className="hero-visual-blob" />
-      <div className="hero-float-badge hero-float-badge--top">
-        <span>✅</span> Verified Sellers
-      </div>
-      <div className="hero-float-badge hero-float-badge--bottom">
-        <span>🔥</span> 500+ new listings today
-      </div>
-    </div>
-  </div>
-</section>
+      {/* ══════════════════════ BROWSE BY CATEGORY ══════════════════════ */}
+      {/* Placed right after the hero/ticker/stats — natural discovery flow */}
+      <BrowseByCategory />
 
-      <Ticker />
-      <div className="stats-bar"><div className="stats-inner">{STATS.map((s, i) => (<div key={i} className="stat-item" style={{ '--sc': s.c }}><div className="stat-val">{s.v}</div><div className="stat-lbl">{s.l}</div></div>))}</div></div>
-
+      {/* ══════════════════════ LISTINGS ══════════════════════ */}
       <section id="listings" className="section" style={{ background: C.void }}>
         <div className="section-inner">
           <div ref={listRef} className={`reveal ${listVis ? 'shown' : ''}`}>
@@ -611,12 +650,38 @@ export default function HomePage() {
             <h2 className="section-h2">What's selling on campus<span style={{ color: C.accent }}> right now.</span></h2>
             <p className="section-sub">Fresh listings added daily by verified student sellers — from course materials and electronics to food and fashion.</p>
           </div>
-          <div className="filter-row">{CATEGORIES.map(cat => (<button key={cat.key} className={`filter-pill${activeFilter === cat.key ? ' active' : ''}`} onClick={() => setActiveFilter(cat.key)}>{cat.label}</button>))}</div>
-          {loadingProds ? (<div className="prod-grid">{[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}</div>) : products.length === 0 ? (<div style={{ textAlign:'center', padding:'48px 0', color: C.muted }}><p style={{ fontSize:42, marginBottom:12 }}>📦</p><p style={{ fontSize:16 }}>No listings found for this category right now.</p></div>) : (<div className="prod-grid">{products.map((product, i) => (<ProductCard key={product._id || i} product={product} index={i} />))}</div>)}
-          <div className="view-all-wrap"><Link href="/listings" className="view-all-btn">View all listings →</Link></div>
+          <div className="filter-row">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat.key}
+                className={`filter-pill${activeFilter === cat.key ? ' active' : ''}`}
+                onClick={() => setActiveFilter(cat.key)}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+          {loadingProds ? (
+            <div className="prod-grid">{[...Array(8)].map((_, i) => <SkeletonCard key={i} />)}</div>
+          ) : products.length === 0 ? (
+            <div style={{ textAlign:'center', padding:'48px 0', color: C.muted }}>
+              <p style={{ fontSize:42, marginBottom:12 }}>📦</p>
+              <p style={{ fontSize:16 }}>No listings found for this category right now.</p>
+            </div>
+          ) : (
+            <div className="prod-grid">
+              {products.map((product, i) => (
+                <ProductCard key={product._id || i} product={product} index={i} />
+              ))}
+            </div>
+          )}
+          <div className="view-all-wrap">
+            <Link href="/listings" className="view-all-btn">View all listings →</Link>
+          </div>
         </div>
       </section>
 
+      {/* ══════════════════════ CEDI AI ══════════════════════ */}
       <section id="ai-assistant-demo" className="section ai-section" ref={aiRef}>
         <div className="section-inner">
           <div className="ai-split">
@@ -625,14 +690,31 @@ export default function HomePage() {
               <p className="section-eyebrow" style={{ '--ec': C.brand }}>— Cedi AI</p>
               <h2 className="section-h2">CediAi — your <span style={{ color: C.brand }}>AI shopping assistant.</span></h2>
               <p className="section-sub">Type anything. "Find me a laptop under GH₵3000," "Who sells Jollof near Legon?" — Cedi reads your intent and surfaces the best matching listings from across campus, instantly.</p>
-              {[{ icon:'🧠', title:'Natural language search', desc:'No keywords needed. Ask like you would a friend who knows every listing.' },{ icon:'📦', title:'Rich product results', desc:'Gets back images, prices, conditions, and campus locations — not just links.' },{ icon:'💬', title:'Follow-up questions', desc:'"Show me cheaper ones" or "only KNUST sellers" — Cedi remembers the context.' }].map((f, i) => (<div key={i} className="ai-feature-row"><div className="ai-feature-icon">{f.icon}</div><div><div className="ai-feature-title">{f.title}</div><div className="ai-feature-desc">{f.desc}</div></div></div>))}
+              {[
+                { icon:'🧠', title:'Natural language search', desc:'No keywords needed. Ask like you would a friend who knows every listing.' },
+                { icon:'📦', title:'Rich product results', desc:'Gets back images, prices, conditions, and campus locations — not just links.' },
+                { icon:'💬', title:'Follow-up questions', desc:'"Show me cheaper ones" or "only KNUST sellers" — Cedi remembers the context.' }
+              ].map((f, i) => (
+                <div key={i} className="ai-feature-row">
+                  <div className="ai-feature-icon">{f.icon}</div>
+                  <div>
+                    <div className="ai-feature-title">{f.title}</div>
+                    <div className="ai-feature-desc">{f.desc}</div>
+                  </div>
+                </div>
+              ))}
               <Link href="/ai-assistant" className="ai-try-btn">✦ Try CediAi — it's free</Link>
             </div>
-            <div className="ai-demos-stack">{AI_DEMOS.slice(0, 3).map((demo, i) => (<AiDemoCard key={i} query={demo.q} icon={demo.icon} delay={i * 100} />))}</div>
+            <div className="ai-demos-stack">
+              {AI_DEMOS.slice(0, 3).map((demo, i) => (
+                <AiDemoCard key={i} query={demo.q} icon={demo.icon} delay={i * 100} />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
+      {/* ══════════════════════ WHY CEDIMART ══════════════════════ */}
       <section className="section" style={{ background: C.void }} ref={whyRef}>
         <div className="section-inner">
           <div className={`reveal ${whyVis ? 'shown' : ''}`} style={{ textAlign:'center', maxWidth:540, margin:'0 auto 52px' }}>
@@ -640,10 +722,19 @@ export default function HomePage() {
             <h2 className="section-h2">Built specifically<br/><span style={{ color: C.coral }}>for campus life.</span></h2>
             <p className="section-sub" style={{ margin:'0 auto', textAlign:'center' }}>Not a clone of Jumia. Not a WhatsApp group. A marketplace designed from the ground up for how students buy and sell.</p>
           </div>
-          <div className="why-grid">{WHY_ITEMS.map((item, i) => (<div key={i} className={`why-card reveal ${whyVis ? 'shown' : ''}`} style={{ '--wc': item.color, '--wb': item.color + '12', transitionDelay:`${i * 60}ms` }}><div className="why-icon">{item.icon}</div><div className="why-title">{item.title}</div><div className="why-desc">{item.desc}</div></div>))}</div>
+          <div className="why-grid">
+            {WHY_ITEMS.map((item, i) => (
+              <div key={i} className={`why-card reveal ${whyVis ? 'shown' : ''}`} style={{ '--wc': item.color, '--wb': item.color + '12', transitionDelay:`${i * 60}ms` }}>
+                <div className="why-icon">{item.icon}</div>
+                <div className="why-title">{item.title}</div>
+                <div className="why-desc">{item.desc}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
+      {/* ══════════════════════ CTA / DOWNLOAD ══════════════════════ */}
       <section id="download" className="section" ref={ctaRef} style={{ background: C.surf }}>
         <div className="section-inner">
           <div className={`cta-wrap reveal ${ctaVis ? 'shown' : ''}`}>
@@ -651,8 +742,12 @@ export default function HomePage() {
             <h2 className="cta-h2">Your campus marketplace<br/>is waiting.</h2>
             <p className="cta-sub">Join 10,000+ students already buying, selling, and growing on CediMart. Free forever.</p>
             <div className="cta-btns">
-              <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="cta-btn-white"> <Apple size={28} className="dl-btn-icon" /> App Store </a>
-              <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="cta-btn-ghost"><Play size={28} className="dl-btn-icon" fill="currentColor" /> Google Play</a>
+              <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="cta-btn-white">
+                <Apple size={28} className="dl-btn-icon" /> App Store
+              </a>
+              <a href="https://play.google.com/store/apps/details?id=com.freshyfood.factory" target="_blank" rel="noopener noreferrer" className="cta-btn-ghost">
+                <Play size={28} className="dl-btn-icon" fill="currentColor" /> Google Play
+              </a>
             </div>
             <form className="nl-form" onSubmit={e => { e.preventDefault(); setEmailDone(true); setEmail(''); }}>
               <input type="email" required placeholder="Get launch updates by email" className="nl-input" value={email} onChange={e => setEmail(e.target.value)} />
@@ -662,6 +757,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ══════════════════════ FLOATING CEDIAI ══════════════════════ */}
       <FloatingAiButton />
     </div>
   );

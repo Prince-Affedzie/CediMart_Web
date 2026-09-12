@@ -4,30 +4,33 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { 
   Menu, 
   X, 
+  Home as HomeIcon,
+  Store,
   Package, 
   Bot, 
-  Banknote, 
   BookOpen, 
   MessageCircle, 
   Download,
-  ChevronRight,
-  Smartphone
+  Smartphone,
 } from 'lucide-react';
 import icon from '@/app/icon.jpg';
 
 const NAV_LINKS = [
+  { label: 'Home',         href: '/',             icon: HomeIcon },
+  { label: 'Vendors',      href: '/vendors',      icon: Store },
   { label: 'Listings',     href: '/listings',     icon: Package },
-  { label: 'AI Assistant', href: '/ai-assistant',  icon: Bot },
-  //{ label: 'Sell',         href: '/sell',          icon: Banknote },
-  { label: 'About',        href: '/about',         icon: BookOpen },
-  { label: 'Contact',      href: '/contact',       icon: MessageCircle },
+  { label: 'AI Assistant', href: '/ai-assistant', icon: Bot },
+  { label: 'About',        href: '/about',        icon: BookOpen },
+  { label: 'Contact',      href: '/contact',      icon: MessageCircle },
 ];
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   // Lock background scroll while the drawer is open
   useEffect(() => {
@@ -35,7 +38,15 @@ export default function Header() {
     return () => { document.body.style.overflow = ''; };
   }, [menuOpen]);
 
+  // Close the mobile drawer on route change
+  useEffect(() => { setMenuOpen(false); }, [pathname]);
+
   const closeMenu = () => setMenuOpen(false);
+
+  const isActive = (href) => {
+    if (href === '/') return pathname === '/';
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   return (
     <header className="sticky top-0 z-50">
@@ -50,6 +61,7 @@ export default function Header() {
           backdrop-filter: blur(20px) saturate(160%);
           border-bottom: 1px solid #E2E8F0;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          gap: 16px;
         }
 
         .nav-logo {
@@ -89,25 +101,46 @@ export default function Header() {
         .nav-links {
           display: flex;
           align-items: center;
-          gap: 32px;
+          gap: 4px;
+          flex: 1;
+          justify-content: center;
         }
         .nav-link {
           font-size: 13.5px;
           font-weight: 500;
           color: #475569;
           text-decoration: none;
-          transition: color 0.2s;
+          transition: color 0.18s, background 0.18s;
           white-space: nowrap;
-          display: flex;
+          display: inline-flex;
           align-items: center;
           gap: 6px;
+          padding: 8px 12px;
+          border-radius: 10px;
+          position: relative;
         }
         .nav-link:hover {
           color: #0D9488;
+          background: #F0FDFA;
+        }
+        .nav-link.active {
+          color: #0D9488;
+          background: #F0FDFA;
+          font-weight: 700;
+        }
+        .nav-link.active::after {
+          content: '';
+          position: absolute;
+          bottom: -1px;
+          left: 12px;
+          right: 12px;
+          height: 2px;
+          border-radius: 2px;
+          background: linear-gradient(90deg, #0D9488, #14B8A6);
         }
         .nav-link-icon {
-          width: 16px;
-          height: 16px;
+          width: 15px;
+          height: 15px;
           flex-shrink: 0;
         }
 
@@ -230,7 +263,8 @@ export default function Header() {
           opacity: 1;
           transform: translateX(0);
         }
-        .mobile-nav-link:hover {
+        .mobile-nav-link:hover,
+        .mobile-nav-link.active {
           background: #F0FDFA;
           color: #0D9488;
           border-left-color: #0D9488;
@@ -272,8 +306,8 @@ export default function Header() {
           box-shadow: 0 6px 20px rgba(13, 148, 136, 0.32);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
+        /* Responsive — collapse nav at 900px so 6 links have room */
+        @media (max-width: 900px) {
           .nav-links,
           .nav-cta-desktop {
             display: none;
@@ -312,9 +346,15 @@ export default function Header() {
         <div className="nav-links">
           {NAV_LINKS.map((link) => {
             const IconComponent = link.icon;
+            const active = isActive(link.href);
             return (
-              <Link key={link.label} href={link.href} className="nav-link">
-                <IconComponent size={16} className="nav-link-icon" />
+              <Link
+                key={link.label}
+                href={link.href}
+                className={`nav-link${active ? ' active' : ''}`}
+                aria-current={active ? 'page' : undefined}
+              >
+                <IconComponent size={15} className="nav-link-icon" />
                 {link.label}
               </Link>
             );
@@ -360,13 +400,15 @@ export default function Header() {
         <div className="mobile-menu-body">
           {NAV_LINKS.map((link, i) => {
             const IconComponent = link.icon;
+            const active = isActive(link.href);
             return (
               <Link
                 key={link.label}
                 href={link.href}
-                className="mobile-nav-link"
+                className={`mobile-nav-link${active ? ' active' : ''}`}
                 style={{ transitionDelay: menuOpen ? `${i * 45}ms` : '0ms' }}
                 onClick={closeMenu}
+                aria-current={active ? 'page' : undefined}
               >
                 <span className="mobile-nav-icon-chip">
                   <IconComponent size={16} />
