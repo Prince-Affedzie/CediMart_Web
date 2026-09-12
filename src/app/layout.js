@@ -9,15 +9,18 @@ export const metadata = {
     template: '%s | CediMart',
   },
   description: 'CediMart connects students across Ghana\'s top universities — buy textbooks, sell electronics, discover food vendors, and grow a real business.',
+  verification: {
+    google: 'iBMCCAhAo_5ViK0WT_9CypifyxUQi2SEzE66ATC11i0',
+  },
   keywords: ['campus marketplace', 'student buy sell', 'Ghana university', 'CediMart'],
   authors: [{ name: 'CediMart' }],
   creator: 'CediMart',
   publisher: 'CediMart',
-  metadataBase: new URL('https://cedimart.com'), // Replace with your actual domain
+  metadataBase: new URL('https://cedimartgh.com'), // Replace with your actual domain
   openGraph: {
     title: 'CediMart - Your Campus Marketplace',
     description: 'Buy, sell, and connect with verified students across Ghana\'s top universities.',
-    url: 'https://cedimart.com',
+    url: 'https://cedimartgh.com',
     siteName: 'CediMart',
     images: [
       {

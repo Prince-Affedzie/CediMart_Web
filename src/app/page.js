@@ -25,6 +25,8 @@ import {
   Heart
 } from 'lucide-react';
 
+
+
 // ─── Design tokens (Teal + Coral Light Mode) ──────────────────────────────────
 const C = {
   void:    '#F8FAFC',
