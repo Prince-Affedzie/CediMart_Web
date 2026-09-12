@@ -14,9 +14,9 @@ import { CATEGORIES } from '@/constants/listings/categories';
 import { SUBCATEGORIES } from '@/constants/listings/subcategories';
 import { SORT_OPTIONS, CAMPUS_OPTIONS } from '@/constants/listings/options';
 
-import ProductCard from '@/components/listings/ProductCard';
-import SkeletonCard from '@/components/listings/SkeletonCard';
-import Pagination from '@/components/listings/Pagination';
+import ProductCard from '@/components/Listings/ProductCard';
+import SkeletonCard from '@/components/Listings/SkeletonCard';
+import Pagination from '@/components/Listings/Pagination';
 
 import './category.css';
 
