@@ -9,12 +9,12 @@ import { getAllProducts, getProductsByCategory } from '@/apis/productApi';
 import { CATEGORIES } from '@/constants/listings/categories';
 import { SORT_OPTIONS, CAMPUS_OPTIONS } from '@/constants/listings/options';
 
-import Hero from '@/components/listings/Hero';
-import Sidebar from '@/components/listings/Sidebar';
-import MobileFilterSheet from '@/components/listings/MobileFilterSheet';
-import ProductCard from '@/components/listings/ProductCard';
-import SkeletonCard from '@/components/listings/SkeletonCard';
-import Pagination from '@/components/listings/Pagination';
+import Hero from '@/components/Listings/Hero';
+import Sidebar from '@/components/Listings/Sidebar';
+import MobileFilterSheet from '@/components/Listings/MobileFilterSheet';
+import ProductCard from '@/components/Listings/ProductCard';
+import SkeletonCard from '@/components/Listings/SkeletonCard';
+import Pagination from '@/components/Listings/Pagination';
 
 import './listings.css';
 
