@@ -1140,7 +1140,7 @@ export default function ProductDetailClient() {
                     </div>
                     {vendorId && (
                       <Link
-                        href={`/vendor/${vendorId}`}
+                        href={`/vendors/${vendorId}`}
                         className="pd-view-shop-btn"
                       >
                         <Store size={14} strokeWidth={2.4} />

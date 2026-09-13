@@ -340,7 +340,7 @@
 /* ── Chat FAB ──
    Floats just above the sticky bar (see --sticky-bar-h) rather than
    competing with it for the same corner of the screen. */
-.pd-chat-fab { position: fixed; right: clamp(16px,3vw,28px); bottom: calc(var(--sticky-bar-h) + 16px); z-index: 55; width: 52px; height: 52px; border-radius: 50%; background: var(--brand); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 26px rgba(13,148,136,.35), 0 2px 8px rgba(0,0,0,.12); transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }
+.pd-chat-fab { position: fixed; right: clamp(16px,3vw,28px); bottom: calc(var(--sticky-bar-h) + 48px); z-index: 55; width: 52px; height: 52px; border-radius: 50%; background: var(--brand); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 26px rgba(13,148,136,.35), 0 2px 8px rgba(0,0,0,.12); transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }
 .pd-chat-fab:hover { background: var(--brand-d); transform: translateY(-3px) scale(1.04); box-shadow: 0 14px 32px rgba(13,148,136,.42); }
 
 /* ── Collapsible section ── */
