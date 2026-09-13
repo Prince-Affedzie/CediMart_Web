@@ -465,7 +465,7 @@
 /* ─── Sticky checkout bar ─── */
 .ct-checkout-bar {
   position: fixed;
-  bottom: 0;
+  bottom: 48;
   left: 0;
   right: 0;
   background: var(--ct-surface);
