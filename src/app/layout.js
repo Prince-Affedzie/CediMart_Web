@@ -1,6 +1,9 @@
 // src/app/layout.js
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import MobileTabBar from '@/components/MobileTabBar';
+import { AuthProvider } from '@/context/AuthContext';
+import { CartProvider } from '@/context/CartContext';
 import './globals.css';
 
 export const metadata = {
@@ -66,9 +69,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body className="inter_396b12ce-module__rRjk0G__className bg-gray-50" suppressHydrationWarning>
+        <AuthProvider>
+          <CartProvider>
         <Header />
         <main>{children}</main>
+        <MobileTabBar />
         <Footer />
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

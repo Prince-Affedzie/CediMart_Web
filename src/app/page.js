@@ -565,19 +565,37 @@ export default function HomePage() {
           .hero-float-badge { padding: 8px 12px; font-size: 11px; }
         }
 
-        /* ── Floating CediAi launcher ── */
-        .floating-ai-btn {
-          position: fixed; bottom: clamp(16px,3vw,28px); right: clamp(16px,3vw,28px); z-index: 500;
-          display: inline-flex; align-items: center; gap: 8px;
-          background: linear-gradient(135deg, ${C.brand}, ${C.brandL});
-          color: #fff; font-weight: 800; font-size: clamp(12px,1.6vw,14px);
-          padding: clamp(13px,2vw,16px) clamp(20px,2.5vw,24px); border-radius: 999px;
-          text-decoration: none; box-shadow: 0 10px 28px rgba(13,148,136,.35), 0 2px 8px rgba(0,0,0,.12);
-          transition: transform .22s ease, box-shadow .22s ease;
-          animation: floatBob 3.4s ease-in-out infinite;
-          white-space: nowrap;
-          max-width: calc(100vw - 32px);
-        }
+                /* ── Floating CediAi launcher ── */
+          .floating-ai-btn {
+            position: fixed;
+            bottom: clamp(16px, 3vw, 28px);
+            right: clamp(16px, 3vw, 28px);
+            z-index: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, ${C.brand}, ${C.brandL});
+            color: #fff;
+            font-weight: 800;
+            font-size: clamp(12px, 1.6vw, 14px);
+            padding: clamp(13px, 2vw, 16px) clamp(20px, 2.5vw, 24px);
+            border-radius: 999px;
+            text-decoration: none;
+            box-shadow: 0 10px 28px rgba(13,148,136,.35), 0 2px 8px rgba(0,0,0,.12);
+            transition: transform .22s ease, box-shadow .22s ease, bottom .22s ease;
+            animation: floatBob 3.4s ease-in-out infinite;
+            white-space: nowrap;
+            max-width: calc(100vw - 32px);
+          }
+
+          /* On mobile, lift the button above the fixed bottom tab bar
+            (60px bar height + 12px breathing room + safe-area inset). */
+          @media (max-width: 768px) {
+            .floating-ai-btn {
+              bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+              right: 16px;
+            }
+          }
         .floating-ai-btn:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 16px 36px rgba(13,148,136,.45); }
         .floating-ai-sparkle { font-size: 15px; flex-shrink: 0; }
         @media(max-width:520px) {

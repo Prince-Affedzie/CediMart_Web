@@ -1,0 +1,485 @@
+/* src/app/login/login.css */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+
+.lg-page {
+  --lg-brand:        #0D9488;
+  --lg-brand-l:      #14B8A6;
+  --lg-brand-d:      #0F766E;
+  --lg-brand-bg:     #F0FDFA;
+  --lg-brand-border: #99F6E4;
+  --lg-accent:       #F97316;
+  --lg-accent-bg:    #FFF7ED;
+  --lg-accent-border:#FED7AA;
+  --lg-success:      #059669;
+  --lg-danger:       #DC2626;
+  --lg-danger-bg:    #FEF2F2;
+  --lg-white:        #FFFFFF;
+  --lg-t1:           #0F172A;
+  --lg-t2:           #475569;
+  --lg-t3:           #94A3B8;
+  --lg-gray-50:      #FAFAFA;
+  --lg-gray-100:     #F5F5F5;
+  --lg-gray-200:     #E5E7EB;
+
+  min-height: 100vh;
+  background:
+    radial-gradient(120% 100% at 15% 0%, #F0FDFA 0%, #F8FAFC 45%, #FFFFFF 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px 60px;
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Soft coral glow top-right */
+.lg-page::before {
+  content: '';
+  position: absolute;
+  top: -140px;
+  right: -140px;
+  width: 460px;
+  height: 460px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249,115,22,0.09) 0%, rgba(249,115,22,0) 70%);
+  filter: blur(4px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Back button ─── */
+.lg-back {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid var(--lg-gray-200);
+  color: var(--lg-t1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: border-color .18s, color .18s, transform .18s;
+  box-shadow: 0 2px 6px rgba(15,23,42,0.04);
+}
+.lg-back:hover {
+  border-color: var(--lg-brand);
+  color: var(--lg-brand);
+  transform: translateX(-2px);
+}
+
+/* ─── Shell ─── */
+.lg-shell {
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  z-index: 1;
+}
+
+.lg-card {
+  background: var(--lg-white);
+  border: 1px solid var(--lg-gray-200);
+  border-radius: 24px;
+  padding: clamp(24px, 5vw, 36px);
+  box-shadow:
+    0 24px 60px -24px rgba(15, 23, 42, 0.14),
+    0 4px 16px -6px rgba(15, 23, 42, 0.06);
+}
+
+/* ─── Header ─── */
+.lg-header {
+  text-align: center;
+  margin-bottom: 26px;
+}
+
+.lg-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 18px;
+  background: var(--lg-brand-bg);
+  border: 1px solid var(--lg-brand-border);
+  margin-bottom: 16px;
+}
+
+.lg-logo {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+}
+
+.lg-title {
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 800;
+  color: var(--lg-brand-d);
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.lg-subtitle {
+  font-size: 14.5px;
+  color: var(--lg-t2);
+  line-height: 1.55;
+}
+
+/* ─── Vendor banner ─── */
+.lg-vendor-banner {
+  display: block;
+  border-radius: 18px;
+  border: 2px solid var(--lg-brand);
+  background: #FFFFFF;
+  overflow: hidden;
+  text-decoration: none;
+  box-shadow:
+    0 12px 30px -12px rgba(13, 148, 136, 0.35),
+    0 2px 8px rgba(13, 148, 136, 0.08);
+  transition: transform .22s ease, box-shadow .22s ease;
+  margin-bottom: 24px;
+}
+.lg-vendor-banner:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 18px 40px -14px rgba(13, 148, 136, 0.4),
+    0 4px 12px rgba(13, 148, 136, 0.12);
+}
+
+.lg-vendor-accent {
+  height: 4px;
+  background: linear-gradient(90deg, var(--lg-brand), var(--lg-brand-l));
+}
+
+.lg-vendor-content {
+  padding: 14px 16px 10px;
+}
+
+.lg-vendor-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lg-vendor-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--lg-t1);
+  letter-spacing: -0.2px;
+}
+
+.lg-vendor-badge {
+  background: var(--lg-accent);
+  color: #FFFFFF;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+}
+
+.lg-vendor-cta {
+  background: var(--lg-brand);
+  padding: 13px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lg-vendor-cta-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #FFFFFF;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: -0.1px;
+}
+
+.lg-vendor-cta-right {
+  background: rgba(255, 255, 255, 0.22);
+  color: #FFFFFF;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ─── Divider ─── */
+.lg-divider-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 22px;
+}
+.lg-divider {
+  flex: 1;
+  height: 1px;
+  background: var(--lg-gray-200);
+}
+.lg-divider-text {
+  font-size: 13px;
+  color: var(--lg-t2);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ─── Error banner ─── */
+.lg-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--lg-danger-bg);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--lg-danger);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.lg-error-banner svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ─── Form ─── */
+.lg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.lg-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.lg-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.lg-password-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.lg-password-header .lg-label { margin-bottom: 0; }
+
+.lg-forgot {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--lg-brand);
+  text-decoration: none;
+  transition: color .15s;
+}
+.lg-forgot:hover { color: var(--lg-brand-d); }
+
+/* Input wrapper */
+.lg-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--lg-gray-100);
+  border: 1.5px solid var(--lg-gray-200);
+  border-radius: 12px;
+  padding: 0 14px;
+  height: 50px;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+  position: relative;
+}
+.lg-input-wrap:focus-within {
+  border-color: var(--lg-brand);
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.10);
+  background: #FFFFFF;
+}
+.lg-input-error {
+  border-color: var(--lg-danger);
+  background: var(--lg-danger-bg);
+}
+.lg-input-error:focus-within {
+  border-color: var(--lg-danger);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.10);
+}
+
+.lg-input-icon {
+  color: #666;
+  flex-shrink: 0;
+  transition: color .2s;
+}
+.lg-input-wrap:focus-within .lg-input-icon {
+  color: var(--lg-brand);
+}
+
+.lg-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 15.5px;
+  color: #333;
+  font-family: inherit;
+  height: 100%;
+  min-width: 0;
+}
+.lg-input::placeholder {
+  color: var(--lg-t3);
+}
+.lg-input:disabled {
+  color: #999;
+}
+.lg-input-password {
+  padding-right: 34px;
+}
+
+.lg-eye-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, color .15s;
+}
+.lg-eye-btn:hover {
+  background: rgba(13, 148, 136, 0.08);
+  color: var(--lg-brand);
+}
+.lg-eye-btn:disabled { cursor: not-allowed; color: #BDBDBD; }
+
+.lg-field-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  color: var(--lg-danger);
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+/* ─── Remember me ─── */
+.lg-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  color: #666;
+  align-self: flex-start;
+  transition: color .15s;
+}
+.lg-remember:hover:not(:disabled) { color: var(--lg-t1); }
+.lg-remember:disabled { cursor: not-allowed; opacity: 0.7; }
+
+.lg-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.5px solid var(--lg-gray-200);
+  background: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  transition: background .18s, border-color .18s;
+  flex-shrink: 0;
+}
+.lg-checkbox.is-checked {
+  background: var(--lg-brand);
+  border-color: var(--lg-brand);
+}
+
+/* ─── Submit button ─── */
+.lg-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, var(--lg-brand), var(--lg-brand-l));
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.1px;
+  padding: 15px 22px;
+  border: none;
+  border-radius: 13px;
+  cursor: pointer;
+  transition: filter .18s, transform .18s, box-shadow .18s;
+  box-shadow: 0 6px 18px rgba(13, 148, 136, 0.28);
+  font-family: inherit;
+  margin-top: 4px;
+}
+.lg-submit:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px rgba(13, 148, 136, 0.36);
+}
+.lg-submit:active:not(:disabled) { transform: translateY(0); }
+.lg-submit:disabled {
+  background: var(--lg-brand-border);
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: none;
+  transform: none;
+}
+.lg-submit.is-loading { cursor: wait; }
+
+@keyframes lgSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.lg-spin {
+  animation: lgSpin 0.9s linear infinite;
+}
+
+/* ─── Signup link ─── */
+.lg-signup {
+  text-align: center;
+  font-size: 14.5px;
+  color: #666;
+  margin-top: 22px;
+}
+
+.lg-signup-link {
+  color: var(--lg-brand);
+  font-weight: 700;
+  text-decoration: none;
+  transition: color .15s;
+}
+.lg-signup-link:hover { color: var(--lg-brand-d); }
+
+/* ─── Mobile tweaks ─── */
+@media (max-width: 480px) {
+  .lg-page { padding: 28px 14px 40px; }
+  .lg-back { top: 16px; left: 16px; width: 36px; height: 36px; }
+  .lg-card { border-radius: 20px; padding: 22px 20px; }
+  .lg-vendor-title { font-size: 15px; }
+  .lg-vendor-cta { padding: 12px 14px; }
+  .lg-vendor-cta-left { font-size: 14.5px; }
+  .lg-vendor-cta-right { font-size: 11.5px; padding: 3px 10px; }
+  .lg-submit { font-size: 15.5px; padding: 14px 20px; }
+}

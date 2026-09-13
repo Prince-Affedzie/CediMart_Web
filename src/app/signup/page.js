@@ -1,64 +1,31 @@
 // src/app/signup/page.js
 'use client';
 
-import { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import icon from '@/app/icon.jpg';
-import GoogleLogo from '@/assets/Google-logo.png';
-import { 
-  User, 
-  Phone, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  AlertCircle, 
+import { useRouter } from 'next/navigation';
+import {
+  User,
+  Phone,
+  Lock,
+  Eye,
+  EyeOff,
   ArrowRight,
+  ArrowLeft,
   Loader2,
-  UserPlus,
-  Check
+  AlertCircle,
+  Check,
+  Info,
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { SignUp } from '@/apis/userApi';
+import BrandLogo from '@/assets/cedimart_logo.png';
+import './signup.css';
 
-// ─── API imports ───────────────────────────────────────────────────────────
-import { login as authLogin, signUpByGoogle, SignUp } from '@/apis/authApi';
-
-// ─── Force dynamic rendering (fixes Vercel build error) ────────────────────
-export const dynamic = 'force-dynamic';
-
-// ─── Teal + Coral Design Tokens ────────────────────────────────────────────
-const C = {
-  brand:        '#0D9488',
-  brandL:       '#14B8A6',
-  brandD:       '#0F766E',
-  brandBg:      '#F0FDFA',
-  brandBorder:  '#99F6E4',
-  accent:       '#F97316',
-  accentBg:     '#FFF7ED',
-  accentBorder: '#FED7AA',
-  success:      '#059669',
-  successBg:    '#ECFDF5',
-  danger:       '#DC2626',
-  dangerBg:     '#FEF2F2',
-  info:         '#0284C7',
-  infoBg:       '#F0F9FF',
-  white:        '#FFFFFF',
-  black:        '#000000',
-  t1:           '#0F172A',
-  t2:           '#475569',
-  t3:           '#94A3B8',
-  gray50:       '#FAFAFA',
-  gray100:      '#F5F5F5',
-  gray200:      '#E5E7EB',
-};
-
-// ─── Inner component (uses useSearchParams) ────────────────────────────────
-function SignUpContent() {
+export default function SignUpPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const nextUrl = searchParams.get('next') || '/';
-  const refCode = searchParams.get('ref') || '';
+  const { login: authLogin, isAuthenticated } = useAuth();
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -67,623 +34,418 @@ function SignUpContent() {
     password: '',
     confirmPassword: '',
   });
-  const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [generalError, setGeneralError] = useState('');
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [topError, setTopError] = useState('');
 
-  const isLoading = loading || googleLoading;
-
-  const buildRedirectUrl = () => nextUrl;
+  // If already authenticated, bounce
+  useEffect(() => {
+    if (isAuthenticated) router.replace('/');
+  }, [isAuthenticated, router]);
 
   const validateForm = () => {
-    const newErrors = {};
-    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-    else if (formData.firstName.length < 2) newErrors.firstName = 'First name must be at least 2 characters';
-    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-    else if (formData.lastName.length < 2) newErrors.lastName = 'Last name must be at least 2 characters';
-    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
-    else if (!/^[0-9]{10,15}$/.test(formData.phone)) newErrors.phone = 'Please enter a valid phone number';
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-    if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
-    else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const next = {};
+    const fn = formData.firstName.trim();
+    const ln = formData.lastName.trim();
+    const ph = formData.phone.trim();
+
+    if (!fn) next.firstName = 'First name is required';
+    else if (fn.length < 2) next.firstName = 'First name must be at least 2 characters';
+
+    if (!ln) next.lastName = 'Last name is required';
+    else if (ln.length < 2) next.lastName = 'Last name must be at least 2 characters';
+
+    if (!ph) next.phone = 'Phone number is required';
+    else if (!/^[0-9]{10,15}$/.test(ph)) next.phone = 'Please enter a valid phone number';
+
+    if (!formData.password) next.password = 'Password is required';
+    else if (formData.password.length < 6) next.password = 'Password must be at least 6 characters';
+
+    if (!formData.confirmPassword) next.confirmPassword = 'Please confirm your password';
+    else if (formData.password !== formData.confirmPassword) next.confirmPassword = 'Passwords do not match';
+
+    if (!agreedToTerms) next.terms = 'You must agree to the Terms of Service and Privacy Policy';
+
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
-    setGeneralError('');
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }));
+    if (topError) setTopError('');
   };
 
-  const handleGoogleSignUp = async () => {
-    if (isLoading) return;
-    setGoogleLoading(true);
-    setGeneralError('');
-    try {
-      const response = await signUpByGoogle({ token: 'google_web_token' });
-      if (response?.success || response.status ===200) {
-        localStorage.setItem('cm_token', response.data.token);
-        localStorage.setItem('cm_user', JSON.stringify(response.data?.user));
-        router.push(buildRedirectUrl());
-      } else {
-        setGeneralError(response?.error || response?.message || 'Google sign-up failed. Please try phone sign-up instead.');
-      }
-    } catch (error) {
-      setGeneralError('Google Sign-Up failed. Please try again or use phone sign-up.');
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
+  const handleSignUp = async (e) => {
+    e?.preventDefault();
+    if (loading) return;
 
-  const handleSignUp = async () => {
-    if (!validateForm()) return;
     if (!agreedToTerms) {
-      setGeneralError('Please agree to the Terms of Service and Privacy Policy');
+      setErrors((prev) => ({
+        ...prev,
+        terms: 'You must agree to the Terms of Service and Privacy Policy',
+      }));
       return;
     }
 
+    if (!validateForm()) return;
+
     setLoading(true);
-    setGeneralError('');
-    
+    setTopError('');
+
     try {
-      const signUpResponse = await SignUp({
+      const response = await SignUp({
         firstName: formData.firstName.trim(),
         lastName: formData.lastName.trim(),
         phone: formData.phone.trim(),
         password: formData.password,
       });
 
-      // Auto-login after successful signup
-      const loginResponse = await authLogin({
-        phone: formData.phone.trim(),
-        password: formData.password,
-      });
+      if (response.status === 200 || response.success) {
+        // Auto-login after successful signup (same flow as mobile)
+        const loginResponse = await authLogin({
+          phone: formData.phone.trim(),
+          password: formData.password,
+        });
 
-      if (loginResponse?.success || loginResponse?.status === 200) {
-        localStorage.setItem('cm_token', loginResponse.data.token);
-        localStorage.setItem('cm_user', JSON.stringify(loginResponse.data?.user));
-        router.push(buildRedirectUrl());
+        if (loginResponse.success) {
+          const redirect = new URLSearchParams(window.location.search).get('redirect') || '/';
+          router.replace(redirect);
+        } else {
+          setTopError('Account created but auto-login failed. Please sign in manually.');
+          setTimeout(() => router.replace('/login'), 1500);
+        }
       } else {
-        setGeneralError('Account created successfully! Please sign in to continue.');
-        setTimeout(() => {
-          router.push(`/auth?next=${encodeURIComponent(nextUrl)}`);
-        }, 2000);
+        setTopError(
+          response.error || response.message || 'Registration failed. Please try again.'
+        );
       }
-    } catch (error) {
-      console.log('Full error object:', error);
-      console.log('Error response:', error?.response);
-      console.log('Error response data:', error?.response?.data);
-      
-      let errorMessage = 'Registration failed. Please try again.';
-      
-      if (error?.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error?.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      } else if (error?.response?.data?.mesaage) {
-        errorMessage = error.response.data.mesaage;
-      } else if (error?.message && !error?.message.includes('status code')) {
-        errorMessage = error.message;
-      }
-      
-      setGeneralError(errorMessage);
+    } catch (err) {
+      console.error('Signup error:', err);
+      setTopError('An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const passwordHintId = 'su-password-hint';
+  const termsErrorId = 'su-terms-error';
+
   return (
-    <>
-      <style>{signupStyles}</style>
+    <div className="su-page">
+      {/* Back button */}
+      <button
+        type="button"
+        className="su-back"
+        onClick={() => router.back()}
+        aria-label="Go back"
+      >
+        <ArrowLeft size={18} strokeWidth={2.4} />
+      </button>
 
-      <div className="signup-page">
-        <div className="signup-card">
-          <div className="signup-logo">
-            <Image src={icon} alt="CediMart" width={56} height={56} priority />
-          </div>
+      <div className="su-shell">
+        <div className="su-card">
+          {/* Header */}
+          <header className="su-header">
+            <div className="su-logo-wrap">
+              <Image
+                src={BrandLogo}
+                alt="CediMart"
+                width={56}
+                height={56}
+                priority
+                className="su-logo"
+              />
+            </div>
+            <h1 className="su-title">Create Account</h1>
+            <p className="su-subtitle">Join our community of buyers and sellers</p>
+          </header>
 
-          <h1 className="signup-title">Create Account</h1>
-          <p className="signup-subtitle">Join our community of buyers and sellers</p>
-
-          {/* Google Sign Up - Commented out for now
-          <button className="signup-google-btn" onClick={handleGoogleSignUp} disabled={isLoading}>
-            {googleLoading ? (
-              <span className="signup-btn-loading">
-                <Loader2 size={18} className="signup-spinner-icon" /> Connecting...
+          {/* Vendor banner */}
+          <Link href="/vendor-signup" className="su-vendor-banner">
+            <div className="su-vendor-accent" />
+            <div className="su-vendor-content">
+              <div className="su-vendor-title-row">
+                <span className="su-vendor-title">Wants to sell on CediMart?</span>
+                <span className="su-vendor-badge">NEW</span>
+              </div>
+            </div>
+            <div className="su-vendor-cta">
+              <span className="su-vendor-cta-left">
+                Create Vendor Account Here
+                <ArrowRight size={16} strokeWidth={2.6} />
               </span>
-            ) : (
-              <>
-                <Image src={GoogleLogo} alt="Google" width={20} height={20} />
-                <span>Continue with Google</span>
-              </>
-            )}
-          </button>
-          
-          <div className="signup-divider">
-            <span className="signup-divider-line" />
-            <span className="signup-divider-text">OR</span>
-            <span className="signup-divider-line" />
-          </div>
-          */}
+              <span className="su-vendor-cta-right">It&apos;s free!</span>
+            </div>
+          </Link>
 
-          <form onSubmit={(e) => { e.preventDefault(); handleSignUp(); }} className="signup-form">
-            <div className="signup-name-row">
-              <div className="signup-input-group signup-half">
-                <label className="signup-label">First Name</label>
-                <div className={`signup-input-wrap ${errors.firstName ? 'signup-input-error' : ''}`}>
-                  <User size={18} className="signup-input-icon" />
+          {/* Divider */}
+          <div className="su-divider-row">
+            <span className="su-divider" />
+            <span className="su-divider-text">For Buyers</span>
+            <span className="su-divider" />
+          </div>
+
+          {/* Terms card */}
+          <div className="su-terms-card">
+            <button
+              type="button"
+              className="su-terms-row"
+              onClick={() => {
+                setAgreedToTerms((v) => !v);
+                if (errors.terms) setErrors((prev) => ({ ...prev, terms: '' }));
+              }}
+              disabled={loading}
+              aria-pressed={agreedToTerms}
+              aria-describedby={errors.terms ? termsErrorId : undefined}
+            >
+              <span className={`su-checkbox${agreedToTerms ? ' is-checked' : ''}`}>
+                {agreedToTerms && <Check size={14} strokeWidth={3} />}
+              </span>
+              <span className="su-terms-text">
+                I agree to the{' '}
+                <Link
+                  href="/terms-of-service"
+                  className="su-terms-link"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Terms of Service
+                </Link>{' '}
+                and{' '}
+                <Link
+                  href="/privacy-policy"
+                  className="su-terms-link"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Privacy Policy
+                </Link>
+              </span>
+            </button>
+
+            {errors.terms && (
+              <span id={termsErrorId} className="su-terms-error">
+                <AlertCircle size={13} strokeWidth={2.4} /> {errors.terms}
+              </span>
+            )}
+
+            <p className="su-terms-note">
+              By creating an account, you acknowledge that CediMart is a platform
+              powered by user-generated content. You agree to our zero-tolerance
+              policy on abuse, harassment, and hate speech.
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div className="su-divider-row">
+            <span className="su-divider" />
+            <span className="su-divider-text">OR</span>
+            <span className="su-divider" />
+          </div>
+
+          {/* Top error banner */}
+          {topError && (
+            <div className="su-error-banner" role="alert">
+              <AlertCircle size={16} strokeWidth={2.4} />
+              <span>{topError}</span>
+            </div>
+          )}
+
+          {/* Form */}
+          <form className="su-form" onSubmit={handleSignUp} noValidate>
+            {/* Name row */}
+            <div className="su-name-row">
+              <div className="su-field">
+                <label htmlFor="su-firstName" className="su-label">
+                  First Name
+                </label>
+                <div className={`su-input-wrap${errors.firstName ? ' su-input-error' : ''}`}>
+                  <User size={18} strokeWidth={2.2} className="su-input-icon" />
                   <input
+                    id="su-firstName"
                     type="text"
-                    className="signup-input"
+                    autoComplete="given-name"
+                    className="su-input"
                     placeholder="John"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                     maxLength={30}
-                    disabled={isLoading}
-                    autoCapitalize="words"
+                    disabled={loading}
                   />
                 </div>
-                {errors.firstName && <p className="signup-error-text">{errors.firstName}</p>}
+                {errors.firstName && (
+                  <span className="su-field-error">
+                    <AlertCircle size={13} strokeWidth={2.4} /> {errors.firstName}
+                  </span>
+                )}
               </div>
 
-              <div className="signup-input-group signup-half">
-                <label className="signup-label">Last Name</label>
-                <div className={`signup-input-wrap ${errors.lastName ? 'signup-input-error' : ''}`}>
-                  <User size={18} className="signup-input-icon" />
+              <div className="su-field">
+                <label htmlFor="su-lastName" className="su-label">
+                  Last Name
+                </label>
+                <div className={`su-input-wrap${errors.lastName ? ' su-input-error' : ''}`}>
+                  <User size={18} strokeWidth={2.2} className="su-input-icon" />
                   <input
+                    id="su-lastName"
                     type="text"
-                    className="signup-input"
+                    autoComplete="family-name"
+                    className="su-input"
                     placeholder="Doe"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                     maxLength={30}
-                    disabled={isLoading}
-                    autoCapitalize="words"
+                    disabled={loading}
                   />
                 </div>
-                {errors.lastName && <p className="signup-error-text">{errors.lastName}</p>}
+                {errors.lastName && (
+                  <span className="su-field-error">
+                    <AlertCircle size={13} strokeWidth={2.4} /> {errors.lastName}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="signup-input-group">
-              <label className="signup-label">Phone Number</label>
-              <div className={`signup-input-wrap ${errors.phone ? 'signup-input-error' : ''}`}>
-                <Phone size={18} className="signup-input-icon" />
+            {/* Phone */}
+            <div className="su-field">
+              <label htmlFor="su-phone" className="su-label">
+                Phone Number
+              </label>
+              <div className={`su-input-wrap${errors.phone ? ' su-input-error' : ''}`}>
+                <Phone size={18} strokeWidth={2.2} className="su-input-icon" />
                 <input
+                  id="su-phone"
                   type="tel"
-                  className="signup-input"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  className="su-input"
                   placeholder="e.g., 0541234567"
                   value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value.replace(/[^0-9]/g, ''))}
+                  onChange={(e) =>
+                    handleInputChange('phone', e.target.value.replace(/[^0-9]/g, ''))
+                  }
                   maxLength={15}
-                  disabled={isLoading}
-                  autoComplete="tel"
+                  disabled={loading}
                 />
               </div>
-              {errors.phone && <p className="signup-error-text">{errors.phone}</p>}
+              {errors.phone && (
+                <span className="su-field-error">
+                  <AlertCircle size={13} strokeWidth={2.4} /> {errors.phone}
+                </span>
+              )}
             </div>
 
-            <div className="signup-input-group">
-              <label className="signup-label">Password</label>
-              <div className={`signup-input-wrap ${errors.password ? 'signup-input-error' : ''}`}>
-                <Lock size={18} className="signup-input-icon" />
+            {/* Password */}
+            <div className="su-field">
+              <label htmlFor="su-password" className="su-label">
+                Password
+              </label>
+              <div className={`su-input-wrap${errors.password ? ' su-input-error' : ''}`}>
+                <Lock size={18} strokeWidth={2.2} className="su-input-icon" />
                 <input
+                  id="su-password"
                   type={showPassword ? 'text' : 'password'}
-                  className="signup-input signup-password-input"
+                  autoComplete="new-password"
+                  className="su-input su-input-password"
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  disabled={isLoading}
-                  autoComplete="new-password"
+                  disabled={loading}
+                  aria-describedby={passwordHintId}
                 />
                 <button
                   type="button"
-                  className="signup-eye-btn"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
-                  tabIndex={-1}
+                  className="su-eye-btn"
+                  onClick={() => setShowPassword((s) => !s)}
+                  disabled={loading}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? (
+                    <EyeOff size={18} strokeWidth={2.2} />
+                  ) : (
+                    <Eye size={18} strokeWidth={2.2} />
+                  )}
                 </button>
               </div>
-              {errors.password && <p className="signup-error-text">{errors.password}</p>}
-              <p className="signup-hint">Must be at least 6 characters long</p>
+              {errors.password && (
+                <span className="su-field-error">
+                  <AlertCircle size={13} strokeWidth={2.4} /> {errors.password}
+                </span>
+              )}
+              <span id={passwordHintId} className="su-hint">
+                <Info size={13} strokeWidth={2.4} /> Must be at least 6 characters long
+              </span>
             </div>
 
-            <div className="signup-input-group">
-              <label className="signup-label">Confirm Password</label>
-              <div className={`signup-input-wrap ${errors.confirmPassword ? 'signup-input-error' : ''}`}>
-                <Lock size={18} className="signup-input-icon" />
+            {/* Confirm password */}
+            <div className="su-field">
+              <label htmlFor="su-confirmPassword" className="su-label">
+                Confirm Password
+              </label>
+              <div className={`su-input-wrap${errors.confirmPassword ? ' su-input-error' : ''}`}>
+                <Lock size={18} strokeWidth={2.2} className="su-input-icon" />
                 <input
+                  id="su-confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
-                  className="signup-input signup-password-input"
+                  autoComplete="new-password"
+                  className="su-input su-input-password"
                   placeholder="••••••••"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  disabled={isLoading}
-                  autoComplete="new-password"
+                  disabled={loading}
                 />
                 <button
                   type="button"
-                  className="signup-eye-btn"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  disabled={isLoading}
-                  tabIndex={-1}
+                  className="su-eye-btn"
+                  onClick={() => setShowConfirmPassword((s) => !s)}
+                  disabled={loading}
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showConfirmPassword ? (
+                    <EyeOff size={18} strokeWidth={2.2} />
+                  ) : (
+                    <Eye size={18} strokeWidth={2.2} />
+                  )}
                 </button>
               </div>
-              {errors.confirmPassword && <p className="signup-error-text">{errors.confirmPassword}</p>}
+              {errors.confirmPassword && (
+                <span className="su-field-error">
+                  <AlertCircle size={13} strokeWidth={2.4} /> {errors.confirmPassword}
+                </span>
+              )}
             </div>
 
-            <label className="signup-terms">
-              <input
-                type="checkbox"
-                checked={agreedToTerms}
-                onChange={(e) => setAgreedToTerms(e.target.checked)}
-                className="signup-checkbox"
-                disabled={isLoading}
-              />
-              <span>
-                I agree to the{' '}
-                <Link href="/terms" className="signup-link">Terms of Service</Link>
-                {' '}and{' '}
-                <Link href="/privacy" className="signup-link">Privacy Policy</Link>
-              </span>
-            </label>
-
-            {generalError && (
-              <div className="signup-general-error">
-                <AlertCircle size={16} /> {generalError}
-              </div>
-            )}
-
-            <button type="submit" className="signup-submit-btn" disabled={isLoading}>
+            {/* Submit */}
+            <button
+              type="submit"
+              className={`su-submit${loading ? ' is-loading' : ''}`}
+              disabled={loading}
+            >
               {loading ? (
-                <span className="signup-btn-loading">
-                  <Loader2 size={18} className="signup-spinner-icon" /> Creating Account...
-                </span>
+                <>
+                  <Loader2 size={18} strokeWidth={2.4} className="su-spin" />
+                  <span>Creating Account...</span>
+                </>
               ) : (
                 <>
-                  <UserPlus size={18} />
-                  <span>Create Account</span>
-                  <ArrowRight size={18} className="signup-submit-arrow" />
+                  <span>Create Shopper Account</span>
+                  <ArrowRight size={18} strokeWidth={2.6} />
                 </>
               )}
             </button>
           </form>
 
-          <p className="signup-login-link">
+          {/* Sign-in link */}
+          <p className="su-login">
             Already have an account?{' '}
-            <Link href={`/auth?next=${encodeURIComponent(nextUrl)}${refCode ? `&ref=${refCode}` : ''}`}>
+            <Link href="/login" className="su-login-link">
               Sign In
             </Link>
           </p>
         </div>
       </div>
-    </>
+    </div>
   );
 }
-
-// ─── Loading fallback ─────────────────────────────────────────────────────
-function SignUpFallback() {
-  return (
-    <>
-      <style>{signupStyles}</style>
-      <div className="signup-page">
-        <div className="signup-card" style={{ textAlign: 'center', padding: '40px' }}>
-          <div className="signup-logo">
-            <Image src={icon} alt="CediMart" width={56} height={56} priority />
-          </div>
-          <Loader2 size={36} className="signup-spinner-icon" style={{ margin: '20px auto', display: 'block', animation: 'spin .7s linear infinite' }} />
-          <p style={{ marginTop: 12, color: '#475569', fontSize: 14 }}>Loading...</p>
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ─── Page export with Suspense boundary ────────────────────────────────────
-export default function SignUpPage() {
-  return (
-    <Suspense fallback={<SignUpFallback />}>
-      <SignUpContent />
-    </Suspense>
-  );
-}
-
-// ─── Styles ─────────────────────────────────────────────────────────────────
-const signupStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
-
-  .signup-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: ${C.gray50};
-    padding: 20px;
-    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-  }
-
-  .signup-card {
-    background: ${C.white};
-    border-radius: 20px;
-    padding: clamp(28px, 4vw, 40px);
-    max-width: 460px;
-    width: 100%;
-    box-shadow: 0 4px 24px rgba(0,0,0,.06);
-    border: 1px solid ${C.gray200};
-  }
-
-  .signup-logo {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-  .signup-logo img {
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(13,148,136,.15);
-  }
-
-  .signup-title {
-    font-size: 26px;
-    font-weight: 800;
-    color: ${C.brandD};
-    text-align: center;
-    margin-bottom: 6px;
-    letter-spacing: -.3px;
-  }
-  .signup-subtitle {
-    font-size: 14px;
-    color: ${C.t2};
-    text-align: center;
-    margin-bottom: 24px;
-  }
-
-  .signup-google-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 14px;
-    border-radius: 12px;
-    border: 1.5px solid ${C.gray200};
-    background: ${C.white};
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 600;
-    color: ${C.t1};
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    transition: all .2s;
-    margin-bottom: 20px;
-  }
-  .signup-google-btn:hover:not(:disabled) {
-    border-color: ${C.brand};
-    background: ${C.brandBg};
-  }
-  .signup-google-btn:disabled {
-    opacity: .6;
-    cursor: not-allowed;
-  }
-  .signup-google-btn img {
-    width: 20px;
-    height: 20px;
-  }
-
-  .signup-divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-  .signup-divider-line {
-    flex: 1;
-    height: 1px;
-    background: ${C.gray200};
-  }
-  .signup-divider-text {
-    font-size: 13px;
-    color: ${C.t3};
-    font-weight: 500;
-  }
-
-  .signup-form {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .signup-name-row {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 0;
-  }
-  .signup-half { flex: 1; }
-
-  .signup-input-group { margin-bottom: 16px; }
-  .signup-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: ${C.t2};
-    margin-bottom: 6px;
-  }
-
-  .signup-input-wrap {
-    display: flex;
-    align-items: center;
-    background: ${C.gray50};
-    border: 1.5px solid ${C.gray200};
-    border-radius: 12px;
-    padding: 0 14px;
-    transition: border-color .2s, box-shadow .2s;
-    position: relative;
-  }
-  .signup-input-wrap:focus-within {
-    border-color: ${C.brand};
-    box-shadow: 0 0 0 3px rgba(13,148,136,.1);
-    background: ${C.white};
-  }
-  .signup-input-error {
-    border-color: ${C.danger};
-    background: ${C.dangerBg};
-  }
-  .signup-input-error:focus-within {
-    border-color: ${C.danger};
-    box-shadow: 0 0 0 3px rgba(220,38,38,.1);
-  }
-
-  .signup-input-icon {
-    color: ${C.t3};
-    margin-right: 8px;
-    flex-shrink: 0;
-  }
-  .signup-input-wrap:focus-within .signup-input-icon {
-    color: ${C.brand};
-  }
-  .signup-input-error .signup-input-icon {
-    color: ${C.danger};
-  }
-  
-  .signup-input {
-    flex: 1;
-    border: none;
-    outline: none;
-    padding: 13px 0;
-    font-size: 15px;
-    color: ${C.t1};
-    background: transparent;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-  }
-  .signup-input::placeholder { color: ${C.t3}; }
-  .signup-password-input { padding-right: 40px; }
-  .signup-eye-btn {
-    position: absolute;
-    right: 14px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: ${C.t3};
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color .15s;
-  }
-  .signup-eye-btn:hover { color: ${C.t2}; }
-
-  .signup-error-text {
-    font-size: 12px;
-    color: ${C.danger};
-    margin-top: 5px;
-    margin-left: 2px;
-    font-weight: 500;
-  }
-  .signup-hint {
-    font-size: 11px;
-    color: ${C.t3};
-    margin-top: 6px;
-    margin-left: 2px;
-  }
-
-  .signup-terms {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 13px;
-    color: ${C.t2};
-    cursor: pointer;
-    margin-bottom: 20px;
-    line-height: 1.5;
-  }
-  .signup-checkbox {
-    width: 18px;
-    height: 18px;
-    accent-color: ${C.brand};
-    cursor: pointer;
-    margin-top: 2px;
-    flex-shrink: 0;
-  }
-  .signup-link {
-    color: ${C.brand};
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .signup-link:hover { text-decoration: underline; }
-
-  .signup-general-error {
-    background: ${C.dangerBg};
-    border: 1px solid #FECACA;
-    color: ${C.danger};
-    font-size: 13px;
-    font-weight: 500;
-    padding: 10px 14px;
-    border-radius: 10px;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .signup-submit-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 15px;
-    border-radius: 12px;
-    border: none;
-    background: ${C.brand};
-    color: ${C.white};
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    transition: all .2s;
-    margin-bottom: 16px;
-  }
-  .signup-submit-btn:hover:not(:disabled) {
-    background: ${C.brandD};
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(13,148,136,.25);
-  }
-  .signup-submit-btn:disabled {
-    background: ${C.brandBorder};
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  .signup-btn-loading { display: flex; align-items: center; gap: 8px; }
-  .signup-spinner-icon {
-    animation: spin .7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .signup-login-link {
-    text-align: center;
-    font-size: 14px;
-    color: ${C.t2};
-  }
-  .signup-login-link a {
-    color: ${C.brand};
-    font-weight: 700;
-    text-decoration: none;
-  }
-  .signup-login-link a:hover { text-decoration: underline; }
-
-  @media (max-width: 480px) {
-    .signup-card { padding: 24px 20px; border-radius: 16px; }
-    .signup-title { font-size: 22px; }
-    .signup-name-row { flex-direction: column; gap: 0; }
-  }
-`;
