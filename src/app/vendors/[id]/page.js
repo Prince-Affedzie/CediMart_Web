@@ -138,7 +138,7 @@ function VendorProductCard({ product }) {
     : 0;
 
   return (
-    <Link href={`/products/${product._id}`} className="vdt-product-card">
+    <Link href={`/product/${product._id}`} className="vdt-product-card">
       <div className="vdt-product-img-wrap">
         {imageUri ? (
           <Image
