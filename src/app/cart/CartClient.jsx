@@ -1,13 +1,12 @@
 // src/app/cart/CartClient.jsx
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   ChevronLeft,
-  ChevronRight,
   Minus,
   Plus,
   Trash2,
@@ -27,7 +26,12 @@ import './cart.css';
 
 export default function CartClient() {
   const router = useRouter();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  // NOTE: no authLoading here — we only care whether the user is signed in
+  // once the cart has finished loading. Any transient "not authenticated"
+  // flash during refresh is handled by the natural re-render when
+  // isAuthenticated flips to true.
+  const { isAuthenticated } = useAuth();
+
   const {
     cartItems = [],
     cartTotal = 0,
@@ -45,10 +49,17 @@ export default function CartClient() {
   const [errorMsg, setErrorMsg] = useState('');
   const [toast, setToast] = useState({ msg: '', danger: false });
 
+  // Guard so the initial load runs exactly once, even if `refreshCart`
+  // changes identity across renders.
+  const didInitRef = useRef(false);
+
   // ── Initial load ──────────────────────────────────────────────
   useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+
     let active = true;
-    const load = async () => {
+    (async () => {
       try {
         if (refreshCart) await refreshCart();
       } catch (err) {
@@ -56,10 +67,14 @@ export default function CartClient() {
       } finally {
         if (active) setScreenLoading(false);
       }
+    })();
+
+    return () => {
+      active = false;
+      didInitRef.current = false;
     };
-    load();
-    return () => { active = false; };
-  }, [refreshCart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Toast helper ──────────────────────────────────────────────
   const showToast = useCallback((msg, danger = false) => {
@@ -143,7 +158,7 @@ export default function CartClient() {
       return;
     }
     if (!isAuthenticated) {
-      router.push('/login?redirect=/checkout');
+      router.push('/login?redirect=/cart');
       return;
     }
     setCheckoutLoading(true);
@@ -154,7 +169,7 @@ export default function CartClient() {
   };
 
   // ── LOADING STATE ─────────────────────────────────────────────
-  if (authLoading || screenLoading) {
+  if (screenLoading) {
     return (
       <div className="ct-page">
         <div className="ct-shell">

@@ -5,19 +5,24 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { 
-  Menu, 
-  X, 
+import {
+  Menu,
+  X,
   Home as HomeIcon,
   Store,
-  Package, 
-  Bot, 
-  BookOpen, 
-  MessageCircle, 
+  Package,
+  Bot,
+  BookOpen,
+  MessageCircle,
   Download,
   Smartphone,
+  ShoppingCart,
+  Heart,
+  User as UserIcon,
 } from 'lucide-react';
 import icon from '@/app/icon.jpg';
+import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 
 const NAV_LINKS = [
   { label: 'Home',         href: '/',             icon: HomeIcon },
@@ -31,6 +36,15 @@ const NAV_LINKS = [
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
+
+  const { cartCount = 0 } = useCart();
+  const { isAuthenticated, user } = useAuth();
+
+  // If logged out, force counters to zero — don't trust stale cart state.
+  const safeCartCount = isAuthenticated ? cartCount : 0;
+  const favoritesCount = isAuthenticated
+    ? user?.favorites?.length || user?.favoritesCount || 0
+    : 0;
 
   // Lock background scroll while the drawer is open
   useEffect(() => {
@@ -62,6 +76,15 @@ export default function Header() {
           border-bottom: 1px solid #E2E8F0;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
           gap: 16px;
+          
+        }
+
+        /* Left cluster: hamburger (mobile) + logo */
+        .nav-left {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-shrink: 0;
         }
 
         .nav-logo {
@@ -144,37 +167,98 @@ export default function Header() {
           flex-shrink: 0;
         }
 
-        /* Desktop CTA */
-        .nav-cta-desktop {
+        /* Right cluster: counters + login (desktop) */
+        .nav-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+
+        .nav-counter {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          background: #F8FAFC;
+          border: 1px solid #E2E8F0;
+          color: #475569;
+          text-decoration: none;
+          transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.18s;
+        }
+        .nav-counter:hover {
+          background: #F0FDFA;
+          color: #0D9488;
+          border-color: #99F6E4;
+          transform: translateY(-1px);
+        }
+        .nav-counter.is-empty {
+          color: #94A3B8;
+        }
+
+        .nav-counter-badge {
+          position: absolute;
+          top: -4px;
+          right: -4px;
+          min-width: 18px;
+          height: 18px;
+          padding: 0 5px;
+          border-radius: 9px;
+          background: #F97316;
+          color: #fff;
+          font-size: 10.5px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-variant-numeric: tabular-nums;
+          border: 2px solid #FFFFFF;
+          box-sizing: content-box;
+        }
+        .nav-counter-badge.is-zero {
+          display: none;
+        }
+        .nav-counter-badge.brand {
+          background: #0D9488;
+        }
+
+        .nav-login {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
           background: linear-gradient(135deg, #0D9488, #14B8A6);
           color: #fff;
           font-size: 13px;
           font-weight: 700;
-          padding: 10px 22px;
+          padding: 10px 18px;
           border-radius: 40px;
           text-decoration: none;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
           transition: all 0.22s ease;
           box-shadow: 0 4px 14px rgba(13, 148, 136, 0.25);
           white-space: nowrap;
-          flex-shrink: 0;
         }
-        .nav-cta-desktop:hover {
+        .nav-login:hover {
           filter: brightness(1.08);
           transform: translateY(-1px);
           box-shadow: 0 6px 20px rgba(13, 148, 136, 0.35);
         }
 
-        /* Hamburger */
+        /* Hamburger (mobile only, on the left) */
         .nav-hamburger {
           display: none;
-          background: none;
-          border: none;
+          background: #F1F5F9;
+          border: 1px solid #E2E8F0;
           color: #475569;
           cursor: pointer;
-          padding: 8px;
+          padding: 0;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          align-items: center;
+          justify-content: center;
           z-index: 60;
         }
 
@@ -281,9 +365,10 @@ export default function Header() {
           color: #0D9488;
         }
 
+        /* ── Footer block: tightened & raised ── */
         .mobile-menu-foot {
           flex-shrink: 0;
-          padding: 14px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+          padding: 10px 18px calc(12px + env(safe-area-inset-bottom, 0px));
           border-top: 1px solid #E2E8F0;
         }
         .mobile-nav-cta {
@@ -291,7 +376,7 @@ export default function Header() {
           align-items: center;
           justify-content: center;
           gap: 8px;
-          padding: 14px;
+          padding: 13px;
           background: linear-gradient(135deg, #0D9488, #14B8A6);
           color: #fff;
           font-size: 14px;
@@ -308,41 +393,44 @@ export default function Header() {
 
         /* Responsive — collapse nav at 900px so 6 links have room */
         @media (max-width: 900px) {
-          .nav-links,
-          .nav-cta-desktop {
+          .nav-links {
             display: none;
           }
           .nav-hamburger {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: #F1F5F9;
-            border: 1px solid #E2E8F0;
+          }
+        }
+
+        /* Hide login text on very small screens, keep icon */
+        @media (max-width: 420px) {
+          .nav-login span {
+            display: none;
+          }
+          .nav-login {
+            padding: 10px 12px;
           }
         }
       `}</style>
 
       <nav className="nav">
-        {/* Logo */}
-        <Link href="/" className="nav-logo">
-          <div className="nav-logo-mark">
-            <Image 
-              src={icon} 
-              alt="CediMart" 
-              width={34} 
-              height={34} 
-              priority
-            />
-          </div>
-          <span className="nav-logo-text">
-            Cedi<span>Mart</span>
-          </span>
-        </Link>
+        {/* ── LEFT: hamburger + logo ── */}
+        <div className="nav-left">
+          <button
+            className="nav-hamburger"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {menuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
 
-        {/* Desktop links */}
+          <Link href="/" className="nav-logo">
+            <span className="nav-logo-text">
+              Cedi<span>Mart</span>
+            </span>
+          </Link>
+        </div>
+
+        {/* ── CENTER: desktop links ── */}
         <div className="nav-links">
           {NAV_LINKS.map((link) => {
             const IconComponent = link.icon;
@@ -361,20 +449,45 @@ export default function Header() {
           })}
         </div>
 
-        {/* Desktop CTA */}
-        <Link href="/download" className="nav-cta-desktop">
-          <Download size={15} />
-          Download App
-        </Link>
+        {/* ── RIGHT: cart + favorites + login ── */}
+        <div className="nav-right">
+          <Link
+            href="/cart"
+            className={`nav-counter${safeCartCount === 0 ? ' is-empty' : ''}`}
+            aria-label={`Cart, ${safeCartCount} item${safeCartCount === 1 ? '' : 's'}`}
+            title="Cart"
+          >
+            <ShoppingCart size={18} strokeWidth={2.2} />
+            <span
+              className={`nav-counter-badge${safeCartCount === 0 ? ' is-zero' : ''}`}
+            >
+              {safeCartCount}
+            </span>
+          </Link>
 
-        {/* Hamburger */}
-        <button
-          className="nav-hamburger"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-        >
-          {menuOpen ? <X size={18} /> : <Menu size={18} />}
-        </button>
+          <Link
+            href="/favorites"
+            className={`nav-counter${favoritesCount === 0 ? ' is-empty' : ''}`}
+            aria-label={`Favorites, ${favoritesCount} item${favoritesCount === 1 ? '' : 's'}`}
+            title="Favorites"
+          >
+            <Heart size={18} strokeWidth={2.2} />
+            <span
+              className={`nav-counter-badge brand${
+                favoritesCount === 0 ? ' is-zero' : ''
+              }`}
+            >
+              {favoritesCount}
+            </span>
+          </Link>
+
+          {!isAuthenticated && (
+            <Link href="/login" className="nav-login">
+              <UserIcon size={14} strokeWidth={2.4} />
+              <span>Login</span>
+            </Link>
+          )}
+        </div>
       </nav>
 
       {/* Mobile menu overlay */}
@@ -387,12 +500,16 @@ export default function Header() {
       <div className={`mobile-menu ${menuOpen ? 'active' : ''}`}>
         <div className="mobile-menu-head">
           <Link href="/" className="nav-logo" onClick={closeMenu}>
-            <div className="nav-logo-mark">
-              <Image src={icon} alt="CediMart" width={34} height={34} />
-            </div>
-            <span className="nav-logo-text">Cedi<span>Mart</span></span>
+            
+            <span className="nav-logo-text">
+              Cedi<span>Mart</span>
+            </span>
           </Link>
-          <button className="mobile-menu-close" onClick={closeMenu} aria-label="Close menu">
+          <button
+            className="mobile-menu-close"
+            onClick={closeMenu}
+            aria-label="Close menu"
+          >
             <X size={15} />
           </button>
         </div>
@@ -419,8 +536,13 @@ export default function Header() {
           })}
         </div>
 
+        {/* Footer block — raised up */}
         <div className="mobile-menu-foot">
-          <Link href="/download" className="mobile-nav-cta" onClick={closeMenu}>
+          <Link
+            href="/download"
+            className="mobile-nav-cta"
+            onClick={closeMenu}
+          >
             <Smartphone size={16} />
             Download App
           </Link>
