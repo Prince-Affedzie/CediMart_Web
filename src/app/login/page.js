@@ -1,292 +1,34 @@
 // src/app/login/page.js
-'use client';
+import { Suspense } from 'react';
+import LoginClient from './LoginClient';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  Phone,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  ArrowLeft,
-  Loader2,
-  AlertCircle,
-  Check,
-} from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import BrandLogo from '@/assets/cedimart_logo.png';
-import './login.css';
-
-const C = {
-  brand:        '#0D9488',
-  brandL:       '#14B8A6',
-  brandD:       '#0F766E',
-  brandBg:      '#F0FDFA',
-  brandBorder:  '#99F6E4',
-  accent:       '#F97316',
-  accentBg:     '#FFF7ED',
-  accentBorder: '#FED7AA',
-  success:      '#059669',
-  danger:       '#DC2626',
-  dangerBg:     '#FEF2F2',
-  info:         '#0284C7',
-  white:        '#FFFFFF',
-  t1:           '#0F172A',
-  t2:           '#475569',
-  t3:           '#94A3B8',
-  gray50:       '#FAFAFA',
-  gray100:      '#F5F5F5',
-  gray200:      '#E5E7EB',
+export const metadata = {
+  title: 'Login · CediMart',
+  description: 'Sign in to your CediMart account',
 };
 
-// ─── Main Component ──────────────────────────────────────────────────────────
-export default function LoginPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { login: authLogin, isAuthenticated } = useAuth();
-
-  const [formData, setFormData] = useState({ phone: '', password: '' });
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [topError, setTopError] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
-
-  // If the user is already signed in, bounce them straight to the redirect target.
-  useEffect(() => {
-    if (isAuthenticated) {
-      const redirect = searchParams.get('redirect') || '/';
-      router.replace(redirect);
-    }
-  }, [isAuthenticated, router, searchParams]);
-
-  const validateForm = () => {
-    const next = {};
-    const trimmed = formData.phone.trim();
-    if (!trimmed) next.phone = 'Phone number is required';
-    else if (!/^[0-9]{10,15}$/.test(trimmed)) next.phone = 'Please enter a valid phone number';
-    if (!formData.password) next.password = 'Password is required';
-    setErrors(next);
-    return Object.keys(next).length === 0;
-  };
-
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: '' }));
-    if (topError) setTopError('');
-  };
-
-  const handleSubmit = async (e) => {
-    e?.preventDefault();
-    if (loading) return;
-    if (!validateForm()) return;
-
-    setLoading(true);
-    setTopError('');
-
-    try {
-      const response = await authLogin({
-        phone: formData.phone.trim(),
-        password: formData.password,
-      });
-
-      if (response?.success) {
-        const redirect = searchParams.get('redirect') || '/';
-        router.replace(redirect);
-      } else {
-        setTopError(
-          response?.error ||
-            response?.message ||
-            "Couldn't sign you in. Please check your details and try again."
-        );
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      setTopError('An unexpected error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+function LoginFallback() {
   return (
-    <div className="lg-page">
-      {/* Back button */}
-      <button
-        type="button"
-        className="lg-back"
-        onClick={() => router.back()}
-        aria-label="Go back"
-      >
-        <ArrowLeft size={18} strokeWidth={2.4} />
-      </button>
-
-      <div className="lg-shell">
-        <div className="lg-card">
-          {/* Header */}
-          <header className="lg-header">
-            <div className="lg-logo-wrap">
-              <Image
-                src={BrandLogo}
-                alt="CediMart"
-                width={56}
-                height={56}
-                priority
-                className="lg-logo"
-              />
-            </div>
-            <h1 className="lg-title">Welcome Back</h1>
-            <p className="lg-subtitle">Sign in to your account to continue</p>
-          </header>
-
-          {/* Vendor banner */}
-          <Link href="/vendor-login" className="lg-vendor-banner">
-            <div className="lg-vendor-accent" />
-            <div className="lg-vendor-content">
-              <div className="lg-vendor-title-row">
-                <span className="lg-vendor-title">Selling on CediMart?</span>
-                <span className="lg-vendor-badge">VENDOR</span>
-              </div>
-            </div>
-            <div className="lg-vendor-cta">
-              <span className="lg-vendor-cta-left">
-                Login as Vendor Here
-                <ArrowRight size={16} strokeWidth={2.6} />
-              </span>
-              <span className="lg-vendor-cta-right">It&apos;s free!</span>
-            </div>
-          </Link>
-
-          {/* Divider */}
-          <div className="lg-divider-row">
-            <span className="lg-divider" />
-            <span className="lg-divider-text">For Buyers</span>
-            <span className="lg-divider" />
-          </div>
-
-          {/* Top error banner */}
-          {topError && (
-            <div className="lg-error-banner" role="alert">
-              <AlertCircle size={16} strokeWidth={2.4} />
-              <span>{topError}</span>
-            </div>
-          )}
-
-          {/* Form */}
-          <form className="lg-form" onSubmit={handleSubmit} noValidate>
-            {/* Phone */}
-            <div className="lg-field">
-              <label htmlFor="lg-phone" className="lg-label">
-                Phone Number
-              </label>
-              <div className={`lg-input-wrap${errors.phone ? ' lg-input-error' : ''}`}>
-                <Phone size={18} strokeWidth={2.2} className="lg-input-icon" />
-                <input
-                  id="lg-phone"
-                  type="tel"
-                  inputMode="numeric"
-                  autoComplete="tel"
-                  className="lg-input"
-                  placeholder="Enter your phone number"
-                  value={formData.phone}
-                  onChange={(e) =>
-                    handleInputChange('phone', e.target.value.replace(/[^0-9]/g, ''))
-                  }
-                  maxLength={15}
-                  disabled={loading}
-                />
-              </div>
-              {errors.phone && (
-                <span className="lg-field-error">
-                  <AlertCircle size={13} strokeWidth={2.4} /> {errors.phone}
-                </span>
-              )}
-            </div>
-
-            {/* Password */}
-            <div className="lg-field">
-              <div className="lg-password-header">
-                <label htmlFor="lg-password" className="lg-label">
-                  Password
-                </label>
-                <Link href="/forgot-password" className="lg-forgot">
-                  Forgot Password?
-                </Link>
-              </div>
-              <div className={`lg-input-wrap${errors.password ? ' lg-input-error' : ''}`}>
-                <Lock size={18} strokeWidth={2.2} className="lg-input-icon" />
-                <input
-                  id="lg-password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  className="lg-input lg-input-password"
-                  placeholder="Enter your password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  className="lg-eye-btn"
-                  onClick={() => setShowPassword((s) => !s)}
-                  disabled={loading}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff size={18} strokeWidth={2.2} /> : <Eye size={18} strokeWidth={2.2} />}
-                </button>
-              </div>
-              {errors.password && (
-                <span className="lg-field-error">
-                  <AlertCircle size={13} strokeWidth={2.4} /> {errors.password}
-                </span>
-              )}
-            </div>
-
-            {/* Remember me */}
-            <button
-              type="button"
-              className="lg-remember"
-              onClick={() => setRememberMe((v) => !v)}
-              disabled={loading}
-              aria-pressed={rememberMe}
-            >
-              <span className={`lg-checkbox${rememberMe ? ' is-checked' : ''}`}>
-                {rememberMe && <Check size={13} strokeWidth={3} />}
-              </span>
-              <span>Remember me</span>
-            </button>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              className={`lg-submit${loading ? ' is-loading' : ''}`}
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 size={18} strokeWidth={2.4} className="lg-spin" />
-                  <span>Signing In...</span>
-                </>
-              ) : (
-                <>
-                  <span>Sign In as Shopper</span>
-                  <ArrowRight size={18} strokeWidth={2.6} />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Sign up link */}
-          <p className="lg-signup">
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="lg-signup-link">
-              Sign Up
-            </Link>
-          </p>
-        </div>
-      </div>
+    <div
+      style={{
+        minHeight: '60vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#94A3B8',
+        fontSize: 15,
+        fontWeight: 500,
+      }}
+    >
+      Loading…
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginClient />
+    </Suspense>
   );
 }
