@@ -238,7 +238,17 @@ html { scroll-behavior: smooth; }
 @media (max-width: 640px) { .why-grid { grid-template-columns: 1fr; } }
 .why-card { background: var(--surf); border: 1px solid var(--border); border-radius: 18px; padding: clamp(20px,3vw,24px); transition: all .28s ease; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
 .why-card:hover { transform: translateY(-4px); border-color: var(--wc); box-shadow: 0 8px 30px rgba(0,0,0,.1); }
-.why-icon { width: clamp(36px,4vw,42px); height: clamp(36px,4vw,42px); border-radius: 13px; background: var(--wb); display: flex; align-items: center; justify-content: center; font-size: clamp(16px,2vw,19px); margin-bottom: clamp(12px,2vw,16px); }
+.why-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wb);      /* item.color at 12% opacity */
+  color: var(--wc);           /* item.color */
+  margin-bottom: 18px;
+}
 .why-title { font-size: clamp(13px,1.6vw,15px); font-weight: 700; color: var(--text); margin-bottom: 7px; }
 .why-desc { font-size: clamp(12px,1.4vw,13.5px); color: var(--off); line-height: 1.65; }
 
