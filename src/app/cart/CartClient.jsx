@@ -164,7 +164,7 @@ export default function CartClient() {
     setCheckoutLoading(true);
     setTimeout(() => {
       setCheckoutLoading(false);
-      router.push('/order');
+      router.push('/checkout');
     }, 800);
   };
 

@@ -154,7 +154,7 @@ export default function MobileTabBar() {
                 }}
               >
                 <span className="mtb-tab-icon-wrap">
-                  <Icon size={24} strokeWidth={active ? 2.4 : 2} />
+                  <Icon size={28} strokeWidth={active ? 2.4 : 2} />
                   {showBadge && (
                     <span className="mtb-badge">
                       {cartCount > 99 ? '99+' : cartCount}

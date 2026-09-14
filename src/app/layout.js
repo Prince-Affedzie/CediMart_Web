@@ -4,6 +4,7 @@ import Footer from '@/components/Footer';
 import MobileTabBar from '@/components/MobileTabBar';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
+import Script from 'next/script';
 import './globals.css';
 
 export const metadata = {
@@ -77,6 +78,10 @@ export default function RootLayout({ children }) {
         <Footer />
           </CartProvider>
         </AuthProvider>
+        <Script
+          src="https://js.paystack.co/v1/inline.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
