@@ -26,6 +26,7 @@
   background: var(--void);
   color: var(--text);
   font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  overflow-x: clip;                     /* ← NEW: no horizontal page scroll */
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -302,26 +303,12 @@ a.lp-card { text-decoration: none; color: inherit; }
      via the topbar (which already has its own sort control on mobile). */
   .lp-hero-filters .lp-hero-select-wrap:nth-of-type(2) { display: none; }
 }
-/* ── Top bar ──
-   Search, campus, and sort now live in the hero's floating card instead
-   (see .lp-hero-search-*), so this bar is just the mobile "Categories"
-   trigger + a running count — and is hidden entirely on desktop, where
-   the sidebar already covers category browsing. Sticks at --header-h so
-   it docks directly under the global header rather than competing for
-   the same y:0 slot; z-index stays below the header's (50). */
-.lp-topbar { display: none; background: var(--surf); border-bottom: 1px solid var(--border); padding: 12px clamp(14px,3vw,32px); position: sticky; top: var(--header-h); z-index: 40; box-shadow: 0 1px 0 rgba(15,23,42,.02); }
-.lp-topbar-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-@media (max-width: 900px) { .lp-topbar { display: block; } }
-.lp-hamburger { display: flex; align-items: center; gap: 7px; height: 40px; padding: 0 14px; border-radius: 12px; background: var(--elev); border: 1.5px solid var(--border); cursor: pointer; color: var(--text); flex-shrink: 0; transition: border-color .2s, background .2s; position: relative; font-size: 13px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
-.lp-hamburger:hover { border-color: var(--brand); background: var(--brand-dim); }
-.lp-hamburger-badge { width: 16px; height: 16px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
-.lp-total-badge { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
-@media (max-width: 480px) { .lp-hamburger-label { display: none; } .lp-hamburger { padding: 0 12px; } .lp-total-badge { display: none; } }
 
 /* ── Shell grid ──
-   Sidebar is a full-height column that sits beside the topbar AND the
-   main content, so it starts at the same y-position as the search bar
-   instead of below it. .lp-right stacks the topbar above the main area. */
+   Sidebar is a full-height column that sits beside the main content.
+   On mobile the sidebar column collapses and the sidebar itself hides
+   entirely — the mobile category strip (rendered outside this grid,
+   directly under the hero) handles category selection instead. */
 .lp-shell { display: grid; grid-template-columns: 252px 1fr; align-items: start; max-width: 1440px; margin: 0 auto; }
 .lp-right { display: flex; flex-direction: column; min-width: 0; }
 @media (max-width: 900px) { .lp-shell { grid-template-columns: 1fr; } .lp-sidebar { display: none; } }
@@ -329,7 +316,7 @@ a.lp-card { text-decoration: none; color: inherit; }
 /* ── Sidebar ──
    Sticks at --header-h and is exactly that much shorter than 100vh, so it
    starts directly beneath the header and never extends up behind it. */
-.lp-sidebar { position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h)); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 20px 0 48px; border-right: 1px solid var(--border); background: var(--void); scrollbar-width: thin; scrollbar-color: var(--border) transparent; z-index: 30; }
+.lp-sidebar { position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h)); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 20px 0 48px; border-right: 1px solid var(--border); background: var(--void); scrollbar-width: thin; scrollbar-color: var(--border) transparent; z-index: 30; min-width: 0; }
 .lp-sidebar::-webkit-scrollbar { width: 3px; }
 .lp-sidebar::-webkit-scrollbar-track { background: transparent; }
 .lp-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -353,18 +340,177 @@ a.lp-card { text-decoration: none; color: inherit; }
 .lp-sub-dot-empty { width: 4px; height: 4px; border-radius: 50%; background: var(--border); display: block; }
 .lp-sub-label { flex: 1; }
 
-/* ── Mobile sheet ── */
-.lp-sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 200; animation: fadeIn .2s ease forwards; }
-.lp-sheet { position: fixed; bottom: 0; left: 0; right: 0; z-index: 201; background: var(--surf); border-radius: 24px 24px 0 0; border-top: 1px solid var(--border); max-height: 88dvh; display: flex; flex-direction: column; animation: slideUp .28s cubic-bezier(.22,1,.36,1) forwards; box-shadow: 0 -12px 48px rgba(0,0,0,.15); }
-.lp-sheet-header { flex-shrink: 0; padding: 10px 20px 0; border-bottom: 1px solid var(--border); }
-.lp-sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 14px; }
-.lp-sheet-title-row { display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; }
-.lp-sheet-title { font-size: 16px; font-weight: 800; color: var(--text); letter-spacing: -.2px; }
-.lp-sheet-close { width: 32px; height: 32px; border-radius: 50%; background: var(--elev); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--off); transition: border-color .2s, color .2s; }
-.lp-sheet-close:hover { border-color: var(--coral); color: var(--coral); }
-.lp-sheet-body { flex: 1; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 8px 0 env(safe-area-inset-bottom,24px); -webkit-overflow-scrolling: touch; }
-.lp-sheet-body .lp-cat-row, .lp-sheet-body .lp-all-row { padding-top: 12px; padding-bottom: 12px; font-size: 14.5px; }
-.lp-sheet-body .lp-sub-row { padding-top: 9px; padding-bottom: 9px; font-size: 13.5px; }
+/* ══════════════════════ Mobile category strip ══════════════════════
+   Rendered between the hero and .lp-shell (see page.js) so it lives
+   outside the sidebar grid entirely. Horizontal scroll on mobile only;
+   hidden above 900px where the sidebar tree does the job. */
+
+.lp-mcat {
+  display: none;                        /* hidden on desktop */
+  background: var(--surf);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: var(--header-h);
+  z-index: 40;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02);
+  min-width: 0;                         /* allow shrink as a flex/grid item */
+}
+
+@media (max-width: 900px) {
+  .lp-mcat {
+    display: block;
+  }
+}
+
+/* ── Horizontal pill scroll ── */
+.lp-mcat-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding: 10px clamp(14px, 3vw, 24px);
+  max-width: 100%;                      /* never wider than the strip */
+}
+
+.lp-mcat-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.lp-mcat-pill {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: 100px;
+  background: var(--elev);
+  border: 1.5px solid var(--border);
+  color: var(--off);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.lp-mcat-pill:hover {
+  border-color: var(--brand);
+  background: var(--brand-dim);
+  color: var(--brand);
+}
+
+.lp-mcat-pill:active {
+  transform: scale(0.97);
+}
+
+.lp-mcat-pill.is-active {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.22);
+}
+
+.lp-mcat-pill.is-active:hover {
+  background: var(--brand);
+  color: #fff;
+}
+
+/* Small dot indicator that a pill has subcategories */
+.lp-mcat-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+  margin-left: 1px;
+}
+
+.lp-mcat-pill.is-active .lp-mcat-dot {
+  opacity: 0.85;
+}
+
+/* ── Subcategory chips ── */
+.lp-mcat-subs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  padding: 0 clamp(14px, 3vw, 24px) 10px;
+  animation: lpMcatFade 0.18s ease;
+  max-width: 100%;                      /* never wider than the strip */
+}
+
+.lp-mcat-subs::-webkit-scrollbar {
+  display: none;
+}
+
+.lp-mcat-sub {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 100px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.lp-mcat-sub:hover {
+  border-color: var(--brand-l);
+  color: var(--brand-l);
+  background: var(--brand-dim);
+}
+
+.lp-mcat-sub.is-active {
+  background: var(--brand-dim);
+  border-color: var(--brand-l);
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.lp-mcat-sub-clear {
+  color: var(--coral);
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+.lp-mcat-sub-clear:hover {
+  background: rgba(220, 38, 38, 0.06);
+  border-color: var(--coral);
+  color: var(--coral);
+}
+
+@keyframes lpMcatFade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* ── Main content ── */
 .lp-main { padding: 22px clamp(14px,3vw,36px) 60px; min-height: 60vh; }
