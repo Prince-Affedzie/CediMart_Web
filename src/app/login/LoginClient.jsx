@@ -17,6 +17,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 import BrandLogo from '@/assets/cedimart_logo.png';
 import './login.css';
 
@@ -25,6 +26,7 @@ export default function LoginClient() {
   const searchParams = useSearchParams();
   const {
     login: authLogin,
+    google_login: googleLogin,
     isAuthenticated,
     loading: authLoading,
   } = useAuth();
@@ -32,11 +34,13 @@ export default function LoginClient() {
   const [formData, setFormData] = useState({ phone: '', password: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [topError, setTopError] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
 
   const sessionExpired = searchParams.get('expired') === '1';
+  const isLoading = loading || googleLoading;
 
   // If already signed in, bounce to the redirect target — but only after
   // auth has finished checking localStorage, otherwise we'd redirect on a
@@ -65,9 +69,46 @@ export default function LoginClient() {
     if (topError) setTopError('');
   };
 
+  // ── Google Login ────────────────────────────────────────────────────────
+  const handleGoogleLogin = async (credential) => {
+    if (isLoading) return;
+
+    setGoogleLoading(true);
+    setTopError('');
+
+    try {
+      const response = await googleLogin({ token: credential });
+
+      if (response?.success) {
+        const redirect = searchParams.get('redirect') || '/';
+        router.replace(redirect);
+      } else {
+        setTopError(
+          response?.error ||
+            response?.message ||
+            "Couldn't sign you in with Google. Please try again."
+        );
+      }
+    } catch (err) {
+      console.error('Google Login error:', err);
+      setTopError(
+        err?.response?.data?.message ||
+          err?.message ||
+          'An unexpected error occurred. Please try again.'
+      );
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleError = (message) => {
+    setTopError(message || 'Google sign-in is unavailable right now.');
+  };
+
+  // ── Regular Login ───────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e?.preventDefault();
-    if (loading) return;
+    if (isLoading) return;
     if (!validateForm()) return;
 
     setLoading(true);
@@ -168,6 +209,34 @@ export default function LoginClient() {
             </div>
           )}
 
+          {/* Google Sign-In */}
+          <div className="lg-google-block">
+            <GoogleSignInButton
+              onCredential={handleGoogleLogin}
+              onError={handleGoogleError}
+              disabled={isLoading}
+              text="continue_with"
+              width={360}
+            />
+            {googleLoading && (
+              <div className="lg-google-loading" role="status">
+                <Loader2
+                  size={16}
+                  strokeWidth={2.4}
+                  className="lg-spin"
+                />
+                <span>Signing you in…</span>
+              </div>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="lg-divider-row">
+            <span className="lg-divider" />
+            <span className="lg-divider-text">OR</span>
+            <span className="lg-divider" />
+          </div>
+
           {/* Form */}
           <form className="lg-form" onSubmit={handleSubmit} noValidate>
             {/* Phone */}
@@ -196,7 +265,7 @@ export default function LoginClient() {
                     )
                   }
                   maxLength={15}
-                  disabled={loading}
+                  disabled={isLoading}
                 />
               </div>
               {errors.phone && (
@@ -232,13 +301,13 @@ export default function LoginClient() {
                   onChange={(e) =>
                     handleInputChange('password', e.target.value)
                   }
-                  disabled={loading}
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
                   className="lg-eye-btn"
                   onClick={() => setShowPassword((s) => !s)}
-                  disabled={loading}
+                  disabled={isLoading}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
@@ -260,7 +329,7 @@ export default function LoginClient() {
               type="button"
               className="lg-remember"
               onClick={() => setRememberMe((v) => !v)}
-              disabled={loading}
+              disabled={isLoading}
               aria-pressed={rememberMe}
             >
               <span className={`lg-checkbox${rememberMe ? ' is-checked' : ''}`}>
@@ -273,7 +342,7 @@ export default function LoginClient() {
             <button
               type="submit"
               className={`lg-submit${loading ? ' is-loading' : ''}`}
-              disabled={loading}
+              disabled={isLoading}
             >
               {loading ? (
                 <>

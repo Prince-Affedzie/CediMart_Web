@@ -1,6 +1,7 @@
 // src/app/layout.js
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ConditionalFooter from '@/components/ConditionalFooter';
 import MobileTabBar from '@/components/MobileTabBar';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
@@ -75,11 +76,15 @@ export default function RootLayout({ children }) {
         <Header />
         <main>{children}</main>
         <MobileTabBar />
-        <Footer />
+        <ConditionalFooter />
           </CartProvider>
         </AuthProvider>
         <Script
           src="https://js.paystack.co/v1/inline.js"
+          strategy="afterInteractive"
+        />
+        <Script
+          src="https://accounts.google.com/gsi/client"
           strategy="afterInteractive"
         />
       </body>
