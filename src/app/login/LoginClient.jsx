@@ -17,7 +17,7 @@ import {
   Check,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
+import GoogleSignInButton from '@/components/Auth/GoogleSignInButton';
 import BrandLogo from '@/assets/cedimart_logo.png';
 import './login.css';
 
