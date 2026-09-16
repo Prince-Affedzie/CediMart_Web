@@ -28,6 +28,7 @@
   font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
   position: relative;
   overflow-x: hidden;
+  padding-bottom: 58px;
 }
 
 .su-page::before {

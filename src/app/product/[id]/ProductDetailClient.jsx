@@ -36,6 +36,7 @@ import { addToFavorites, removeFromFavorites } from '@/apis/userActionsApi';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import GuestCheckout from '@/components/GuestCheckOut';
+import { shareProduct } from '@/utils/shareProduct';
 import './product-detail.css';
 
 // ─── Design Tokens (aligned with mobile app C palette) ─────────────────────────
@@ -707,6 +708,22 @@ export default function ProductDetailClient() {
     setModalOpen(true);
   };
 
+
+  const handleShareProduct = async () => {
+  const result = await shareProduct(product);
+
+  if (!result.ok) {
+    showToast('Could not share this product', true);
+    return;
+  }
+
+  if (result.method === 'clipboard') {
+    showToast('Link copied — paste it anywhere to share');
+  }
+  // native-file and native-text don't need a toast — the OS sheet
+  // itself is the confirmation.
+};
+
   const handleFavoriteToggle = async () => {
     if (!product) return;
     if (!isAuthenticated) {
@@ -894,7 +911,7 @@ export default function ProductDetailClient() {
                 isFavorite={isFavorite}
                 favoriteLoading={favoriteLoading}
                 onToggleFavorite={handleFavoriteToggle}
-                onShare={() => handleAction('share')}
+                onShare={handleShareProduct}
               />
             </div>
 

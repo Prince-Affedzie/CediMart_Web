@@ -68,3 +68,80 @@
   .lp-card-name { font-size: 12.5px; }
   .lp-price { font-size: 14px; }
 }
+
+.gsi-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* The measurable wrapper. Google's iframe lives inside .gsi-button, but
+   we measure the width of .gsi-measure so the iframe can't push it wider. */
+.gsi-measure {
+  position: relative;
+  width: 100%;
+  max-width: 400px;       /* Google's max renderable width */
+  display: flex;
+  justify-content: center;
+  overflow: hidden;       /* belt-and-braces: never let the iframe escape */
+}
+
+.gsi-button {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  min-height: 44px;       /* prevent layout shift between skeleton and real button */
+}
+
+/* Google injects an iframe with inline width; center it and clamp it. */
+.gsi-button > div,
+.gsi-button iframe {
+  max-width: 100% !important;
+  margin: 0 auto !important;
+}
+
+.gsi-wrap.is-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.gsi-overlay {
+  position: absolute;
+  inset: 0;
+  cursor: not-allowed;
+}
+
+.gsi-skeleton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 12px;
+  background: #F5F5F5;
+  border: 1px solid #E5E7EB;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.gsi-spin {
+  animation: gsiSpin .9s linear infinite;
+}
+
+.gsi-error {
+  font-size: 12.5px;
+  color: #DC2626;
+  margin: 0;
+  text-align: center;
+}
+
+@keyframes gsiSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
