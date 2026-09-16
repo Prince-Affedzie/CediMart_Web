@@ -232,7 +232,15 @@ export default function AiAssistantPage() {
         .ai-send-btn.disabled { background: transparent; color: ${C.muted}; cursor: not-allowed; opacity: 0.5; }
         .ai-input-footer { max-width: 900px; margin: 8px auto 0; text-align: center; font-size: 11px; color: ${C.muted}; }
 
-        @media (max-width: 768px) { .ai-header { padding: 10px 16px; } .ai-chat-area { padding: 16px; gap: 16px; } .ai-welcome { padding: 40px 16px; } .ai-welcome-icon { width: 64px; height: 64px; border-radius: 22px; font-size: 26px; margin-bottom: 18px; } .ai-welcome-title { font-size: 24px; } .ai-suggestions-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; max-width: 100%; } .ai-input-section { padding: 0 12px 16px; } .ai-user-msg { max-width: 85%; font-size: 14px; } .ai-product-img-wrap { height: 150px; } }
+        @media (max-width: 768px) { .ai-header { padding: 10px 16px; }
+         .ai-chat-area { padding: 16px; gap: 16px; } .ai-welcome { padding: 40px 16px; } 
+         .ai-welcome-icon { width: 64px; height: 64px; border-radius: 22px; font-size: 26px; margin-bottom: 18px; } .ai-welcome-title { font-size: 24px; } 
+         .ai-suggestions-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; max-width: 100%; } 
+         .ai-user-msg { max-width: 85%; font-size: 14px; } 
+         .ai-product-img-wrap { height: 150px; }  
+         .ai-input-section {
+        padding: 0 12px calc(16px + 64px + env(safe-area-inset-bottom, 0px));
+       }}
         @media (max-width: 400px) { .ai-suggestions-grid { grid-template-columns: 1fr; } }
       `}</style>
 
