@@ -39,7 +39,6 @@ html { scroll-behavior: smooth; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 a.lp-card { text-decoration: none; color: inherit; }
-
 /* ── Hero ──
    Slide copy is bottom-aligned (not vertically centered) so it never
    competes with the search toolbar docked to the top of the same box. */
@@ -63,19 +62,36 @@ a.lp-card { text-decoration: none; color: inherit; }
 .lp-hero-dot.active { background: #fff; width: 22px; border-radius: 4px; }
 @media (max-width: 640px) { .lp-hero { height: 430px; margin-bottom: 16px; } }
 
-/* ── Hero search dock ──
-   Compact search bar, anchored top-left inside the hero. Uses a frosted
-   glass treatment (translucent white + blur) so it reads as floating on
-   the image without competing with the slide copy down below. No card. */
-.lp-hero-search {
+/* ── Hero toolbar dock ──
+   Search + campus + sort now live in one horizontally-centered group,
+   anchored near the top of the hero — instead of a search dock pinned to
+   the left and a filters dock pinned to the right. Centered the same way
+   at every breakpoint; on narrow screens it just wraps onto a second row
+   rather than switching to a left-anchored layout. */
+.lp-hero-toolbar {
   position: absolute;
   top: clamp(20px, 3vw, 34px);
-  left: clamp(20px, 6vw, 72px);
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 6;
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: min(920px, calc(100% - 32px));
+}
+
+/* ── Hero search dock ──
+   Compact search bar. Uses a frosted glass treatment (translucent white +
+   blur) so it reads as floating on the image. No card — just the pill. */
+.lp-hero-search {
+  position: relative;
+  display: flex;
+  align-items: center;
   gap: 4px;
-  width: min(520px, calc(100% - 40px));
+  flex: 1 1 420px;
+  max-width: 520px;
   height: 54px;
   padding: 5px 5px 5px 18px;
   border-radius: 100px;
@@ -160,17 +176,15 @@ a.lp-card { text-decoration: none; color: inherit; }
 }
 
 /* ── Hero filters dock ──
-   Two compact pill-style selects anchored to the right side, dropped
-   closer to the bottom of the hero. They sit on a subtle frosted strip
-   so they're legible over any slide image without needing a full card. */
+   Two compact pill-style selects, now grouped next to the search bar
+   inside the same centered toolbar rather than docked to the opposite
+   corner of the hero. */
 .lp-hero-filters {
-  position: absolute;
-  right: clamp(20px, 6vw, 72px);
-  bottom: clamp(28px, 5vw, 54px);
-  z-index: 6;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 0 1 auto;
   padding: 6px;
   border-radius: 100px;
   background: rgba(255, 255, 255, 0.10);
@@ -251,25 +265,25 @@ a.lp-card { text-decoration: none; color: inherit; }
 }
 
 /* ── Hero toolbar responsive behavior ──
-   Below 900px the search bar and the filters stack vertically: search
-   stays pinned top-left, filters move just under it. Below 640px the
-   search takes nearly full width and the filters dock inline beneath. */
+   Stays centered at every width. Below 900px the search bar takes its own
+   full row (forced via flex-basis: 100%) and the filters wrap onto a
+   second centered row beneath it, rather than switching to a left-anchored
+   layout the way the old two-dock version did. */
 @media (max-width: 900px) {
-  .lp-hero-search {
+  .lp-hero-toolbar {
     top: 18px;
-    left: 16px;
-    right: 16px;
-    width: auto;
+    width: calc(100% - 32px);
+    gap: 8px;
+  }
+  .lp-hero-search {
+    flex: 1 1 100%;
+    max-width: none;
     height: 50px;
     padding: 4px 4px 4px 16px;
   }
   .lp-hero-search-btn { padding: 0 16px; height: 42px; font-size: 13px; }
 
   .lp-hero-filters {
-    top: 82px;
-    left: 16px;
-    right: auto;
-    bottom: auto;
     gap: 6px;
     padding: 5px;
   }
@@ -278,23 +292,21 @@ a.lp-card { text-decoration: none; color: inherit; }
 }
 
 @media (max-width: 640px) {
-  .lp-hero-search {
+  .lp-hero-toolbar {
     top: 14px;
-    left: 12px;
-    right: 12px;
-    height: 46px;
+    width: calc(100% - 24px);
   }
+  .lp-hero-search { height: 46px; }
   .lp-hero-search-input { font-size: 14px; padding: 10px 6px; }
   .lp-hero-search-btn span { display: none; }
   .lp-hero-search-btn { padding: 0 14px; }
 
   .lp-hero-filters {
-    top: 72px;
-    left: 12px;
-    right: 12px;
+    width: 100%;
+    justify-content: center;
     gap: 6px;
   }
-  .lp-hero-select-wrap { flex: 1; min-width: 0; }
+  .lp-hero-select-wrap { flex: 1; min-width: 0; max-width: 200px; }
   .lp-hero-select { width: 100%; min-width: 0; }
 }
 
@@ -303,7 +315,6 @@ a.lp-card { text-decoration: none; color: inherit; }
      via the topbar (which already has its own sort control on mobile). */
   .lp-hero-filters .lp-hero-select-wrap:nth-of-type(2) { display: none; }
 }
-
 /* ── Shell grid ──
    Sidebar is a full-height column that sits beside the main content.
    On mobile the sidebar column collapses and the sidebar itself hides

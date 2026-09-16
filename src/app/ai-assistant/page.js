@@ -240,6 +240,7 @@ export default function AiAssistantPage() {
          .ai-product-img-wrap { height: 150px; }  
          .ai-input-section {
         padding: 0 12px calc(16px + 64px + env(safe-area-inset-bottom, 0px));
+       
        }}
         @media (max-width: 400px) { .ai-suggestions-grid { grid-template-columns: 1fr; } }
       `}</style>

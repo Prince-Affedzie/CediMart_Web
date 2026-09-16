@@ -63,65 +63,66 @@ export default function Hero({
         );
       })}
 
-      {/* ── Search dock (top-left) ──
-          Compact, left-aligned, floating directly on the hero image with a
-          frosted glass treatment. No surrounding card. */}
-      <form className="lp-hero-search" onSubmit={onSearchSubmit}>
-        <span className="lp-hero-search-icon"><Search size={17} strokeWidth={2.2} /></span>
-        <input
-          className="lp-hero-search-input"
-          placeholder="Search laptops, textbooks, sneakers…"
-          value={searchInput}
-          onChange={(e) => onSearchInputChange(e.target.value)}
-          aria-label="Search listings"
-        />
-        {searchInput && (
-          <button type="button" className="lp-hero-search-clear" onClick={onClearSearch} aria-label="Clear search">
-            <X size={14} strokeWidth={2.5} />
+      {/* ── Toolbar dock (top-center) ──
+          Search + campus + sort now live together in one centered group
+          instead of a top-left search dock and a separate bottom-right
+          filters dock — same alignment at every breakpoint, just wraps
+          onto a second line once it runs out of room. */}
+      <div className="lp-hero-toolbar">
+        <form className="lp-hero-search" onSubmit={onSearchSubmit}>
+          <span className="lp-hero-search-icon"><Search size={17} strokeWidth={2.2} /></span>
+          <input
+            className="lp-hero-search-input"
+            placeholder="Search laptops, textbooks, sneakers…"
+            value={searchInput}
+            onChange={(e) => onSearchInputChange(e.target.value)}
+            aria-label="Search listings"
+          />
+          {searchInput && (
+            <button type="button" className="lp-hero-search-clear" onClick={onClearSearch} aria-label="Clear search">
+              <X size={14} strokeWidth={2.5} />
+            </button>
+          )}
+          <button type="submit" className="lp-hero-search-btn">
+            <Search size={15} strokeWidth={2.5} />
+            <span>Search</span>
           </button>
-        )}
-        <button type="submit" className="lp-hero-search-btn">
-          <Search size={15} strokeWidth={2.5} />
-          <span>Search</span>
-        </button>
-      </form>
+        </form>
 
-      {/* ── Filters dock (right side, lower) ──
-          Two compact pill selects + total, dropped near the bottom edge
-          of the hero on desktop. On mobile they tuck under the search bar. */}
-      <div className="lp-hero-filters">
-        <div className="lp-hero-select-wrap">
-          <span className="lp-hero-select-icon"><MapPin size={13} strokeWidth={2.2} /></span>
-          <select
-            className="lp-hero-select"
-            value={campus}
-            onChange={(e) => onCampusChange(e.target.value)}
-            aria-label="Filter by campus"
-          >
-            {CAMPUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-          <span className="lp-hero-select-chevron"><ChevronDown size={13} strokeWidth={2.2} /></span>
+        <div className="lp-hero-filters">
+          <div className="lp-hero-select-wrap">
+            <span className="lp-hero-select-icon"><MapPin size={13} strokeWidth={2.2} /></span>
+            <select
+              className="lp-hero-select"
+              value={campus}
+              onChange={(e) => onCampusChange(e.target.value)}
+              aria-label="Filter by campus"
+            >
+              {CAMPUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <span className="lp-hero-select-chevron"><ChevronDown size={13} strokeWidth={2.2} /></span>
+          </div>
+
+          <div className="lp-hero-select-wrap">
+            <span className="lp-hero-select-icon"><ArrowUpDown size={13} strokeWidth={2.2} /></span>
+            <select
+              className="lp-hero-select"
+              value={sort}
+              onChange={(e) => onSortChange(e.target.value)}
+              aria-label="Sort by"
+            >
+              {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+            <span className="lp-hero-select-chevron"><ChevronDown size={13} strokeWidth={2.2} /></span>
+          </div>
+
+          {!loading && (
+            <>
+              <span className="lp-hero-filters-divider" />
+              <span className="lp-hero-total">{total.toLocaleString()} listing{total !== 1 ? 's' : ''}</span>
+            </>
+          )}
         </div>
-
-        <div className="lp-hero-select-wrap">
-          <span className="lp-hero-select-icon"><ArrowUpDown size={13} strokeWidth={2.2} /></span>
-          <select
-            className="lp-hero-select"
-            value={sort}
-            onChange={(e) => onSortChange(e.target.value)}
-            aria-label="Sort by"
-          >
-            {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-          </select>
-          <span className="lp-hero-select-chevron"><ChevronDown size={13} strokeWidth={2.2} /></span>
-        </div>
-
-        {!loading && (
-          <>
-            <span className="lp-hero-filters-divider" />
-            <span className="lp-hero-total">{total.toLocaleString()} listing{total !== 1 ? 's' : ''}</span>
-          </>
-        )}
       </div>
 
       <button type="button" className="lp-hero-arrow lp-hero-arrow-prev" aria-label="Previous slide" onClick={() => goTo(slide - 1)}>
