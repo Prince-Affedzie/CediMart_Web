@@ -492,63 +492,6 @@
   margin: 4px 0 20px;
 }
 
-.gsi-wrap {
-  position: relative;
-  width: 100%;
-  max-width: 360px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.gsi-button {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.gsi-button > div {
-  margin: 0 auto !important;
-}
-
-.gsi-wrap.is-disabled {
-  opacity: 0.55;
-  pointer-events: none;
-}
-
-.gsi-overlay {
-  position: absolute;
-  inset: 0;
-  cursor: not-allowed;
-}
-
-.gsi-skeleton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 44px;
-  width: 100%;
-  max-width: 360px;
-  border-radius: 12px;
-  background: #F5F5F5;
-  border: 1px solid #E5E7EB;
-  color: #475569;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.gsi-spin {
-  animation: lgGsiSpin .9s linear infinite;
-}
-
-.gsi-error {
-  font-size: 12.5px;
-  color: #DC2626;
-  margin: 0;
-  text-align: center;
-}
 
 .lg-google-loading {
   display: inline-flex;
@@ -559,7 +502,3 @@
   color: #0D9488;
 }
 
-@keyframes lgGsiSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}

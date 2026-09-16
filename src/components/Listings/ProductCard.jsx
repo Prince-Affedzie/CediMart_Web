@@ -46,7 +46,7 @@ export default function ProductCard({ product }) {
         )}
         <p className="lp-card-name">{product.name}</p>
         <div className="lp-card-foot">
-          <span className="lp-price" style={{ color: isOnSale ? C.coral : C.white }}>{fmtPrice(product.price)}</span>
+          <span className="lp-price" style={{ color: isOnSale ? C.coral : C.accent }}>{fmtPrice(product.price)}</span>
           {isOnSale && <s className="lp-original">{fmtPrice(product.discountInfo.originalPrice)}</s>}
         </div>
       </div>

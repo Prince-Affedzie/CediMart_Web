@@ -17,29 +17,6 @@
   }
 }
 
-/* ── Product grid ── */
-.lp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 18px; }
-.lp-card { display: flex; flex-direction: column; background: var(--surf); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: transform .22s cubic-bezier(.22,1,.36,1), box-shadow .22s, border-color .2s; animation: fadeUp .35s ease both; }
-.lp-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(15,23,42,.1); border-color: rgba(13,148,136,.25); }
-.lp-card-img-wrap { position: relative; aspect-ratio: 1 / 1; background: var(--elev); overflow: hidden; }
-.lp-card-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease; }
-.lp-card:hover .lp-card-img { transform: scale(1.06); }
-.lp-card-img-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-.lp-card-badges { position: absolute; top: 9px; left: 9px; display: flex; flex-direction: column; gap: 5px; align-items: flex-start; z-index: 2; }
-.lp-badge { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 7px; letter-spacing: .02em; display: inline-flex; align-items: center; gap: 3px; }
-.lp-badge-sale { background: var(--coral); color: #fff; }
-.lp-badge-nego { background: #fff; color: var(--accent); border: 1px solid rgba(249,115,22,.35); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-.lp-card-fav { position: absolute; top: 9px; right: 9px; z-index: 2; width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,.92); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; color: var(--off); box-shadow: 0 2px 8px rgba(0,0,0,.08); transition: color .15s, transform .15s; }
-.lp-card:hover .lp-card-fav { transform: scale(1.06); }
-.lp-card-overlay { position: absolute; inset: auto 0 0 0; display: flex; justify-content: center; padding: 0 0 10px; opacity: 0; transform: translateY(6px); transition: opacity .2s ease, transform .2s ease; pointer-events: none; }
-.lp-card:hover .lp-card-overlay { opacity: 1; transform: translateY(0); }
-.lp-card-view-btn { background: var(--text); color: #fff; font-size: 11.5px; font-weight: 700; padding: 7px 16px; border-radius: 20px; box-shadow: 0 4px 14px rgba(0,0,0,.22); }
-.lp-card-body { padding: 11px 12px 13px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
-.lp-card-campus { display: inline-flex; align-items: center; gap: 3px; font-size: 9.5px; font-weight: 700; color: var(--brand); background: var(--brand-dim); border-radius: 6px; padding: 2px 7px 2px 6px; font-family: 'JetBrains Mono', monospace; width: fit-content; }
-.lp-card-name { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.8em; }
-.lp-card-foot { display: flex; align-items: baseline; gap: 8px; margin-top: auto; flex-wrap: wrap; }
-.lp-price { font-size: 16px; font-weight: 800; font-family: 'JetBrains Mono', monospace; letter-spacing: -.2px; }
-.lp-original { font-size: 11px; color: var(--muted); text-decoration: line-through; font-family: 'JetBrains Mono', monospace; }
 
 /* ── Skeleton ── */
 .lp-sk-card { background: var(--surf); border-radius: 14px; overflow: hidden; border: 1px solid var(--border); }
@@ -69,6 +46,12 @@
   .lp-price { font-size: 14px; }
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Google Sign-In Button (GIS) — shared global styles
+   Used by GoogleSignInButton.jsx on /login and /signup
+   ══════════════════════════════════════════════════════════════ */
+
+/* Outer wrapper provided by the component */
 .gsi-wrap {
   position: relative;
   width: 100%;
@@ -78,31 +61,44 @@
   gap: 10px;
 }
 
-/* The measurable wrapper. Google's iframe lives inside .gsi-button, but
-   we measure the width of .gsi-measure so the iframe can't push it wider. */
+/* Measureable wrapper — this is what the component reads with ResizeObserver.
+   Capped at 400px because that's Google's documented maximum renderable width. */
 .gsi-measure {
   position: relative;
   width: 100%;
-  max-width: 400px;       /* Google's max renderable width */
+  max-width: 400px;
   display: flex;
   justify-content: center;
-  overflow: hidden;       /* belt-and-braces: never let the iframe escape */
+  overflow: hidden;           /* belt-and-braces: only trims if the JS-driven
+                                  scale-to-fit hasn't applied yet */
 }
 
+/* The div Google renders into. We center it rather than stretching it —
+   Google's content isn't responsive internally, so forcing its width
+   just clips whatever doesn't fit (this used to cut the logo off the
+   personalized "Continue as …" chip on narrow screens). The component's
+   JS instead scales this box down proportionally when it's wider than
+   the space available, so nothing gets cropped. */
 .gsi-button {
   width: 100%;
   display: flex;
   justify-content: center;
-  min-height: 44px;       /* prevent layout shift between skeleton and real button */
+  align-items: center;
+  min-height: 44px;           /* prevent layout shift between skeleton and real button */
 }
 
-/* Google injects an iframe with inline width; center it and clamp it. */
-.gsi-button > div,
+/* Google's own wrapper div around the iframe — this is what the component
+   applies its scale transform to. Center-based origin keeps the shrink
+   symmetric instead of pulling the button toward one edge. */
+.gsi-button > div {
+  transform-origin: center;
+}
+
 .gsi-button iframe {
-  max-width: 100% !important;
-  margin: 0 auto !important;
+  border: 0 !important;
 }
 
+/* Disabled state */
 .gsi-wrap.is-disabled {
   opacity: 0.55;
   pointer-events: none;
@@ -112,8 +108,10 @@
   position: absolute;
   inset: 0;
   cursor: not-allowed;
+  z-index: 2;
 }
 
+/* Loading skeleton shown while GIS loads */
 .gsi-skeleton {
   display: inline-flex;
   align-items: center;
@@ -141,6 +139,7 @@
   text-align: center;
 }
 
+/* Generic spinner — also usable by any other GIS-loading context */
 @keyframes gsiSpin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }

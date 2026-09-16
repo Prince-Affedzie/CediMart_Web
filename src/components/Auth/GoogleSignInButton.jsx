@@ -19,6 +19,7 @@ export default function GoogleSignInButton({
   const buttonRef = useRef(null);
   const initializedRef = useRef(false);
   const lastRenderedWidthRef = useRef(0);
+  const fitFrameRef = useRef(null);
   const [ready, setReady] = useState(false);
   const [internalError, setInternalError] = useState('');
 
@@ -33,6 +34,34 @@ export default function GoogleSignInButton({
     return Math.min(Math.max(w, MIN_WIDTH), MAX_WIDTH);
   }, [width]);
 
+  // Scale Google's rendered button down to fit when its actual content is
+  // wider than the space we have — which happens once Google recognizes an
+  // existing session and swaps to a wider "Continue as [Name]" chip that
+  // needs more room than the plain button. We used to force the iframe's
+  // CSS width down to match the container, but that just clips whatever
+  // Google drew inside it (the logo, usually) instead of resizing it.
+  // Scaling shrinks everything proportionally so nothing gets cut off.
+  const fitToContainer = useCallback(() => {
+    if (!buttonRef.current || !containerRef.current) return;
+    const iframe = buttonRef.current.querySelector('iframe');
+    const wrap = buttonRef.current.firstElementChild; // Google's own wrapper div
+    if (!iframe || !wrap) return;
+
+    const naturalWidth = parseFloat(iframe.getAttribute('width')) || iframe.getBoundingClientRect().width;
+    const naturalHeight = parseFloat(iframe.getAttribute('height')) || iframe.getBoundingClientRect().height;
+    const containerWidth = containerRef.current.clientWidth;
+    if (!naturalWidth || !containerWidth) return;
+
+    const scale = naturalWidth > containerWidth ? containerWidth / naturalWidth : 1;
+    wrap.style.transform = scale < 1 ? `scale(${scale})` : '';
+    wrap.style.transformOrigin = 'center';
+
+    // Scaling shrinks the button visually but not the space its box
+    // reserves in the page, so pull the reserved height in to match —
+    // otherwise a shrunk button leaves a gap underneath it.
+    buttonRef.current.style.minHeight = naturalHeight ? `${naturalHeight * scale}px` : '';
+  }, []);
+
   // Render (or re-render) the button at the given width.
   const renderButton = useCallback((w) => {
     if (!buttonRef.current) return;
@@ -40,6 +69,7 @@ export default function GoogleSignInButton({
 
     // Clear existing content so a re-render doesn't stack buttons.
     buttonRef.current.innerHTML = '';
+    buttonRef.current.style.minHeight = '';
 
     window.google.accounts.id.renderButton(buttonRef.current, {
       type: 'standard',
@@ -112,6 +142,36 @@ export default function GoogleSignInButton({
     };
   }, [onCredential, onError, computeWidth, renderButton]);
 
+  // Watch for Google (re)drawing the button — including swapping to the
+  // wider personalized chip after the initial render — and fit it to the
+  // container whenever that happens.
+  useEffect(() => {
+    if (!ready || !buttonRef.current) return;
+    if (typeof MutationObserver === 'undefined') return;
+
+    const scheduleFit = () => {
+      if (fitFrameRef.current) cancelAnimationFrame(fitFrameRef.current);
+      fitFrameRef.current = requestAnimationFrame(fitToContainer);
+    };
+
+    const mo = new MutationObserver(scheduleFit);
+    mo.observe(buttonRef.current, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['width', 'height'],
+    });
+
+    // Catch the initial render too, in case it lands before this observer
+    // is attached.
+    scheduleFit();
+
+    return () => {
+      mo.disconnect();
+      if (fitFrameRef.current) cancelAnimationFrame(fitFrameRef.current);
+    };
+  }, [ready, fitToContainer]);
+
   // Re-render when the container resizes (rotation, sidebar open/close, etc.)
   useEffect(() => {
     if (!ready || !containerRef.current) return;
@@ -119,13 +179,19 @@ export default function GoogleSignInButton({
 
     const ro = new ResizeObserver(() => {
       const w = computeWidth();
-      if (Math.abs(w - lastRenderedWidthRef.current) < 8) return; // ignore tiny jitters
+      if (Math.abs(w - lastRenderedWidthRef.current) < 8) {
+        // Same requested width, but the available space may still have
+        // changed relative to it (e.g. orientation change) — refit rather
+        // than skip entirely.
+        fitToContainer();
+        return;
+      }
       renderButton(w);
     });
 
     ro.observe(containerRef.current);
     return () => ro.disconnect();
-  }, [ready, computeWidth, renderButton]);
+  }, [ready, computeWidth, renderButton, fitToContainer]);
 
   return (
     <div className={`gsi-wrap${disabled ? ' is-disabled' : ''}`}>
@@ -143,7 +209,7 @@ export default function GoogleSignInButton({
         <div
           ref={buttonRef}
           className="gsi-button"
-          style={{ display: ready ? 'block' : 'none' }}
+          style={{ display: ready ? 'flex' : 'none' }}
         />
       </div>
 
