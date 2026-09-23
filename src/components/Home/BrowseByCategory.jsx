@@ -53,7 +53,7 @@ export default function BrowseByCategory() {
       <div className="bbc-header">
         <div>
           <h2 className="bbc-title">Browse by Category</h2>
-          <p className="bbc-subtitle">Find exactly what you need, from fashion to hostel essentials</p>
+          <p className="bbc-subtitle">Find exactly what you need, from fashion to home appliances</p>
         </div>
 
         <div className="bbc-header-actions">
@@ -98,7 +98,7 @@ export default function BrowseByCategory() {
                 }}
               >
                 <span className="bbc-tile-icon">
-                  <Icon size={18} strokeWidth={2.1} />
+                  <Icon size={12} strokeWidth={2.1} />
                 </span>
                 <span className="bbc-tile-label">{cat.label}</span>
               </Link>

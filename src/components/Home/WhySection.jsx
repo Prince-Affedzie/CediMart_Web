@@ -1,10 +1,9 @@
 // src/components/Home/WhySection.jsx
 import {
   ShieldCheck,
-  Bike,
+  Truck,
   Lock,
-  ShieldAlert,
-  Sparkles,
+  BadgeCheck,
 } from 'lucide-react';
 
 const WHY_ITEMS = [
@@ -12,89 +11,51 @@ const WHY_ITEMS = [
     icon: ShieldCheck,
     title: 'Verified Sellers',
     color: '#0D9488',
-    desc: 'Every vendor submits a national ID and student card. A green badge means they passed full verification — no anonymous accounts.',
+    desc: 'Every seller submits a government ID. A green badge means they passed full verification — no anonymous accounts.',
   },
   {
-    icon: Bike,
-    title: 'Same-Day Delivery',
+    icon: Truck,
+    title: 'Fast Delivery',
     color: '#F97316',
-    desc: 'Order before 3pm and your item arrives on campus the same day. Campus-to-campus, hostel-to-hostel — usually within hours.',
+    desc: 'Order before 3pm and most items arrive the same day within your city, door to door.',
   },
   {
     icon: Lock,
-    title: 'Secured Transactions',
+    title: 'Secure Payments',
     color: '#0F766E',
-    desc: 'Payments are held in escrow until you confirm you received the item as described. Your money only moves when you say it should.',
+    desc: 'Payments are held in escrow until you confirm the item arrived as described. Your money only moves when you say so.',
   },
   {
-    icon: ShieldAlert,
-    title: 'Zero Fraud Policy',
-    color: '#DC2626',
-    desc: 'Every account is tied to a verified identity. Report a bad transaction and we freeze the seller\'s account within 24 hours — no exceptions.',
-  },
-  {
-    icon: Sparkles,
-    title: 'Quality at Student Prices',
+    icon: BadgeCheck,
+    title: 'Buyer Protection',
     color: '#059669',
-    desc: 'Second-hand doesn\'t mean worn out. Every listing shows condition, real photos, and seller history — so you know exactly what you\'re getting.',
+    desc: 'Every listing shows condition, real photos, and seller history. Report an issue and we act within 24 hours.',
   },
 ];
 
-export default function WhySection({ reveal, sectionRef }) {
+export default function WhySection() {
   return (
-    <section
-      className="section"
-      style={{ background: 'var(--void)' }}
-      ref={sectionRef}
-    >
+    <section className="section" style={{ background: 'var(--void)' }}>
       <div className="section-inner">
-        <div
-          className={`reveal ${reveal ? 'shown' : ''}`}
-          style={{
-            textAlign: 'center',
-            maxWidth: 540,
-            margin: '0 auto 52px',
-          }}
-        >
-          <p
-            className="section-eyebrow"
-            style={{ '--ec': '#DC2626', textAlign: 'center' }}
-          >
-            — Why CediMart
-          </p>
-          <h2 className="section-h2">
-            Built to make campus
-            <br />
-            <span style={{ color: '#DC2626' }}>buying and selling safe.</span>
-          </h2>
-          <p
-            className="section-sub"
-            style={{ margin: '0 auto', textAlign: 'center' }}
-          >
-            Real verification, real protection, real delivery. CediMart is the
-            only marketplace designed around how students actually trade — quick,
-            local, and trustworthy.
+        <div style={{ maxWidth: 540, marginBottom: 32 }}>
+          <h2 className="section-h2">Built for safe buying and selling.</h2>
+          <p className="section-sub" style={{ marginBottom: 0 }}>
+            Real verification, real protection, real delivery — wherever you are in Ghana.
           </p>
         </div>
 
-        <div className="why-grid">
+        <div className="why-strip">
           {WHY_ITEMS.map((item, i) => {
             const Icon = item.icon;
             return (
-              <div
-                key={i}
-                className={`why-card reveal ${reveal ? 'shown' : ''}`}
-                style={{
-                  '--wc': item.color,
-                  '--wb': item.color + '12',
-                  transitionDelay: `${i * 60}ms`,
-                }}
-              >
+              <div key={i} className="why-item" style={{ '--wc': item.color, '--wb': item.color + '14' }}>
                 <div className="why-icon">
-                  <Icon size={26} strokeWidth={1.9} />
+                  <Icon size={20} strokeWidth={2} />
                 </div>
-                <div className="why-title">{item.title}</div>
-                <div className="why-desc">{item.desc}</div>
+                <div>
+                  <div className="why-title">{item.title}</div>
+                  <div className="why-desc">{item.desc}</div>
+                </div>
               </div>
             );
           })}

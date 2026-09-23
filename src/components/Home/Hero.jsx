@@ -14,7 +14,12 @@ const QUICK_FILTERS = [
   { label: '✦ Try CediAi', href: '/ai-assistant' },
 ];
 
-export default function Hero({ reveal, sectionRef }) {
+// Cities/locations the marketplace serves — this replaces the old
+// campus-only list (UG, KNUST, UCC…) now that CediMart isn't limited to
+// campuses. Extend this list as coverage grows.
+const LOCATIONS = ['Accra', 'Kumasi', 'Takoradi', 'Cape Coast', 'Tamale', 'Ho'];
+
+export default function Hero() {
   const router = useRouter();
   const [query, setQuery] = useState('');
 
@@ -25,12 +30,11 @@ export default function Hero({ reveal, sectionRef }) {
   };
 
   return (
-    <section className="hero-section" ref={sectionRef}>
-      {/* Background photo — fills the section behind everything else */}
+    <section className="hero-section">
       <div className="hero-bg">
         <Image
           src={GirlShopping}
-          alt="Student shopping on CediMart"
+          alt="Shopping on CediMart"
           fill
           priority
           sizes="100vw"
@@ -39,21 +43,15 @@ export default function Hero({ reveal, sectionRef }) {
         <div className="hero-bg-overlay" />
       </div>
 
-      <div className={`hero reveal ${reveal ? 'shown' : ''}`}>
+      <div className="hero">
         <div className="hero-copy">
-          <div className="hero-eyebrow">
-            <span className="live-dot" />
-            Live across 8 campuses in Ghana
-          </div>
+          <p className="hero-tag">Now shipping to cities across Ghana</p>
 
-          <h1 className="hero-h1">
-            What do you need<br />
-            <span className="hero-h1-line2">on campus today?</span>
-          </h1>
+          <h1 className="hero-h1">What are you looking for today?</h1>
 
           <p className="hero-sub">
-            Search thousands of listings from verified student sellers — textbooks,
-            electronics, food, fashion, and everything in between.
+            Search thousands of listings from verified sellers — electronics,
+            fashion, home goods, and everything in between.
           </p>
 
           <div className="hero-copy-actions">
@@ -62,7 +60,7 @@ export default function Hero({ reveal, sectionRef }) {
               <input
                 type="text"
                 className="hero-search-input"
-                placeholder="Search for laptops, textbooks, sneakers…"
+                placeholder="Search for accessories, fashion, electronics…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 aria-label="Search listings"
@@ -77,26 +75,18 @@ export default function Hero({ reveal, sectionRef }) {
             </div>
 
             <div className="hero-trust">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div className="hero-rating">
                 <div className="hero-stars">{'★★★★★'}</div>
-                <span className="hero-trust-text"><strong>4.9</strong> / 10K+ students</span>
+                <span className="hero-trust-text"><strong>4.9</strong> / 10K+ people</span>
               </div>
-              <div className="hero-campus-pills">
-                {['UG', 'KNUST', 'UCC', 'UPSA', 'GIMPA', 'ATU'].map((c) => (
-                  <span key={c} className="campus-pill">{c}</span>
+              <div className="hero-location-pills">
+                {LOCATIONS.map((c) => (
+                  <span key={c} className="location-pill">{c}</span>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Floating badges now sit on the photo itself rather than on a framed card */}
-      <div className="hero-float-badge hero-float-badge--top">
-        <span>✅</span> Verified Sellers
-      </div>
-      <div className="hero-float-badge hero-float-badge--bottom">
-        <span>🔥</span> 500+ new listings today
       </div>
     </section>
   );

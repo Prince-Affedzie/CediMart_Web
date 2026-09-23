@@ -1,90 +1,112 @@
 // src/app/page.js
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { getProductsByCategory, getProductsByTag } from '@/apis/productApi';
+//import Header from '@/components/Layout/Header';
+import ReferEarnStrip from '@/components/Home/ReferEarnStrip';
+import FeaturedCarousel from '@/components/Home/FeaturedCarousel';
 import BrowseByCategory from '@/components/Home/BrowseByCategory';
-import Hero from '@/components/Home/Hero';
-import Ticker from '@/components/Home/Ticker';
-import StatsBar from '@/components/Home/StatsBar';
-import ProductRail from '@/components/Home/ProductRail';
-import WhySection from '@/components/Home/WhySection';
-import AiSection from '@/components/Home/AiSection';
-import CtaSection from '@/components/Home/CtaSection';
-import FloatingAiButton from '@/components/Home/FloatingAiButton';
-import { TAG_RAILS, CATEGORY_RAILS } from '@/components/Home/constants';
+import VendorSpotlight from '@/components/Home/VendorSpotlight';
+import ProductGrid from '@/components/Home/ProductGrid';
+import CategorySection from '@/components/Home/CategorySection';
+import DealsRail from '@/components/Home/DealsRail';
+import EscrowBanner from '@/components/Home/EscrowBanner';
+//import Footer from '@/components/Layout/Footer';
 import './home.css';
 
-// Normalizes the various response shapes the API has been seen to return
-// down to a plain product array.
-function extractProducts(res) {
-  const d = res?.data;
-  const data = d?.data?.products || d?.data?.data || d?.products || d?.data || d || [];
-  return Array.isArray(data) ? data.slice(0, 10) : [];
-}
-
-function useReveal(threshold = 0.1) {
-  const ref = useRef(null);
-  const [vis, setVis] = useState(false);
-  useEffect(() => {
-    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVis(true); }, { threshold });
-    if (ref.current) obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-  return [ref, vis];
-}
-
 export default function HomePage() {
-  const [heroRef, heroVis] = useReveal(0.05);
-  const [whyRef, whyVis] = useReveal(0.08);
-  const [ctaRef, ctaVis] = useReveal(0.08);
-
   return (
     <div className="home-page">
-      <Hero reveal={heroVis} sectionRef={heroRef} />
+     {/* <Header />*/}
 
-      <Ticker />
-      <StatsBar />
+      <main className="home-main">
+      
 
-      {/* ══════════════════════ BROWSE BY CATEGORY ══════════════════════ */}
-      <BrowseByCategory />
+        {/* 2. Featured products carousel — real listings, real prices */}
+        <FeaturedCarousel />
 
-      {/* ══════════════════════ TAG RAILS ══════════════════════
-          getProductsByTag('urgent-sale' | 'popular' | 'new-arrival' |
-          'student-favorite' | 'discounted', …) — one rail per tag, in the
-          order editors would want them to compete for attention. A rail
-          with no tagged products yet renders nothing. */}
-      {TAG_RAILS.map((rail) => (
-        <ProductRail
-          key={rail.tag}
-          title={rail.title}
-          subtitle={rail.subtitle}
-          accent={rail.accent}
-          seeAllHref={`/listings?tag=${encodeURIComponent(rail.tag)}`}
-          fetcher={() => getProductsByTag(rail.tag, { limit: 10, sort: 'newest' }).then(extractProducts)}
+        {/* 3. Browse by category — horizontal pills, mobile-parity */}
+        <BrowseByCategory />
+
+        {/* 4. Vendor spotlight — avatars + "see all" */}
+        <VendorSpotlight title="Featured vendors" subtitle="Top-rated sellers" limit={12} />
+
+        {/* 5. Featured listings grid */}
+        <ProductGrid
+          title="Featured Listings"
+          subtitle="Hand-picked by our team"
+          tag="featured"
+          limit={12}
+          seeAllHref="/listings?tag=featured"
         />
-      ))}
 
-      {/* ══════════════════════ CATEGORY RAILS ══════════════════════
-          getProductsByCategory(category, …) — mirrors the tag rails but
-          scoped by category instead. */}
-      {CATEGORY_RAILS.map((rail) => (
-        <ProductRail
-          key={rail.category}
-          title={rail.title}
-          accent={rail.accent}
-          seeAllHref={`/listings?category=${encodeURIComponent(rail.category)}`}
-          fetcher={() => getProductsByCategory(rail.category, { limit: 10, sort: 'newest' }).then(extractProducts)}
+        {/* 6. Category: Fashion */}
+        <CategorySection
+          category="fashion"
+          title="Fashion"
+          subtitle="Shop fashion from trusted sellers"
         />
-      ))}
 
-      <WhySection reveal={whyVis} sectionRef={whyRef} />
+        {/* 7. Category: Computers & Laptops */}
+        <CategorySection
+          category="computers and laptops"
+          title="Computers & Laptops"
+          subtitle="Laptops, accessories, and more"
+        />
 
-      <AiSection />
+        {/* 8. Flash Sales — horizontal deal cards */}
+        <DealsRail
+          tag="urgent-sale"
+          title="Flash Sales"
+          subtitle="Grab them before they're gone"
+          accent="danger"
+          seeAllHref="/listings?tag=urgent-sale"
+        />
 
-      <CtaSection reveal={ctaVis} sectionRef={ctaRef} />
+        {/* 9. Category: Phones & Tablets */}
+        <CategorySection
+          category="phones and tablets"
+          title="Phones & Tablets"
+          subtitle="Smartphones, cases, and accessories"
+        />
 
-      <FloatingAiButton />
+        {/* 10. Popular */}
+        <ProductGrid
+          title="Popular"
+          subtitle="Most viewed this week"
+          tag="popular"
+          limit={10}
+          seeAllHref="/listings?tag=popular&sort=popular"
+        />
+
+        {/* 11. Category: Beauty & Grooming */}
+        <CategorySection
+          category="beauty and grooming"
+          title="Beauty & Grooming"
+          subtitle="Skincare, makeup, and more"
+        />
+
+        {/* 12. New Arrivals */}
+        <DealsRail
+          tag="new-arrival"
+          title="New Arrivals"
+          subtitle="Just listed"
+          seeAllHref="/listings?tag=new-arrival&sort=newest"
+        />
+
+        {/* 13. Just for you */}
+        <ProductGrid
+          title="Just for you"
+          subtitle="Curated for you"
+          tag="student-favorite"
+          limit={10}
+          seeAllHref="/listings?tag=student-favorite"
+        />
+
+        {/* 14. Escrow banner */}
+        <EscrowBanner />
+      </main>
+
+      {/*<Footer />*/}
     </div>
   );
 }

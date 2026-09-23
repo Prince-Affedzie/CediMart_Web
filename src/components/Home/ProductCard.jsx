@@ -19,6 +19,11 @@ export default function ProductCard({ product, index = 0 }) {
     setIsMobile(window.innerWidth <= 768);
   }, []);
 
+  //  Guard: if the caller hands us nothing (or an object without an id),
+  //  render nothing instead of crashing the entire grid. This is the safety
+  //  net — the primary fix lives in the data source (ProductGrid / extract).
+  if (!product || !product._id) return null;
+
   const onMove = (e) => {
     if (isMobile) return;
     const r = e.currentTarget.getBoundingClientRect();
@@ -31,13 +36,15 @@ export default function ProductCard({ product, index = 0 }) {
     setTilt({ x: 0, y: 0 });
   };
 
+  //  `product` is now guaranteed non-null, so this reads safely.
   const img = product.images?.[0] || product.image || null;
   const cond = CONDITION_MAP[product.condition] || null;
-  // Look up the component for this category, fall back to a generic box.
   const CategoryIcon = CATEGORY_ICONS[product.category] || DEFAULT_CATEGORY_ICON;
+
   const isOnSale =
     product.discountInfo?.isOnSale &&
     product.discountInfo?.originalPrice > product.price;
+
   const pct = isOnSale
     ? Math.round(
         ((product.discountInfo.originalPrice - product.price) /
@@ -45,6 +52,14 @@ export default function ProductCard({ product, index = 0 }) {
           100
       )
     : null;
+
+  //  Location: prefer the new { city, area } shape, fall back to campus for
+  //  legacy listings. Anything missing just means we render no chip.
+  const locationLabel =
+    product.location?.area ||
+    product.location?.city ||
+    product.campus ||
+    null;
 
   return (
     <Link href={`/product/${product._id}`} className="prod-card-link">
@@ -71,7 +86,7 @@ export default function ProductCard({ product, index = 0 }) {
           {img ? (
             <img
               src={img}
-              alt={product.name}
+              alt={product.name || 'Product'}
               className="prod-img"
               onError={(e) => {
                 e.target.src =
@@ -113,8 +128,8 @@ export default function ProductCard({ product, index = 0 }) {
               <CategoryIcon size={12} strokeWidth={2.2} />
               {product.category?.replace(/-/g, ' ') || 'Other'}
             </span>
-            {product.campus && (
-              <span className="prod-campus">{product.campus}</span>
+            {locationLabel && (
+              <span className="prod-campus">{locationLabel}</span>
             )}
           </div>
           <p className="prod-name">{product.name}</p>
