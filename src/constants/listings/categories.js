@@ -38,3 +38,4 @@ export const CATEGORIES = [
   { key: 'other', label: 'Other', icon: Package,
     sub: ['Miscellaneous'] },
 ];
+
