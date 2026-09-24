@@ -34,15 +34,18 @@ export default function VisualSearchClient() {
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState('');
 
-  const [detectedItem, setDetectedItem]   = useState(null);
-  const [aiResponse, setAiResponse]       = useState(null);
-  const [results, setResults]             = useState(null);
+  const [detectedItem, setDetectedItem]     = useState(null);
+  const [aiResponse, setAiResponse]         = useState(null);
+  const [results, setResults]               = useState(null);
   const [conversationId, setConversationId] = useState(null);
 
-  const fileInputRef = useRef(null);
+  //  Two separate hidden inputs — one with `capture` for the camera,
+  //  one without for the gallery. This is the only reliable way to give
+  //  mobile users distinct "take photo" vs "choose from library" flows.
+  const cameraInputRef  = useRef(null);
+  const galleryInputRef = useRef(null);
 
-  //  Revoke the object URL when it changes or the component unmounts —
-  //  otherwise the browser holds the blob in memory.
+  //  Revoke the object URL when it changes or the component unmounts.
   useEffect(() => {
     return () => {
       if (preview) URL.revokeObjectURL(preview);
@@ -50,7 +53,8 @@ export default function VisualSearchClient() {
   }, [preview]);
 
   // ── File handling ──────────────────────────────────────────────────────
-  const openFilePicker = () => fileInputRef.current?.click();
+  const openCamera  = () => cameraInputRef.current?.click();
+  const openGallery = () => galleryInputRef.current?.click();
 
   const onFileChange = (e) => {
     const f = e.target.files?.[0];
@@ -164,25 +168,25 @@ export default function VisualSearchClient() {
               <button
                 type="button"
                 className="vs-tile"
-                onClick={openFilePicker}
+                onClick={openCamera}
               >
                 <span className="vs-tile-icon vs-tile-icon-camera">
                   <Camera size={28} strokeWidth={2} />
                 </span>
                 <span className="vs-tile-label">Take a photo</span>
-                <span className="vs-tile-hint">Opens your camera on mobile</span>
+                <span className="vs-tile-hint">Opens your camera</span>
               </button>
 
               <button
                 type="button"
                 className="vs-tile"
-                onClick={openFilePicker}
+                onClick={openGallery}
               >
                 <span className="vs-tile-icon vs-tile-icon-library">
                   <ImageIcon size={28} strokeWidth={2} />
                 </span>
                 <span className="vs-tile-label">From your device</span>
-                <span className="vs-tile-hint">JPEG, PNG, or WebP</span>
+                <span className="vs-tile-hint">Photo library &amp; files</span>
               </button>
             </div>
 
@@ -190,14 +194,25 @@ export default function VisualSearchClient() {
               Clear photos with good lighting give the best matches.
             </p>
 
-            {/*  A single hidden input handles both flows — on mobile the
-                capture attribute nudges the browser to the camera; on
-                desktop it falls back to the file browser. */}
+            {/* ── Camera input — `capture` tells mobile browsers to open
+                the camera directly. Desktop browsers ignore it and fall
+                back to the file picker. ── */}
             <input
-              ref={fileInputRef}
+              ref={cameraInputRef}
               type="file"
               accept="image/*"
               capture="environment"
+              onChange={onFileChange}
+              hidden
+            />
+
+            {/* ── Gallery input — no `capture` attribute, so mobile browsers
+                show the native file picker (Photo Library / Browse), and
+                desktop browsers show the standard file browser. ── */}
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
               onChange={onFileChange}
               hidden
             />
@@ -215,11 +230,11 @@ export default function VisualSearchClient() {
             </button>
 
             <div className="vs-preview-actions">
-              <button type="button" className="vs-preview-action" onClick={openFilePicker}>
+              <button type="button" className="vs-preview-action" onClick={openCamera}>
                 <Camera size={16} strokeWidth={2.2} />
                 <span>Retake</span>
               </button>
-              <button type="button" className="vs-preview-action" onClick={openFilePicker}>
+              <button type="button" className="vs-preview-action" onClick={openGallery}>
                 <ImageIcon size={16} strokeWidth={2.2} />
                 <span>Choose different</span>
               </button>
