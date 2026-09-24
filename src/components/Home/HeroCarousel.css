@@ -2,11 +2,10 @@
 
 /* ══════════════════════════════════════════════════════════════════════════
    HERO CAROUSEL
-   Full-bleed image slider with responsive aspect ratios.
-   - Mobile: 4:5 portrait, edge-to-edge (no padding, no radius)
-   - Tablet: 16:9 landscape, card treatment
-   - Desktop: 21:9 panoramic, card treatment
-   Slides are stacked with opacity crossfade so only one is visible at a time.
+   Full-bleed image slider. Images are shown with `object-fit: contain` so
+   the full flyer is always visible — no cropping. The container's aspect
+   ratio matches the flyers' native shape, and its background colour fills
+   any leftover space with a subtle brand-tinted tone.
    ══════════════════════════════════════════════════════════════════════════ */
 
 .hero-carousel {
@@ -18,14 +17,11 @@
   outline: none;
 }
 
-/* ── Mobile: full-bleed treatment ──────────────────────────────────────────
-   On phones the carousel spans edge to edge — no padding, no rounded
-   corners, no shadow. This is the same pattern Amazon and Jumia use,
-   and it gives the flyer maximum visual presence without changing
-   anything about the image itself. */
+/* ── Mobile: full-bleed treatment ── */
 @media (max-width: 640px) {
   .hero-carousel {
     padding: 0 0 20px;
+    width: 110%;
   }
 }
 
@@ -35,13 +31,26 @@
   position: relative;
   width: 100%;
 
-  /* Mobile-first: 4:5 portrait so flyers stay readable on phones */
-  aspect-ratio: 4 / 5;
-  max-height: 620px;
+  /*  Mobile: match a wide flyer's shape so there's minimal empty space.
+      If your flyers are square or portrait, change this line — see the
+      three options in the docs. */
+  aspect-ratio: 16 / 9;
+  max-height: 320px;
 
   border-radius: 18px;
   overflow: hidden;
-  background: #F1F5F9;   /* placeholder colour while images load */
+
+  /*  A soft brand-tinted background fills any leftover space around a
+      contained image. Not a solid colour — a very light gradient that
+      reads as intentional. */
+  background:
+    radial-gradient(
+      ellipse at center,
+      #F0FDFA 0%,
+      #F8FAFC 60%,
+      #F1F5F9 100%
+    );
+
   box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
 }
 
@@ -53,7 +62,7 @@
   }
 }
 
-/* ── Tablet: landscape ratio, restore card styling ── */
+/* ── Tablet: keep the wide ratio, grow taller ── */
 @media (min-width: 640px) {
   .hero-track {
     aspect-ratio: 16 / 9;
@@ -73,18 +82,16 @@
 
 /* ══════════════════════ Slides ══════════════════════ */
 
-/*  Slides are absolutely positioned on top of each other. Only the
-    active one has opacity: 1; the rest are hidden but still mounted
-    so the browser has them cached for an instant transition. */
 .hero-slide {
   position: absolute;
   inset: 0;
-  display: block;
+  display: flex;                     /* centers the image */
+  align-items: center;
+  justify-content: center;
   opacity: 0;
   pointer-events: none;
   transition: opacity .6s ease;
   text-decoration: none;
-  background: #F1F5F9;
 }
 
 .hero-slide.is-active {
@@ -94,17 +101,22 @@
 }
 
 .hero-slide-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  /*  Contain — never crop. The image is centered and scaled down to fit
+      inside the container, so the full flyer is always visible. */
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+
+  /*  If the image is a proper bitmap that should fill the space
+      regardless, use these instead of the block above:
+      width: 100%; height: 100%; object-fit: contain;
+      Both approaches work; the max-* version avoids upscaling on very
+      large screens, which keeps the image crisp. */
+  object-fit: contain;
   object-position: center;
   display: block;
 }
-
-/*  If the flyer is a promotional poster (not a photo), object-fit: contain
-    keeps the whole image visible. Flip this to `contain` if any of your
-    flyers have important text getting cropped at the edges. */
-/* .hero-slide-img { object-fit: contain; } */
 
 /* ══════════════════════ Arrows ══════════════════════ */
 
@@ -118,7 +130,7 @@
   height: 44px;
   border-radius: 50%;
 
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
   color: #0F172A;
   border: none;
   cursor: pointer;
@@ -155,7 +167,6 @@
 .hero-arrow-prev { left: 16px; }
 .hero-arrow-next { right: 16px; }
 
-/*  On small screens the arrows crowd the image — dots are enough. */
 @media (max-width: 640px) {
   .hero-arrow { display: none; }
 }
@@ -173,18 +184,16 @@
   align-items: center;
   gap: 8px;
 
-  background: rgba(15, 23, 42, 0.35);
+  background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   padding: 8px 12px;
   border-radius: 20px;
 }
 
-/*  On mobile the dots sit inside a full-bleed image, so lift them
-    slightly higher off the bottom edge. */
 @media (max-width: 640px) {
   .hero-dots {
-    bottom: 16px;
+    bottom: 14px;
     padding: 6px 10px;
     gap: 6px;
   }
@@ -196,13 +205,13 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   transition: background .2s ease, width .2s ease, border-radius .2s ease;
 }
 
 .hero-dot:hover {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .hero-dot.is-active {
