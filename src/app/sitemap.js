@@ -2,7 +2,7 @@
 import { getAllProducts } from '@/apis/productApi';
 import { getVendors } from '@/apis/vendorApi';
 import { CATEGORIES } from '@/constants/listings/categories';
-import { SUBCATEGORIES } from '@/constants/listings/options';
+import { SUBCATEGORIES } from '@/constants/listings/subcategories';
 
 export const revalidate = 3600;   // regenerate at most once per hour
 
