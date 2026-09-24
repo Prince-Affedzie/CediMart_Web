@@ -2,9 +2,11 @@
 
 /* ══════════════════════════════════════════════════════════════════════════
    HERO CAROUSEL
-   Full-bleed image slider. Slides are stacked with opacity crossfade so
-   only one is visible at a time. Responsive height keeps the flyers
-   readable on all screens.
+   Full-bleed image slider with responsive aspect ratios.
+   - Mobile: 4:5 portrait, edge-to-edge (no padding, no radius)
+   - Tablet: 16:9 landscape, card treatment
+   - Desktop: 21:9 panoramic, card treatment
+   Slides are stacked with opacity crossfade so only one is visible at a time.
    ══════════════════════════════════════════════════════════════════════════ */
 
 .hero-carousel {
@@ -16,25 +18,60 @@
   outline: none;
 }
 
+/* ── Mobile: full-bleed treatment ──────────────────────────────────────────
+   On phones the carousel spans edge to edge — no padding, no rounded
+   corners, no shadow. This is the same pattern Amazon and Jumia use,
+   and it gives the flyer maximum visual presence without changing
+   anything about the image itself. */
+@media (max-width: 640px) {
+  .hero-carousel {
+    padding: 0 0 20px;
+  }
+}
+
+/* ══════════════════════ Track (the visible viewport) ══════════════════════ */
+
 .hero-track {
   position: relative;
   width: 100%;
-  /*  Height is aspect-driven: the flyers are wide, so a responsive
-      ratio keeps them readable without stretching. */
-  aspect-ratio: 16 / 9;
-  max-height: 520px;
+
+  /* Mobile-first: 4:5 portrait so flyers stay readable on phones */
+  aspect-ratio: 4 / 5;
+  max-height: 620px;
+
   border-radius: 18px;
   overflow: hidden;
   background: #F1F5F9;   /* placeholder colour while images load */
   box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
 }
 
-@media (min-width: 900px) {
+/*  On mobile, drop the card treatment so the flyer runs edge to edge. */
+@media (max-width: 640px) {
   .hero-track {
-    /*  On desktop the wide ratio looks better with a taller cap. */
-    aspect-ratio: 21 / 9;
+    border-radius: 0;
+    box-shadow: none;
   }
 }
+
+/* ── Tablet: landscape ratio, restore card styling ── */
+@media (min-width: 640px) {
+  .hero-track {
+    aspect-ratio: 16 / 9;
+    max-height: 480px;
+    border-radius: 18px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+  }
+}
+
+/* ── Desktop: panoramic ratio ── */
+@media (min-width: 900px) {
+  .hero-track {
+    aspect-ratio: 21 / 9;
+    max-height: 520px;
+  }
+}
+
+/* ══════════════════════ Slides ══════════════════════ */
 
 /*  Slides are absolutely positioned on top of each other. Only the
     active one has opacity: 1; the rest are hidden but still mounted
@@ -49,6 +86,7 @@
   text-decoration: none;
   background: #F1F5F9;
 }
+
 .hero-slide.is-active {
   opacity: 1;
   pointer-events: auto;
@@ -99,6 +137,7 @@
     box-shadow .18s ease;
 
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .hero-arrow:hover {
@@ -108,6 +147,7 @@
     0 6px 18px rgba(15, 23, 42, 0.16),
     0 2px 6px rgba(15, 23, 42, 0.08);
 }
+
 .hero-arrow:active {
   transform: translateY(-50%) scale(1);
 }
@@ -135,8 +175,19 @@
 
   background: rgba(15, 23, 42, 0.35);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 8px 12px;
   border-radius: 20px;
+}
+
+/*  On mobile the dots sit inside a full-bleed image, so lift them
+    slightly higher off the bottom edge. */
+@media (max-width: 640px) {
+  .hero-dots {
+    bottom: 16px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
 }
 
 .hero-dot {
