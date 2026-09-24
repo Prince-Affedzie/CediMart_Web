@@ -11,6 +11,7 @@ import ProductGrid from '@/components/Home/ProductGrid';
 import CategorySection from '@/components/Home/CategorySection';
 import DealsRail from '@/components/Home/DealsRail';
 import EscrowBanner from '@/components/Home/EscrowBanner';
+import FloatingAiButton from '@/components/Home/FloatingAiButton'
 //import Footer from '@/components/Layout/Footer';
 import './home.css';
 
@@ -106,6 +107,7 @@ export default function HomePage() {
           limit={10}
           seeAllHref="/listings?tag=student-favorite"
         />
+        <FloatingAiButton/>
 
         {/* 14. Escrow banner */}
         <EscrowBanner />
