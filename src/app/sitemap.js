@@ -2,50 +2,51 @@
 import { getAllProducts } from '@/apis/productApi';
 import { getVendors } from '@/apis/vendorApi';
 import { CATEGORIES } from '@/constants/listings/categories';
-import { SUBCATEGORIES } from '@/constants/listings/subcategories';
-import {
-  CITY_OPTIONS,
-  GHANA_LOCATIONS,          // ← this was missing — the actual root cause
-} from '@/constants/listings/options';
+import { SUBCATEGORIES } from '@/constants/listings/options';
 
 export const revalidate = 3600;   // regenerate at most once per hour
 
 const BASE_URL = 'https://cedimartgh.com';
-
-//  Only include products updated in the last N days at full priority.
 const FRESH_WINDOW_DAYS = 14;
 
-//  Only include products updated in the last N days at full priority.
 function daysSince(date) {
   const then = new Date(date).getTime();
   if (!Number.isFinite(then)) return Infinity;
   return (Date.now() - then) / (1000 * 60 * 60 * 24);
 }
 
-//  Build a listings URL with all query params correctly encoded.
-//  Using URLSearchParams guarantees that any `&`, `=`, `#`, or space
-//  inside a value gets properly escaped, so the resulting URL is always
-//  a valid string. Next.js then XML-escapes the `&` separators when it
-//  serializes the sitemap, which is the correct behavior.
+//  Build a URL with query params safely escaped. URLSearchParams turns
+//  spaces into %20 and special chars into their percent-encoded form,
+//  so the output is always a well-formed URL string.
+//
+//  NOTE: URLSearchParams produces a raw `&` between params. Next.js
+//  XML-escapes that to `&amp;` when it serializes the sitemap. That's
+//  correct — but if you ever see a raw `&` in the generated XML, it
+//  means something between this function and the response is not
+//  escaping. Guard against it by re-escaping here.
 function buildListingsUrl(params) {
   const qs = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
+  for (const [key, value] of Object.entries(params || {})) {
     if (value != null && value !== '') {
       qs.set(key, String(value));
     }
   }
   const query = qs.toString();
-  return query ? `${BASE_URL}/listings?${query}` : `${BASE_URL}/listings`;
+
+  //  Belt-and-braces: XML-escape any `&` produced by URLSearchParams
+  //  itself, so even if Next.js or a proxy doesn't escape it, the
+  //  output is still valid XML.
+  const safeQuery = query.replace(/&/g, '&amp;');
+
+  return safeQuery
+    ? `${BASE_URL}/listings?${safeQuery}`
+    : `${BASE_URL}/listings`;
 }
 
-//  Same idea for product / vendor detail URLs — encode the id so any
-//  unexpected characters can't break the URL.
 function buildEntityUrl(kind, id) {
   return `${BASE_URL}/${kind}/${encodeURIComponent(String(id))}`;
 }
 
-//  Skip any image URL that isn't a fully-qualified http(s) URL. Google
-//  rejects image entries pointing at relative paths or non-http schemes.
 function validImages(images) {
   if (!Array.isArray(images)) return undefined;
   const cleaned = images
@@ -57,8 +58,6 @@ function validImages(images) {
 export default async function sitemap() {
   const now = new Date();
 
-  //  Every push goes through this — ensures the URL is unique and
-  //  well-formed, and that lastModified is a valid ISO string.
   const seen = new Set();
   const entries = [];
 
@@ -95,6 +94,10 @@ export default async function sitemap() {
   });
 
   // ── 2. Category + subcategory routes ─────────────────────────────────────
+  //  NOTE: city and suburb routes were removed deliberately. They added
+  //  a raw `&` to every URL and they weren't pulling their weight for
+  //  search visibility — category + product + vendor coverage is what
+  //  actually drives traffic.
   for (const cat of CATEGORIES || []) {
     if (!cat?.id || cat.id === 'all') continue;
 
@@ -104,9 +107,6 @@ export default async function sitemap() {
       priority: 0.8,
     });
 
-    //  Category subcategories live in SUBCATEGORIES_MAP on the web side,
-    //  keyed by category id, each entry being { key, label } or
-    //  { value, label }. We handle both shapes.
     const subs = SUBCATEGORIES?.[cat.id] || [];
     for (const sub of subs) {
       const subKey = sub?.value || sub?.key || sub?.id;
@@ -119,28 +119,7 @@ export default async function sitemap() {
     }
   }
 
-  // ── 3. City + suburb routes ──────────────────────────────────────────────
-  for (const city of CITY_OPTIONS || []) {
-    if (!city?.id) continue;
-
-    push(buildListingsUrl({ city: city.id }), {
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.7,
-    });
-
-    const suburbs = GHANA_LOCATIONS?.[city.id]?.suburbs || [];
-    for (const sub of suburbs) {
-      if (!sub || typeof sub !== 'string') continue;
-      push(buildListingsUrl({ city: city.id, suburb: sub }), {
-        lastModified: now,
-        changeFrequency: 'weekly',
-        priority: 0.5,
-      });
-    }
-  }
-
-  // ── 4. Product routes ────────────────────────────────────────────────────
+  // ── 3. Product routes ────────────────────────────────────────────────────
   try {
     const res = await getAllProducts({ limit: 1000, sort: 'newest' });
     const d = res?.data;
@@ -164,7 +143,7 @@ export default async function sitemap() {
     console.error('[sitemap] Failed to fetch products:', err?.message || err);
   }
 
-  // ── 5. Vendor routes ─────────────────────────────────────────────────────
+  // ── 4. Vendor routes ─────────────────────────────────────────────────────
   try {
     const res = await getVendors({ limit: 1000, sortBy: 'rating', order: 'desc' });
     const d = res?.data;
@@ -190,6 +169,6 @@ export default async function sitemap() {
     console.error('[sitemap] Failed to fetch vendors:', err?.message || err);
   }
 
-  // ── 6. Return everything ─────────────────────────────────────────────────
+  // ── 5. Return everything ─────────────────────────────────────────────────
   return entries;
 }
