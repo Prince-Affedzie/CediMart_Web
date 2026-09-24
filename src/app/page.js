@@ -4,7 +4,7 @@
 //import Header from '@/components/Layout/Header';
 import HomeSearchBar from '@/components/Home/HomeSearchBar';
 import ReferEarnStrip from '@/components/Home/ReferEarnStrip';
-import FeaturedCarousel from '@/components/Home/FeaturedCarousel';
+import HeroCarousel from '@/components/Home/HeroCarousel';
 import BrowseByCategory from '@/components/Home/BrowseByCategory';
 import VendorSpotlight from '@/components/Home/VendorSpotlight';
 import ProductGrid from '@/components/Home/ProductGrid';
@@ -29,7 +29,7 @@ export default function HomePage() {
         <HomeSearchBar />
 
         {/* 2. Featured products carousel — real listings, real prices */}
-        <FeaturedCarousel />
+        <HeroCarousel />
 
         {/* 3. Browse by category — horizontal pills, mobile-parity */}
         <BrowseByCategory />

@@ -1216,7 +1216,7 @@ export default function ProductDetailClient() {
               </h2>
               <div className="pd-related-grid">
                 {relatedProducts
-                  .slice(0, isMobile ? 4 : 6)
+                  .slice(0,6)
                   .map((rp) => (
                     <RelatedProductCard key={rp._id} product={rp} />
                   ))}
