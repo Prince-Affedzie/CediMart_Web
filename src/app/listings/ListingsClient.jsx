@@ -8,14 +8,17 @@ import { ChevronRight, X, MapPin, Search, Package, SlidersHorizontal } from 'luc
 import { getAllProducts, getProductsByCategory } from '@/apis/productApi';
 
 import { CATEGORIES } from '@/constants/listings/categories';
+import {SUBCATEGORIES} from '@/constants/listings/subcategories'
 import { SORT_OPTIONS, CONDITION_OPTIONS } from '@/constants/listings/options';
 import { CITY_OPTIONS, getSuburbs, GHANA_LOCATIONS } from '@/constants/listings/options';
+
 
 import Sidebar from '@/components/Listings/Sidebar';
 import ProductCard from '@/components/Listings/ProductCard';
 import SkeletonCard from '@/components/Listings/SkeletonCard';
 import FloatingAiButton from '@/components/Home/FloatingAiButton'
 import VisualSearchFab from '@/components/VisualSearchFab'
+import MobileCategoryStrip from '@/components/Listings/MobileCategoryStrip';
 import Pagination from '@/components/Listings/Pagination';
 
 import './listings.css';
@@ -243,11 +246,6 @@ export default function ListingsClient() {
   }, []);
 
   // ── Live search (debounced fetch) ─────────────────────────────────────────
-  //  Note this effect ONLY fetches results. It does NOT open or close the
-  //  dropdown. Opening is the input's job (see onChange below); closing is
-  //  every other action's job. This split is what prevents the dropdown
-  //  from popping back open after a submit — the fetch resolves without
-  //  touching `suggestOpen`, so the state you set in `submitSearch` sticks.
   useEffect(() => {
     const t = setTimeout(() => {
       if (searchInput.trim().length >= MIN_SUGGEST_LENGTH) {
@@ -578,7 +576,15 @@ export default function ListingsClient() {
             <button className="lp-clear-all" onClick={clearAllFilters}>Clear all</button>
           </div>
         )}
+       
       </div>
+       <MobileCategoryStrip
+            activeCategory={activeCategory}
+            activeSub={activeSub}
+            onCategory={handleCatChange}
+            onSub={handleSubChange}
+            subcategories={SUBCATEGORIES}
+            />
 
       {/* MAIN SHELL */}
       <div className="lp-shell">

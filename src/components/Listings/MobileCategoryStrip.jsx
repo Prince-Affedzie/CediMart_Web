@@ -8,11 +8,13 @@ export default function MobileCategoryStrip({
   activeSub,
   onCategory,
   onSub,
+  subcategories = {},           // { [catId]: [{ value, label }] }
 }) {
   const scrollRef = useRef(null);
+  const subScrollRef = useRef(null);
   const [localOpenSubs, setLocalOpenSubs] = useState(false);
 
-  // Auto-scroll the active pill into view whenever it changes.
+  // Auto-scroll the active category pill into view when it changes.
   useEffect(() => {
     if (!scrollRef.current || !activeCategory) return;
     const el = scrollRef.current.querySelector(
@@ -27,33 +29,48 @@ export default function MobileCategoryStrip({
     }
   }, [activeCategory]);
 
-  // Open the sub-row automatically when a category with subcategories is picked.
+  // Auto-scroll the active sub pill into view when it changes.
   useEffect(() => {
-    if (activeCategory) {
-      const cat = CATEGORIES.find((c) => c.key === activeCategory);
-      setLocalOpenSubs(!!cat?.sub?.length);
-    } else {
-      setLocalOpenSubs(false);
+    if (!subScrollRef.current || !activeSub) return;
+    const el = subScrollRef.current.querySelector(
+      `[data-sub-key="${activeSub}"]`
+    );
+    if (el) {
+      el.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest',
+      });
     }
-  }, [activeCategory]);
+  }, [activeSub]);
+
+  // Open the sub-row automatically when a category with subs is picked.
+  useEffect(() => {
+    if (!activeCategory) {
+      setLocalOpenSubs(false);
+      return;
+    }
+    const subs = subcategories[activeCategory] || [];
+    setLocalOpenSubs(subs.length > 0);
+  }, [activeCategory, subcategories]);
+
+  const subsForActive = activeCategory
+    ? (subcategories[activeCategory] || [])
+    : [];
 
   const handleCategoryTap = (cat) => {
     if (cat.key === activeCategory) {
-      // Tapping the active category re-shows its subcategories.
+      // Tapping the active category toggles its subcategory row.
       setLocalOpenSubs((v) => !v);
       return;
     }
     onCategory(cat.key);
     onSub('');
-    setLocalOpenSubs(!!cat.sub?.length);
   };
 
-  const handleSubTap = (sub) => {
-    onSub(activeSub === sub ? '' : sub);
+  const handleSubTap = (subValue) => {
+    onSub(activeSub === subValue ? '' : subValue);
   };
-
-  const activeCat = CATEGORIES.find((c) => c.key === activeCategory);
-  const subs = activeCat?.sub || [];
 
   return (
     <div className="lp-mcat">
@@ -75,6 +92,8 @@ export default function MobileCategoryStrip({
         {CATEGORIES.map((cat) => {
           const Icon = cat.icon;
           const isActive = activeCategory === cat.key;
+          const hasSubs = (subcategories[cat.key] || []).length > 0;
+
           return (
             <button
               key={cat.key}
@@ -85,37 +104,42 @@ export default function MobileCategoryStrip({
             >
               {Icon && <Icon size={13} strokeWidth={2.4} />}
               <span>{cat.label}</span>
-              {cat.sub?.length > 0 && <span className="lp-mcat-dot" />}
+              {/* Small dot hint that this category has subcategories */}
+              {hasSubs && <span className="lp-mcat-dot" />}
             </button>
           );
         })}
       </div>
 
-      {/* Subcategory chips — only when a category with subs is active */}
-      {activeCategory && subs.length > 0 && localOpenSubs && (
-        <div className="lp-mcat-subs">
-          {subs.map((sub) => {
-            const subActive = activeSub === sub;
+      {/* Subcategory chips — shown whenever the active category has subs */}
+      {activeCategory && subsForActive.length > 0 && localOpenSubs && (
+        <div className="lp-mcat-subs" ref={subScrollRef}>
+          {/* "All in category" chip */}
+          <button
+            type="button"
+            className={`lp-mcat-sub${!activeSub ? ' is-active' : ''}`}
+            onClick={() => onSub('')}
+          >
+            All
+          </button>
+
+          {subsForActive.map((sub) => {
+            const subValue = sub.value || sub.key || sub;
+            const subLabel = sub.label || sub;
+            const subActive = activeSub === subValue;
+
             return (
               <button
-                key={sub}
+                key={subValue}
                 type="button"
+                data-sub-key={subValue}
                 className={`lp-mcat-sub${subActive ? ' is-active' : ''}`}
-                onClick={() => handleSubTap(sub)}
+                onClick={() => handleSubTap(subValue)}
               >
-                {sub}
+                {subLabel}
               </button>
             );
           })}
-          {activeSub && (
-            <button
-              type="button"
-              className="lp-mcat-sub lp-mcat-sub-clear"
-              onClick={() => onSub('')}
-            >
-              ✕ Clear
-            </button>
-          )}
         </div>
       )}
     </div>

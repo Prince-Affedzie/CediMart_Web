@@ -168,7 +168,7 @@ export const SUBCATEGORIES = {
     { id: 'tailoring-alterations', label: 'Clothing Alterations & Tailoring' },
     { id: 'other-services', label: 'Other Student Services' },
   ],
-  'tutoring-education': [
+  'tutoring and education': [
     { id: 'math-sciences', label: 'Maths, Physics, Chemistry & Bio' },
     { id: 'languages', label: 'English, French & Local Languages' },
     { id: 'coding-tech', label: 'Coding, Web Dev & Data Science' },
@@ -177,7 +177,7 @@ export const SUBCATEGORIES = {
     { id: 'music-arts', label: 'Music, Piano & Fine Art Lessons' },
     { id: 'other-tutoring', label: 'Other Subjects' },
   ],
-  'photography-media': [
+  'photography and media': [
     { id: 'photoshoots', label: 'Portrait & Event Photoshoots' },
     { id: 'videography', label: 'Videography & Video Editing' },
     { id: 'drone', label: 'Drone Photography & Aerial Shots' },
@@ -193,21 +193,21 @@ export const SUBCATEGORIES = {
     { id: 'binding', label: 'Binding & Lamination' },
     { id: 'other-design', label: 'Other Design & Print' },
   ],
-  'repair-services': [
+  'repair and services': [
     { id: 'phone-repair', label: 'Phone Screen & Battery Repair' },
     { id: 'laptop-repair', label: 'Laptop & Computer Repair' },
     { id: 'software-repair', label: 'Software & OS Installation' },
     { id: 'appliance-repair', label: 'Appliance Repair' },
     { id: 'other-repairs', label: 'Other Repair Services' },
   ],
-  'events-catering': [
+  'events and catering': [
     { id: 'catering', label: 'Catering & Food Service' },
     { id: 'cake-baking', label: 'Cakes & Pastries' },
     { id: 'decor-setup', label: 'Event Decor & Setup' },
     { id: 'event-mc', label: 'MCs & Event Hosts' },
     { id: 'other-events', label: 'Other Event Services' },
   ],
-  'accommodation-housing': [
+  'accommodation and housing': [
     { id: 'single-room', label: 'Single Rooms' },
     { id: 'shared-room', label: 'Shared Rooms & Roommates' },
     { id: 'hostel', label: 'Hostel Beds' },
