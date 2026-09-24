@@ -558,3 +558,156 @@
   flex-shrink: 0;
 }
 @media (max-width: 640px) { .escrow-banner-art { display: none; } }
+
+/* Append to src/app/home.css */
+
+/* ══════════════════════ Product card skeleton ══════════════════════
+   The skeleton uses the exact same outer classes as the real card
+   (.prod-card, .prod-img-wrap, .prod-info) so dimensions match and
+   there's no layout shift when real content swaps in. */
+
+.prod-card-skeleton {
+  pointer-events: none;
+  /* Override hover effects so skeletons stay inert */
+  border-color: var(--border, #E2E8F0) !important;
+  box-shadow: none !important;
+}
+
+.prod-skeleton-img {
+  position: relative;
+  /* Matches .prod-img-wrap's aspect-ratio — real image is square */
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(
+    90deg,
+    #F1F5F9 25%,
+    #E2E8F0 50%,
+    #F1F5F9 75%
+  );
+  background-size: 400% 100%;
+  animation: prodShimmer 1.4s ease-in-out infinite;
+}
+
+.prod-skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    #F1F5F9 25%,
+    #E2E8F0 50%,
+    #F1F5F9 75%
+  );
+  background-size: 400% 100%;
+  animation: prodShimmer 1.4s ease-in-out infinite;
+  margin-bottom: 8px;
+}
+
+/*  Taller bar for the "price" row — mirrors where the real price sits
+    and keeps grid rows aligned. */
+.prod-skeleton-line-lg {
+  height: 16px;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+@keyframes prodShimmer {
+  0%   { background-position: -400% 0; }
+  100% { background-position:  400% 0; }
+}
+
+/*  Respect reduced-motion preferences — hold a static tone for users
+    who've asked for less animation. */
+@media (prefers-reduced-motion: reduce) {
+  .prod-skeleton-img,
+  .prod-skeleton-line {
+    animation: none;
+    background: #F1F5F9;
+  }
+}
+
+/* Append to src/app/home.css */
+
+/* ══════════════════════ Deal card skeleton ══════════════════════
+   Uses the same outer class (.dc) as the real card so the rail's
+   height, width, and scroll-snap behaviour are identical — no
+   reflow when the real content arrives. */
+
+.dc-skeleton {
+  /* .dc already sets position, flex, aspect-ratio, border-radius, and
+     overflow — inherit all of those. Just kill the interaction. */
+  pointer-events: none;
+}
+
+.dc-skeleton-img {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #F1F5F9 25%,
+    #E2E8F0 50%,
+    #F1F5F9 75%
+  );
+  background-size: 400% 100%;
+  animation: dcShimmer 1.4s ease-in-out infinite;
+}
+
+/*  Overlay area at the bottom — mirrors where the name + price sit
+    in a real card. Same gradient scrim so the shape reads the same. */
+.dc-skeleton-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(15, 23, 42, .35) 100%
+  );
+}
+
+.dc-skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(241, 245, 249, .55) 25%,
+    rgba(226, 232, 240, .8) 50%,
+    rgba(241, 245, 249, .55) 75%
+  );
+  background-size: 400% 100%;
+  animation: dcShimmer 1.4s ease-in-out infinite;
+}
+
+/*  Slightly taller, brighter bar for the price line — matches where
+    the real price sits and reads as the visual anchor of the card. */
+.dc-skeleton-line-price {
+  height: 16px;
+  margin-top: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(153, 246, 228, .35) 25%,
+    rgba(153, 246, 228, .6) 50%,
+    rgba(153, 246, 228, .35) 75%
+  );
+  background-size: 400% 100%;
+}
+
+@keyframes dcShimmer {
+  0%   { background-position: -400% 0; }
+  100% { background-position:  400% 0; }
+}
+
+/*  Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .dc-skeleton-img,
+  .dc-skeleton-line {
+    animation: none;
+    background: #F1F5F9;
+  }
+  .dc-skeleton-line-price {
+    background: rgba(153, 246, 228, .5);
+  }
+}

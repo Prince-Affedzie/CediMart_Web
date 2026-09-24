@@ -10,15 +10,39 @@ import {
   DEFAULT_CATEGORY_ICON,
 } from './constants';
 
-export default function ProductCard({ product, index = 0 }) {
-  const [hovered, setHovered] = useState(false);
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+export default function ProductCard({ product, index = 0, skeleton = false }) {
+  const [hovered, setHovered]   = useState(false);
+  const [tilt, setTilt]         = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setIsMobile(window.innerWidth <= 768);
   }, []);
 
+  // ── Skeleton branch ──────────────────────────────────────────────────────
+  //  Renders a shimmer placeholder with the same outer classes as the real
+  //  card (.prod-card, .prod-img-wrap, .prod-info), so there's zero layout
+  //  shift when the real content swaps in.
+  //
+  //  Uses <div> not <Link> — skeletons aren't clickable, and this avoids
+  //  rendering an anchor with no href.
+  if (skeleton) {
+    return (
+      <div className="prod-card prod-card-skeleton" aria-hidden="true">
+        <div className="prod-img-wrap prod-skeleton-img" />
+        <div className="prod-info">
+          <div className="prod-skeleton-line" style={{ width: '65%' }} />
+          <div className="prod-skeleton-line" style={{ width: '45%' }} />
+          <div
+            className="prod-skeleton-line prod-skeleton-line-lg"
+            style={{ width: '55%' }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ── Real card ────────────────────────────────────────────────────────────
   //  Guard: if the caller hands us nothing (or an object without an id),
   //  render nothing instead of crashing the entire grid. This is the safety
   //  net — the primary fix lives in the data source (ProductGrid / extract).
@@ -31,6 +55,7 @@ export default function ProductCard({ product, index = 0 }) {
     const y = ((e.clientY - r.top) / r.height - 0.5) * -12;
     setTilt({ x, y });
   };
+
   const onLeave = () => {
     setHovered(false);
     setTilt({ x: 0, y: 0 });
