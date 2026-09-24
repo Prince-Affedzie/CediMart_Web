@@ -2,6 +2,7 @@
 'use client';
 
 //import Header from '@/components/Layout/Header';
+import HomeSearchBar from '@/components/Home/HomeSearchBar';
 import ReferEarnStrip from '@/components/Home/ReferEarnStrip';
 import FeaturedCarousel from '@/components/Home/FeaturedCarousel';
 import BrowseByCategory from '@/components/Home/BrowseByCategory';
@@ -19,7 +20,11 @@ export default function HomePage() {
      {/* <Header />*/}
 
       <main className="home-main">
-      
+
+        {/* 1. Search — sits before everything else, including the carousel,
+            so people can jump straight into search from the moment the
+            page loads. */}
+        <HomeSearchBar />
 
         {/* 2. Featured products carousel — real listings, real prices */}
         <FeaturedCarousel />

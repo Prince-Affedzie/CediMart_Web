@@ -327,7 +327,7 @@ a.lp-card { text-decoration: none; color: inherit; }
 /* ── Sidebar ──
    Sticks at --header-h and is exactly that much shorter than 100vh, so it
    starts directly beneath the header and never extends up behind it. */
-.lp-sidebar { position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h)); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 20px 0 48px; border-right: 1px solid var(--border); background: var(--void); scrollbar-width: thin; scrollbar-color: var(--border) transparent; z-index: 30; min-width: 0; }
+.lp-sidebar { position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h)); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; padding: 20px 0 48px; border-right: 1px solid var(--border); background: var(--surf); scrollbar-width: thin; scrollbar-color: var(--border) transparent; z-index: 30; min-width: 0; }
 .lp-sidebar::-webkit-scrollbar { width: 3px; }
 .lp-sidebar::-webkit-scrollbar-track { background: transparent; }
 .lp-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -796,6 +796,13 @@ a.lp-card { text-decoration: none; color: inherit; }
   margin-top: 24px;
 }
 .lp-sheet-apply:hover { background: var(--brand-d); }
+.lp-skeleton-card {
+  aspect-ratio: 1 / 1.1;
+  background: var(--elev, #F1F5F9);
+  border-radius: 14px;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: .6; } 50% { opacity: 1; } }
 
 /* Chip rows inside sheets */
 .lp-chip-wrap { display: flex; flex-wrap: wrap; gap: 8px; }

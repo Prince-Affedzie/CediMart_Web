@@ -1,0 +1,368 @@
+/* src/components/Home/HomeSearchBar.css */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HOMEPAGE SEARCH BAR — sticky version
+   Sticks under the site header (--header-h) as you scroll.
+   IMPORTANT: no ancestor may have `overflow: hidden` or `overflow: clip`
+   on the y-axis. If sticky appears broken, that's why — see the ancestor
+   note in the docs.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.hs-wrap {
+  /* ── Sticky positioning ── */
+  position: sticky;
+  top: var(--header-h, 64px);      /* sits right under the site header */
+  z-index: 55;
+
+  /* ── Layout ── */
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  
+
+  /* ── Backdrop (un-stuck state) ── */
+  background: transparent;
+  pointer-events: none;
+  transition: background .2s ease, backdrop-filter .2s ease;
+}
+
+.hs-wrap > * { pointer-events: auto; }
+
+/*  When the bar is stuck (JS toggles .is-stuck), give it a soft frosted
+    backdrop so it reads as floating above the content behind it. */
+.hs-wrap.is-stuck {
+  background: linear-gradient(
+    to bottom,
+    rgba(248, 250, 252, 0.94) 0%,
+    rgba(248, 250, 252, 0.78) 65%,
+    rgba(248, 250, 252, 0) 100%
+  );
+  backdrop-filter: blur(8px) saturate(140%);
+  -webkit-backdrop-filter: blur(8px) saturate(140%);
+}
+
+/* ── The bar itself ── */
+.hs-bar {
+  display: flex;
+  align-items: center;
+  background: #FFFFFF;
+  border: 2px solid #0F172A;
+  border-radius: 24px;
+  height: 56px;
+  padding: 0;
+  overflow: visible;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: border-color .15s, box-shadow .15s;
+}
+.hs-wrap.is-stuck .hs-bar {
+  box-shadow:
+    0 6px 20px rgba(15, 23, 42, 0.10),
+    0 1px 3px rgba(15, 23, 42, 0.06);
+}
+.hs-bar:focus-within {
+  border-color: #0D9488;
+  box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.16);
+}
+
+/* ── Category dropdown (left segment) ── */
+.hs-cat {
+  position: relative;
+  flex-shrink: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.hs-cat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  padding: 0 14px 0 16px;
+  background: #F8FAFC;
+  border: none;
+  border-right: 1px solid #E2E8F0;
+  border-radius: 10px 0 0 10px;
+  color: #0F172A;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.hs-cat-btn:hover { background: #F1F5F9; }
+
+.hs-cat-label {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .hs-cat { display: none; }
+}
+
+/* ── Category dropdown menu ── */
+.hs-cat-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 240px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+  padding: 6px;
+  z-index: 70;
+}
+
+.hs-cat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #0F172A;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.hs-cat-item:hover { background: #F1F5F9; }
+.hs-cat-item.is-active {
+  background: rgba(13, 148, 136, 0.1);
+  color: #0F766E;
+  font-weight: 700;
+}
+.hs-cat-item-icon { color: #94A3B8; flex-shrink: 0; }
+.hs-cat-item.is-active .hs-cat-item-icon { color: #0D9488; }
+
+/* ── Search icon inside the input area ── */
+.hs-icon {
+  color: #94A3B8;
+  margin-left: 14px;
+  flex-shrink: 0;
+  transition: color .15s;
+}
+.hs-bar:focus-within .hs-icon { color: #0D9488; }
+
+/* ── Input ── */
+.hs-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 12px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: #0F172A;
+}
+.hs-input::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+/* ── Clear button ── */
+.hs-clear {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #94A3B8;
+  transition: color .15s, background .15s;
+  flex-shrink: 0;
+}
+.hs-clear:hover {
+  color: #DC2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+/* ── Submit button ── */
+.hs-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: calc(100% - 8px);
+  margin: 4px 4px 4px 0;
+  padding: 0 22px;
+  background: #F97316;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 21px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background .18s, transform .12s, box-shadow .18s;
+  box-shadow: 0 3px 10px rgba(249, 115, 22, 0.24);
+}
+.hs-submit:hover {
+  background: #EA580C;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(249, 115, 22, 0.32);
+}
+.hs-submit:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.24);
+}
+
+@media (max-width: 640px) {
+  .hs-submit-label { display: none; }
+  .hs-submit { padding: 0 14px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SUGGESTIONS DROPDOWN
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.hs-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 20px;
+  right: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+  overflow: hidden;
+  z-index: 60;
+  max-height: 460px;
+  overflow-y: auto;
+  animation: hsFadeIn .14s ease;
+}
+
+@keyframes hsFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hs-dropdown-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: #94A3B8;
+}
+.hs-dropdown-clear {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #DC2626;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.hs-dropdown-clear:hover { text-decoration: underline; }
+
+.hs-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 10px 16px;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #0F172A;
+  text-align: left;
+  transition: background .1s;
+}
+.hs-suggestion:hover,
+.hs-suggestion.is-active { background: #F8FAFC; }
+.hs-suggestion.is-active { background: rgba(13, 148, 136, 0.08); }
+
+.hs-suggestion-icon { color: #94A3B8; flex-shrink: 0; }
+.hs-suggestion-arrow {
+  color: #94A3B8;
+  opacity: 0;
+  transition: opacity .15s, transform .15s;
+  flex-shrink: 0;
+}
+.hs-suggestion:hover .hs-suggestion-arrow {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+.hs-suggestion-thumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #F1F5F9;
+  flex-shrink: 0;
+}
+.hs-suggestion-thumb-empty { display: block; }
+
+.hs-suggestion-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.hs-suggestion-price {
+  color: #F97316;
+  font-weight: 800;
+  font-size: 12.5px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  flex-shrink: 0;
+}
+
+.hs-dropdown-empty {
+  padding: 18px 16px;
+  text-align: center;
+  color: #94A3B8;
+  font-size: 13px;
+}
+
+.hs-dropdown-all {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  background: #F0FDFA;
+  color: #0D9488;
+  border: none;
+  border-top: 1px solid #E2E8F0;
+  cursor: pointer;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  transition: background .15s, color .15s;
+}
+.hs-dropdown-all:hover {
+  background: #CCFBF1;
+  color: #0F766E;
+}
