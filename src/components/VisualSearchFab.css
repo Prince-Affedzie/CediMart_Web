@@ -1,0 +1,139 @@
+/* src/components/VisualSearchFab.css */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   VISUAL SEARCH FAB
+   Sits in the bottom-right stack, above the AI button.
+   Icon + label, always visible, on both desktop and mobile.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.vs-fab {
+  position: fixed;
+  z-index: 500;
+
+  /* Position is set inline via props so the parent can shift it if needed,
+     but the defaults here are the fallback. */
+  bottom: 96px;
+  right: 24px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  height: 48px;
+  padding: 0 18px 0 14px;
+
+  background: linear-gradient(135deg, #0D9488 0%, #14B8A6 100%);
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+  border-radius: 999px;
+
+  text-decoration: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: -.1px;
+  white-space: nowrap;
+
+  box-shadow:
+    0 8px 22px rgba(13, 148, 136, 0.32),
+    0 3px 8px rgba(15, 23, 42, 0.10);
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    background .2s ease;
+}
+
+.vs-fab:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #0F766E 0%, #0D9488 100%);
+  box-shadow:
+    0 12px 28px rgba(13, 148, 136, 0.4),
+    0 4px 10px rgba(15, 23, 42, 0.12);
+}
+
+.vs-fab:active {
+  transform: translateY(0);
+}
+
+/* ── Pulsing halo behind the button ── */
+.vs-fab-halo {
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  background: #0D9488;
+  opacity: .4;
+  animation: vsPulse 2s ease-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes vsPulse {
+  0%   { transform: scale(1);    opacity: .4; }
+  100% { transform: scale(1.14); opacity: 0;  }
+}
+
+/*  The halo scales a rounded rectangle, which is fine visually, but on
+    Safari the transform-origin can make it look off-centre. Force it: */
+.vs-fab-halo {
+  transform-origin: center;
+}
+
+/* ── Icon ── */
+.vs-fab-icon {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+
+/* ── Label (always visible) ── */
+.vs-fab-label {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  line-height: 1;
+}
+
+/* ── Sparkle badge on the top-right ── */
+.vs-fab-sparkle {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #F97316;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.3);
+  z-index: 2;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — mobile keeps the label but shrinks the pill
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .vs-fab {
+    height: 44px;
+    padding: 0 14px 0 12px;
+    font-size: 12.5px;
+    gap: 6px;
+    bottom: 140px;
+  }
+  .vs-fab-icon { width: 16px; height: 16px; }
+  .vs-fab-sparkle { width: 16px; height: 16px; top: -2px; right: -2px; }
+}
+
+/*  Very small phones: keep the pill short so it doesn't dominate the
+    corner. Still shows the label, just tighter. */
+@media (max-width: 380px) {
+  .vs-fab {
+    padding: 0 12px 0 10px;
+    font-size: 12px;
+  }
+}

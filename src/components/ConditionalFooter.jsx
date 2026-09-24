@@ -15,6 +15,7 @@ const HIDDEN_PREFIXES = [
   '/verify',
   '/vendor-login',
   '/vendor-signup',
+  '/visual-search',
   '/cart',
   '/checkout',
   '/orders',

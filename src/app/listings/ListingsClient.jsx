@@ -14,6 +14,8 @@ import { CITY_OPTIONS, getSuburbs, GHANA_LOCATIONS } from '@/constants/listings/
 import Sidebar from '@/components/Listings/Sidebar';
 import ProductCard from '@/components/Listings/ProductCard';
 import SkeletonCard from '@/components/Listings/SkeletonCard';
+import FloatingAiButton from '@/components/Home/FloatingAiButton'
+import VisualSearchFab from '@/components/VisualSearchFab'
 import Pagination from '@/components/Listings/Pagination';
 
 import './listings.css';
@@ -632,6 +634,8 @@ export default function ListingsClient() {
               totalPages={loading ? 1 : totalPages}
               onPageChange={setPage}
             />
+            <VisualSearchFab />
+             <FloatingAiButton/>
           </main>
         </div>
       </div>
