@@ -11,7 +11,7 @@ export default function VendorSpotlight({ title = 'Featured vendors', subtitle, 
 
   useEffect(() => {
     let cancelled = false;
-    getVendors({ sortBy: 'rating', order: 'desc', page: 1, limit })
+    getVendors({ page: 1, limit })
       .then((res) => {
         if (cancelled) return;
         const list = res?.data?.data || [];
