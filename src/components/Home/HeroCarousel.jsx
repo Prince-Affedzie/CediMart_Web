@@ -8,22 +8,22 @@ import './HeroCarousel.css';
 //  no CTAs, no product data. The image IS the message.
 const SLIDES = [
   {
-    src: 'https://res.cloudinary.com/duv3qvvjz/image/upload/v1790250614/hero_flyer_1_ilzcr5.png',
+    src: 'https://res.cloudinary.com/duv3qvvjz/image/upload/v1790335121/hero_flyer_1_1_ney3mo.png',
     alt: 'CediMart promo',
     href: '/listings',
   },
   {
-    src: 'https://res.cloudinary.com/duv3qvvjz/image/upload/v1790250614/hero_flyer_2_tlju8v.png',
+    src: 'https://res.cloudinary.com/duv3qvvjz/image/upload/v1790335131/hero_flyer_2_1_av33wr.png',
     alt: 'CediMart promo',
     href: '/listings?sort=newest',
   },
   {
-    src: 'https://res.cloudinary.com/duv3qvvjz/image/upload/v1790250614/hero_flyer_3_bnvcqe.png',
+    src: 'https://res.cloudinary.com/duv3qvvjz/image/upload/v1790335211/hero_flyer_3_1_lrktad.png',
     alt: 'CediMart promo',
     href: '/listings?tag=popular',
   },
   {
-    src: 'https://res.cloudinary.com/duv3qvvjz/image/upload/v1790250608/hero_flyer_4_l8m3sc.png',
+    src: 'https://res.cloudinary.com/duv3qvvjz/image/upload/v1790335121/hero_flyer_4_1_elq4l8.png',
     alt: 'CediMart promo',
     href: '/listings?tag=urgent-sale',
   },
