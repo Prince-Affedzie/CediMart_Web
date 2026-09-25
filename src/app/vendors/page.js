@@ -1,7 +1,7 @@
 // src/app/vendors/page.js
 'use client';
 
-import { Suspense, useState, useEffect, useCallback, useMemo } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -12,16 +12,17 @@ import {
   Cpu, Smartphone, Laptop, Gamepad2, Shirt, BookOpen, Bed,
   Tv, Armchair, Dumbbell, Watch, UtensilsCrossed, Wrench,
   GraduationCap, Camera, Palette, Hammer, Home, Ticket, Bike,
-  Ellipsis, Layers, Store as StoreIcon,
+  Ellipsis, Layers, Store as StoreIcon, Globe,
 } from 'lucide-react';
 import { getVendors } from '@/apis/vendorApi';
+import { CITY_OPTIONS, GHANA_LOCATIONS, getSuburbs } from '@/constants/listings/options';
 
 import './vendors.css';
 
 const PAGE_LIMIT = 16;
 const SEARCH_DEBOUNCE_MS = 400;
 
-// ─── Category meta (mirrors mobile DiscoverScreen) ──────────────────────────
+// ─── Category meta ──────────────────────────────────────────────────────────
 const CATEGORY_META = {
   '':                          { label: 'All',              Icon: Grid },
   'electronics':                { label: 'Electronics',      Icon: Cpu },
@@ -30,7 +31,7 @@ const CATEGORY_META = {
   'gaming':                     { label: 'Gaming',            Icon: Gamepad2 },
   'fashion':                    { label: 'Fashion',           Icon: Shirt },
   'books-course-materials':     { label: 'Books',             Icon: BookOpen },
-  'hostel-items':               { label: 'Hostel Items',      Icon: Bed },
+  'hostel-items':               { label: 'Home & Living',     Icon: Bed },
   'appliances':                 { label: 'Appliances',        Icon: Tv },
   'furniture':                  { label: 'Furniture',         Icon: Armchair },
   'beauty and grooming':        { label: 'Beauty',            Icon: Sparkles },
@@ -56,17 +57,11 @@ const BUSINESS_TYPE_FILTERS = [
   { key: 'service', label: 'Services', Icon: Wrench },
 ];
 
-const CAMPUSES = [
-  { key: '',        label: 'All campuses' },
-  { key: 'UG',      label: 'University of Ghana' },
-  { key: 'KNUST',   label: 'KNUST' },
-  { key: 'UCC',     label: 'Univ. of Cape Coast' },
-  { key: 'UEW',     label: 'Univ. of Ed., Winneba' },
-  { key: 'UPSA',    label: 'UPSA' },
-  { key: 'GIMPA',   label: 'GIMPA' },
-  { key: 'ASHESI',  label: 'Ashesi University' },
-  { key: 'ATU',     label: 'Accra Technical Univ.' },
-  { key: 'OTHER',   label: 'Other' },
+//  Location options come straight from the shared data source so
+//  the filter dropdown stays in sync with the rest of the app.
+const LOCATION_OPTIONS = [
+  { key: '', label: 'All locations' },
+  ...CITY_OPTIONS.map((c) => ({ key: c.id, label: c.label })),
 ];
 
 const SORT_OPTIONS = [
@@ -75,8 +70,6 @@ const SORT_OPTIONS = [
   { key: 'totalSales', order: 'desc', label: 'Most sales',      Icon: TrendingUp },
 ];
 
-// Small scattered icon set used purely for the hero's decorative mosaic —
-// picked to read as "campus marketplace" rather than generic ecommerce.
 const HERO_MOSAIC_ICONS = [
   { Icon: BookOpen,        className: 'm1' },
   { Icon: Smartphone,      className: 'm2' },
@@ -87,13 +80,32 @@ const HERO_MOSAIC_ICONS = [
 
 const isRealImageUrl = (val) => !!val && /^https?:\/\//i.test(val);
 
+//  Display label for a vendor's location. Prefers the new { city, area }
+//  shape, falls back to legacy { campusArea, hostel } for old listings,
+//  and finally falls back to the campus code.
+function getVendorLocationLine(vendor) {
+  const loc = vendor?.location || {};
+
+  // New shape: city is an id like 'ACCRA', area is a suburb string.
+  if (loc.city) {
+    const cityLabel = GHANA_LOCATIONS[loc.city]?.label || loc.city;
+    return loc.area ? `${loc.area}, ${cityLabel}` : cityLabel;
+  }
+
+  // Legacy campus shape still works for old vendors.
+  if (loc.campusArea) {
+    return loc.hostel ? `${loc.hostel}, ${loc.campusArea}` : loc.campusArea;
+  }
+
+  // Last resort: show the campus code if that's all we have.
+  return vendor?.campus || 'Location not set';
+}
+
 // ─── Vendor Card ────────────────────────────────────────────────────────────
 function VendorCard({ vendor }) {
   const hasAvatar = isRealImageUrl(vendor.profileImage);
   const displayName = vendor.storeName || vendor.name;
-  const campusLabel = CAMPUSES.find((c) => c.key === vendor.campus)?.label || vendor.campus;
-  const areaLabel = vendor.location?.campusArea;
-  const locationLine = [areaLabel, campusLabel].filter(Boolean).join(', ') || 'Campus not set';
+  const locationLine = getVendorLocationLine(vendor);
   const primaryCategory = vendor.categories?.[0];
   const categoryMeta = CATEGORY_META[primaryCategory] || CATEGORY_META.other;
   const PrimaryIcon = categoryMeta.Icon;
@@ -163,7 +175,6 @@ function VendorCard({ vendor }) {
         </div>
       </div>
 
-      {/* Product strip / service cue */}
       {isServiceOnly ? (
         <div className="vd-card-service-cue">
           <MessageCircle size={13} strokeWidth={2.2} />
@@ -189,7 +200,6 @@ function VendorCard({ vendor }) {
               <span>+{extraCount}</span>
             </div>
           )}
-          {/* Fill remaining slots with subtle placeholders for consistent card height */}
           {totalSlots < 3 &&
             Array.from({ length: 3 - totalSlots }).map((_, i) => (
               <div key={`empty-${i}`} className="vd-card-thumb vd-card-thumb-empty" />
@@ -221,10 +231,7 @@ function SkeletonVendorCard() {
   );
 }
 
-// ─── Loading fallback for the Suspense boundary ────────────────────────────
-// Shown for the brief moment before useSearchParams can resolve on the client.
-// Keeping the hero + stats strip static here means there's no layout jump
-// once VendorsPageContent takes over.
+// ─── Loading fallback ──────────────────────────────────────────────────────
 function VendorsPageSkeleton() {
   return (
     <div className="vd-page">
@@ -247,16 +254,16 @@ function VendorsHero() {
         <div className="vd-hero-copy">
           <div className="vd-hero-badge">
             <Shield size={13} strokeWidth={2.4} />
-            <span>Verified vendors</span>
+            <span>Verified vendors · Nationwide</span>
           </div>
           <h1 className="vd-hero-title">
-            Trusted shops, run by
+            Trusted shops,
             <br />
-            students like you
+            across Ghana
           </h1>
           <p className="vd-hero-sub">
-            Buy and book from vendors on your own campus — every one of them
-            a fellow student.
+            Discover verified vendors in your city — or order from anywhere
+            and get it shipped to you.
           </p>
         </div>
 
@@ -273,12 +280,12 @@ function VendorsHero() {
   );
 }
 
-// ─── Stats strip (kept separate from the hero, per design direction) ──────
+// ─── Stats strip ───────────────────────────────────────────────────────────
 function VendorsStatsStrip({ stats }) {
   const items = [
     { label: 'Active vendors', value: stats?.totalVendors != null ? stats.totalVendors.toLocaleString() : null },
     { label: 'Categories', value: String(CATEGORIES.length - 1) },
-    { label: 'Campuses', value: String(CAMPUSES.length - 1) },
+    { label: 'Cities covered', value: String(CITY_OPTIONS.length) },
   ];
 
   return (
@@ -319,7 +326,10 @@ function VendorsPageContent() {
   const [searchInput, setSearchInput] = useState(searchParams.get('q') || '');
   const [search, setSearch] = useState(searchParams.get('q') || '');
   const [businessType, setBusinessType] = useState(searchParams.get('type') || '');
-  const [campus, setCampus] = useState(searchParams.get('campus') || '');
+  //  Renamed from `campus` — now a city id. Query param stays `city` in the
+  //  URL so old bookmarks that used `campus` still work server-side if you
+  //  want to migrate them later.
+  const [city, setCity] = useState(searchParams.get('city') || '');
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [verifiedOnly, setVerifiedOnly] = useState(searchParams.get('verified') === '1');
   const [sort, setSort] = useState(
@@ -327,22 +337,31 @@ function VendorsPageContent() {
   );
 
   const [showBusinessSheet, setShowBusinessSheet] = useState(false);
-  const [showCampusSheet, setShowCampusSheet] = useState(false);
+  const [showCitySheet, setShowCitySheet] = useState(false);
   const [showSortSheet, setShowSortSheet] = useState(false);
 
   // ── Sync to URL ─────────────────────────────────────────────────────────
   const syncURL = useCallback((overrides = {}) => {
-    const next = { q: search, type: businessType, campus, category, verified: verifiedOnly ? '1' : '', sort: sort.key, page, ...overrides };
+    const next = {
+      q: search,
+      type: businessType,
+      city,                        // ← renamed from `campus`
+      category,
+      verified: verifiedOnly ? '1' : '',
+      sort: sort.key,
+      page,
+      ...overrides,
+    };
     const qs = new URLSearchParams();
     if (next.q) qs.set('q', next.q);
     if (next.type) qs.set('type', next.type);
-    if (next.campus) qs.set('campus', next.campus);
+    if (next.city) qs.set('city', next.city);
     if (next.category) qs.set('category', next.category);
     if (next.verified === '1') qs.set('verified', '1');
     if (next.sort && next.sort !== 'createdAt') qs.set('sort', next.sort);
     if (next.page && next.page !== 1) qs.set('page', next.page);
     router.replace(`/vendors${qs.toString() ? `?${qs}` : ''}`, { scroll: false });
-  }, [search, businessType, campus, category, verifiedOnly, sort, page, router]);
+  }, [search, businessType, city, category, verifiedOnly, sort, page, router]);
 
   // ── Debounced search ────────────────────────────────────────────────────
   useEffect(() => {
@@ -361,7 +380,11 @@ function VendorsPageContent() {
     try {
       const res = await getVendors({
         search: search || undefined,
-        campus: campus || undefined,
+        //  Backend still accepts `campus` historically. If your API was
+        //  updated to accept `city`, swap this key. Otherwise keep sending
+        //  `campus` and translate server-side.
+        campus: city || undefined,
+        city: city || undefined,
         category: category || undefined,
         businessType: businessType || undefined,
         isVerified: verifiedOnly ? true : undefined,
@@ -386,9 +409,12 @@ function VendorsPageContent() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [search, campus, category, businessType, verifiedOnly, sort]);
+  }, [search, city, category, businessType, verifiedOnly, sort]);
 
-  useEffect(() => { fetchVendors(1); syncURL({ page: 1 }); }, [search, campus, category, businessType, verifiedOnly, sort]);
+  useEffect(() => {
+    fetchVendors(1);
+    syncURL({ page: 1 });
+  }, [search, city, category, businessType, verifiedOnly, sort]);
 
   const handleLoadMore = () => {
     if (hasMore && !loadingMore && !loading) fetchVendors(page + 1, { append: true });
@@ -396,7 +422,7 @@ function VendorsPageContent() {
 
   const resetAllFilters = () => {
     setBusinessType('');
-    setCampus('');
+    setCity('');
     setCategory('');
     setVerifiedOnly(false);
     setSearch('');
@@ -404,8 +430,8 @@ function VendorsPageContent() {
     setPage(1);
   };
 
-  const activeFilterCount = [campus, category, verifiedOnly, businessType].filter(Boolean).length;
-  const selectedCampusLabel = CAMPUSES.find((c) => c.key === campus)?.label || 'Campus';
+  const activeFilterCount = [city, category, verifiedOnly, businessType].filter(Boolean).length;
+  const selectedCityLabel = CITY_OPTIONS.find((c) => c.id === city)?.label || 'All locations';
   const sectionLabel = businessType === 'service' ? 'Services' : businessType === 'product' ? 'Shops' : 'All vendors';
 
   return (
@@ -415,11 +441,10 @@ function VendorsPageContent() {
 
       {/* ── Controls ── */}
       <div className="vd-controls">
-        {/* Row 1: title + business type dropdown */}
         <div className="vd-controls-title-row">
           <div>
             <h2 className="vd-section-title">Discover vendors</h2>
-            <p className="vd-section-sub">Shops and services across your campus</p>
+            <p className="vd-section-sub">Shops and services across Ghana</p>
           </div>
           <button
             className="vd-biz-dropdown"
@@ -440,12 +465,11 @@ function VendorsPageContent() {
           </button>
         </div>
 
-        {/* Row 2: search */}
         <div className="vd-search-bar">
           <Search size={17} strokeWidth={2.2} />
           <input
             className="vd-search-input"
-            placeholder="Search vendors, tags, campus area…"
+            placeholder="Search vendors, tags, or city…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             aria-label="Search vendors"
@@ -461,7 +485,6 @@ function VendorsPageContent() {
           )}
         </div>
 
-        {/* Row 3: category tiles */}
         <div className="vd-cat-strip">
           <div className="vd-cat-scroll">
             {CATEGORIES.map((item) => {
@@ -483,14 +506,13 @@ function VendorsPageContent() {
           </div>
         </div>
 
-        {/* Row 4: campus / verified / sort */}
         <div className="vd-filter-row">
           <button
-            className={`vd-filter-pill ${campus ? 'active' : ''}`}
-            onClick={() => setShowCampusSheet(true)}
+            className={`vd-filter-pill ${city ? 'active' : ''}`}
+            onClick={() => setShowCitySheet(true)}
           >
             <MapPin size={13} strokeWidth={2.2} />
-            <span>{selectedCampusLabel}</span>
+            <span>{selectedCityLabel}</span>
             <ChevronDown size={12} strokeWidth={2.5} />
           </button>
 
@@ -542,7 +564,7 @@ function VendorsPageContent() {
               <Store size={44} strokeWidth={1.5} />
             </div>
             <h3>No vendors found</h3>
-            <p>Try adjusting your search or filters</p>
+            <p>Try a different city, category, or search term</p>
             {activeFilterCount > 0 || search ? (
               <button className="vd-empty-reset" onClick={resetAllFilters}>
                 Reset filters
@@ -591,20 +613,20 @@ function VendorsPageContent() {
         </div>
       )}
 
-      {/* ── Campus sheet ── */}
-      {showCampusSheet && (
-        <div className="vd-sheet-backdrop" onClick={() => setShowCampusSheet(false)}>
+      {/* ── Location sheet ── */}
+      {showCitySheet && (
+        <div className="vd-sheet-backdrop" onClick={() => setShowCitySheet(false)}>
           <div className="vd-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="vd-sheet-handle" />
-            <h3 className="vd-sheet-title">Filter by campus</h3>
+            <h3 className="vd-sheet-title">Filter by location</h3>
             <div className="vd-sheet-scroll">
-              {CAMPUSES.map((opt) => {
-                const isActive = campus === opt.key;
+              {LOCATION_OPTIONS.map((opt) => {
+                const isActive = city === opt.key;
                 return (
                   <button
                     key={opt.key || 'all'}
                     className={`vd-sheet-option ${isActive ? 'active' : ''}`}
-                    onClick={() => { setCampus(opt.key); setShowCampusSheet(false); setPage(1); }}
+                    onClick={() => { setCity(opt.key); setShowCitySheet(false); setPage(1); }}
                   >
                     <MapPin size={16} strokeWidth={2.2} />
                     <span>{opt.label}</span>
