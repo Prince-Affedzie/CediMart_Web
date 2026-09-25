@@ -2,6 +2,7 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ConditionalFooter from '@/components/ConditionalFooter';
+import AppDownloadBanner from '@/components/AppDownloadBanner';
 import MobileTabBar from '@/components/MobileTabBar';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
@@ -122,6 +123,7 @@ export default function RootLayout({ children }) {
       >
         <AuthProvider>
           <CartProvider>
+            <AppDownloadBanner />
             <Header />
             <main>{children}</main>
             <MobileTabBar />

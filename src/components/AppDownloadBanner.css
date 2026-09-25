@@ -1,0 +1,252 @@
+/* src/components/AppDownloadBanner.css */
+
+/* ══════════════════════════════════════════════════════════════════════════
+   APP DOWNLOAD BANNER
+   Thin, dismissible banner that sits above the header on mobile only.
+   Hidden on desktop via CSS as a belt-and-braces — the component already
+   checks the viewport via matchMedia, so this is just redundancy.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.adb {
+  /* Layout */
+  display: none;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px 8px 14px;
+
+  /* Colour — subtle gradient from teal into brand-l, no heavy border */
+  background: linear-gradient(90deg, #0D9488 0%, #14B8A6 100%);
+  color: #fff;
+
+  border: none;
+  cursor: pointer;
+  text-align: left;
+
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  font-size: 13px;
+  line-height: 1.3;
+
+  /* No rounded corners — it spans edge to edge */
+  position: relative;
+  z-index: 60;   /* above the header */
+
+  /* Entrance */
+  animation: adbSlideDown .35s ease both;
+}
+
+@keyframes adbSlideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+.adb:active {
+  filter: brightness(0.96);
+}
+
+/* ── Show only on mobile ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .adb { display: flex; }
+}
+
+/* ── Icon chip ───────────────────────────────────────────────────────── */
+.adb-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+}
+
+/* ── Text ────────────────────────────────────────────────────────────── */
+.adb-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.94);
+}
+.adb-text strong {
+  font-weight: 800;
+  color: #fff;
+}
+
+/* ── "Get app" CTA ───────────────────────────────────────────────────── */
+.adb-cta {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.1px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* ── Close button ────────────────────────────────────────────────────── */
+.adb-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s;
+  /* Bump the tap target without changing the visual size */
+  margin: 0 -2px 0 0;
+}
+.adb-close:hover,
+.adb-close:active {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   BOTTOM SHEET
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.adb-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+
+  animation: adbFade .18s ease both;
+}
+
+@keyframes adbFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.adb-sheet {
+  background: #FFFFFF;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 22px 22px 0 0;
+  padding: 14px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -8px 40px rgba(15, 23, 42, 0.25);
+
+  animation: adbSheetUp .28s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+@keyframes adbSheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.adb-sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: #E2E8F0;
+  margin: 0 auto 16px;
+}
+
+.adb-sheet-head {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.adb-sheet-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.3px;
+  margin: 0 0 6px;
+}
+
+.adb-sheet-sub {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Store links ─────────────────────────────────────────────────────── */
+.adb-sheet-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.adb-store {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+
+  background: #0F172A;
+  color: #FFFFFF;
+  text-decoration: none;
+
+  transition: transform .15s ease, background .18s ease;
+}
+.adb-store:active {
+  transform: scale(0.98);
+  background: #1E293B;
+}
+
+.adb-store-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.adb-store-small {
+  font-size: 10.5px;
+  font-weight: 500;
+  opacity: 0.75;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.adb-store-big {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+/* ── Cancel button ───────────────────────────────────────────────────── */
+.adb-sheet-cancel {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background .15s;
+}
+.adb-sheet-cancel:hover {
+  background: #F1F5F9;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REDUCED MOTION
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .adb,
+  .adb-sheet-backdrop,
+  .adb-sheet {
+    animation: none;
+  }
+}
