@@ -375,7 +375,7 @@ export default function CheckoutClient() {
       setTimeout(() => {
         const orderId =
           res.data?.data?._id || res.data?.data?.id || res.data?.orderId;
-        router.push(orderId ? `/order/${orderId}` : '/orders');
+        router.push(orderId ? `/orders/${orderId}` : '/orders');
       }, 1200);
     } else {
       // CHANGED: message no longer assumes a payment was processed — untrue for cash orders
