@@ -25,6 +25,8 @@ import {
   Lock,
   Store,
   AlertCircle,
+  Wallet,
+  Banknote,
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -151,6 +153,9 @@ export default function CheckoutClient() {
   const [deliveryDay, setDeliveryDay] = useState('');
   const [deliveryTime, setDeliveryTime] = useState('afternoon');
 
+  
+  const [paymentMethod, setPaymentMethod] = useState('virtual');
+
   const [toast, setToast] = useState({ msg: '', danger: false });
 
   const didInitRef = useRef(false);
@@ -208,7 +213,8 @@ export default function CheckoutClient() {
 
   // ── Derived state ───────────────────────────────────────────────────────
   const total = cartTotal || 0;
-  const emailValid = paymentEmail && validateEmail(paymentEmail);
+  // CHANGED: email is irrelevant (and therefore always "valid") when paying cash on delivery
+  const emailValid = paymentMethod === 'cash' ? true : (paymentEmail && validateEmail(paymentEmail));
   const readyToPay = !!selectedAddress && emailValid;
 
   // ── Address handlers ────────────────────────────────────────────────────
@@ -254,7 +260,8 @@ export default function CheckoutClient() {
       preferredDay: deliveryDay,
       preferredTime: deliveryTime,
     },
-    paymentMethod: 'paystack',
+   
+    paymentMethod,
     paymentReference,
     paymentStatus,
     ...(referralCode && { referralCode }),
@@ -274,13 +281,16 @@ export default function CheckoutClient() {
       showToast('Please choose a delivery day and time.', true);
       return false;
     }
-    if (!paymentEmail.trim()) {
-      setPaymentEmailError('Email is required for payment');
-      return false;
-    }
-    if (!validateEmail(paymentEmail)) {
-      setPaymentEmailError('Please enter a valid email address');
-      return false;
+    // CHANGED: email is only required when paying online
+    if (paymentMethod === 'virtual') {
+      if (!paymentEmail.trim()) {
+        setPaymentEmailError('Email is required for payment');
+        return false;
+      }
+      if (!validateEmail(paymentEmail)) {
+        setPaymentEmailError('Please enter a valid email address');
+        return false;
+      }
     }
     const outOfStock = cartItems.filter((item) => {
       const stock =
@@ -356,16 +366,21 @@ export default function CheckoutClient() {
         res.data?.orderNumber ||
         'N/A';
 
-      showToast(`Order #${orderNumber} placed successfully!`);
+      // CHANGED: cash orders get a reminder to have cash ready, instead of nothing
+      showToast(
+        paymentMethod === 'cash'
+          ? `Order #${orderNumber} placed! Have exact cash ready on delivery.`
+          : `Order #${orderNumber} placed successfully!`
+      );
       setTimeout(() => {
         const orderId =
           res.data?.data?._id || res.data?.data?.id || res.data?.orderId;
         router.push(orderId ? `/order/${orderId}` : '/orders');
       }, 1200);
     } else {
+      // CHANGED: message no longer assumes a payment was processed — untrue for cash orders
       throw new Error(
-        res.data?.message ||
-          "Your payment was processed but we couldn't create your order."
+        res.data?.message || "We couldn't create your order. Please contact support."
       );
     }
   };
@@ -378,6 +393,12 @@ export default function CheckoutClient() {
     try {
       if (!isAuthenticated) {
         router.push('/login?redirect=/checkout');
+        return;
+      }
+
+      // NEW: cash-on-delivery skips Paystack entirely and creates the order as unpaid/pending
+      if (paymentMethod === 'cash') {
+        await createOrderAfterPayment(null, 'pending');
         return;
       }
 
@@ -655,77 +676,119 @@ export default function CheckoutClient() {
           )}
         </section>
 
-        {/* ── Payment Email ── */}
-        <section
-          className={`ck-card${!emailValid ? ' is-required' : ''}`}
-        >
-          <SectionHeader
-            icon={Mail}
-            title="Payment Email"
-            filled={emailValid}
-            required
-          />
+        {/* ── Payment Method (NEW) ── */}
+        <section className="ck-card">
+          <SectionHeader icon={Wallet} title="Payment Method" filled />
 
-          <div className="ck-info-banner">
-            <Info size={15} strokeWidth={2.4} />
-            <span>
-              Your receipt and order confirmation will be sent here
-            </span>
-          </div>
-
-          <div
-            className={`ck-email-wrap${
-              paymentEmailError
-                ? ' is-error'
-                : emailValid
-                ? ' is-success'
-                : ''
-            }`}
+          <button
+            type="button"
+            className={`ck-addr-card${paymentMethod === 'virtual' ? ' is-selected' : ''}`}
+            onClick={() => setPaymentMethod('virtual')}
           >
-            <Mail
-              size={18}
-              strokeWidth={2.2}
-              className="ck-email-icon"
-              color={
-                paymentEmailError
-                  ? '#DC2626'
-                  : emailValid
-                  ? '#059669'
-                  : '#94A3B8'
-              }
-            />
-            <input
-              type="email"
-              autoComplete="email"
-              inputMode="email"
-              className="ck-email-input"
-              placeholder="yourname@example.com"
-              value={paymentEmail}
-              onChange={(e) => {
-                const v = e.target.value.trim();
-                setPaymentEmail(v);
-                if (paymentEmailError && validateEmail(v))
-                  setPaymentEmailError('');
-              }}
-            />
-            {emailValid && (
-              <CheckCircle2 size={18} strokeWidth={2.4} color="#059669" />
+            <span className={`ck-radio${paymentMethod === 'virtual' ? ' is-active' : ''}`}>
+              {paymentMethod === 'virtual' && <span className="ck-radio-fill" />}
+            </span>
+            <span className="ck-addr-body">
+              <span className="ck-addr-main">Pay Now</span>
+              <span className="ck-addr-sub">Mobile Money, Card or Bank </span>
+            </span>
+            {paymentMethod === 'virtual' && (
+              <CheckCircle2 size={20} strokeWidth={2.4} color="#059669" />
             )}
-          </div>
+          </button>
 
-          {paymentEmailError && (
-            <div className="ck-field-msg is-error">
-              <XCircle size={14} strokeWidth={2.4} />
-              <span>{paymentEmailError}</span>
-            </div>
-          )}
-          {!paymentEmailError && emailValid && (
-            <div className="ck-field-msg is-success">
-              <CheckCircle2 size={14} strokeWidth={2.4} />
-              <span>Looks good!</span>
-            </div>
-          )}
+          <button
+            type="button"
+            className={`ck-addr-card${paymentMethod === 'cash' ? ' is-selected' : ''}`}
+            style={{ marginBottom: 0 }}
+            onClick={() => setPaymentMethod('cash')}
+          >
+            <span className={`ck-radio${paymentMethod === 'cash' ? ' is-active' : ''}`}>
+              {paymentMethod === 'cash' && <span className="ck-radio-fill" />}
+            </span>
+            <span className="ck-addr-body">
+              <span className="ck-addr-main">Pay on Delivery</span>
+              <span className="ck-addr-sub">Pay cash when your order arrives</span>
+            </span>
+            {paymentMethod === 'cash' && (
+              <CheckCircle2 size={20} strokeWidth={2.4} color="#059669" />
+            )}
+          </button>
         </section>
+
+        {/* ── Payment Email — CHANGED: only shown when paying online ── */}
+        {paymentMethod === 'virtual' && (
+          <section
+            className={`ck-card${!emailValid ? ' is-required' : ''}`}
+          >
+            <SectionHeader
+              icon={Mail}
+              title="Payment Email"
+              filled={emailValid}
+              required
+            />
+
+            <div className="ck-info-banner">
+              <Info size={15} strokeWidth={2.4} />
+              <span>
+                Your receipt and order confirmation will be sent here
+              </span>
+            </div>
+
+            <div
+              className={`ck-email-wrap${
+                paymentEmailError
+                  ? ' is-error'
+                  : emailValid
+                  ? ' is-success'
+                  : ''
+              }`}
+            >
+              <Mail
+                size={18}
+                strokeWidth={2.2}
+                className="ck-email-icon"
+                color={
+                  paymentEmailError
+                    ? '#DC2626'
+                    : emailValid
+                    ? '#059669'
+                    : '#94A3B8'
+                }
+              />
+              <input
+                type="email"
+                autoComplete="email"
+                inputMode="email"
+                className="ck-email-input"
+                placeholder="yourname@example.com"
+                value={paymentEmail}
+                onChange={(e) => {
+                  const v = e.target.value.trim();
+                  setPaymentEmail(v);
+                  if (paymentEmailError && validateEmail(v))
+                    setPaymentEmailError('');
+                }}
+              />
+              {emailValid && (
+                <CheckCircle2 size={18} strokeWidth={2.4} color="#059669" />
+              )}
+            </div>
+
+            {paymentEmailError && (
+              <div className="ck-field-msg is-error">
+                <XCircle size={14} strokeWidth={2.4} />
+                <span>{paymentEmailError}</span>
+              </div>
+            )}
+            {!paymentEmailError && emailValid && (
+              <div className="ck-field-msg is-success">
+                <CheckCircle2 size={14} strokeWidth={2.4} />
+                <span>Looks good!</span>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* ── Order Summary ── */}
         <section className="ck-card">
@@ -789,7 +852,9 @@ export default function CheckoutClient() {
             </div>
             <div className="ck-totals-divider" />
             <div className="ck-grand-row">
-              <span className="ck-grand-label">Total to pay now</span>
+              <span className="ck-grand-label">
+                {paymentMethod === 'cash' ? 'Total (pay on delivery)' : 'Total to pay now'}
+              </span>
               <span className="ck-grand-amount">GH₵ {total.toFixed(2)}</span>
             </div>
           </div>
@@ -880,7 +945,9 @@ export default function CheckoutClient() {
           </div>
 
           <div className="ck-bottom-amount-row">
-            <span className="ck-bottom-amount-label">Total to pay now</span>
+            <span className="ck-bottom-amount-label">
+              {paymentMethod === 'cash' ? 'Total (pay on delivery)' : 'Total to pay now'}
+            </span>
             <span className="ck-bottom-amount">GH₵ {total.toFixed(2)}</span>
           </div>
 
@@ -901,6 +968,11 @@ export default function CheckoutClient() {
                 <Loader2 size={18} strokeWidth={2.4} className="ck-spin" />
                 Processing…
               </>
+            ) : paymentMethod === 'cash' ? (
+              <>
+                <Banknote size={16} strokeWidth={2.4} />
+                Place Order
+              </>
             ) : (
               <>
                 <Lock size={16} strokeWidth={2.4} />
@@ -910,8 +982,14 @@ export default function CheckoutClient() {
           </button>
 
           <p className="ck-terms">
-            <Lock size={10} strokeWidth={2.4} /> Secured by Paystack ·
-            Continuing means you agree to our Terms
+            {paymentMethod === 'cash' ? (
+              <>Pay cash on delivery · Continuing means you agree to our Terms</>
+            ) : (
+              <>
+                <Lock size={10} strokeWidth={2.4} /> Secured by Paystack ·
+                Continuing means you agree to our Terms
+              </>
+            )}
           </p>
         </div>
       </div>
