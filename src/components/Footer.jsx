@@ -32,7 +32,7 @@ export default function Footer() {
       links: [
         { label: 'About',   href: '/about' },
         { label: 'Contact', href: '/contact' },
-        { label: 'Sell on CediMart', href: '/sell' },
+        { label: 'Sell on CediMart', href: '/vendor-signup' },
       ],
     },
     {
@@ -51,7 +51,7 @@ export default function Footer() {
     { label: 'LinkedIn',  href: 'https://linkedin.com/company/cedimart', Icon: FiLinkedin },
     { label: 'YouTube',   href: 'https://youtube.com/@cedimart',  Icon: FiYoutube },
   ];
-  
+
   return (
     <div className="footer-wrap">
       <style>{`

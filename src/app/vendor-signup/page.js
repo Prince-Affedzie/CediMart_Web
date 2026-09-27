@@ -12,13 +12,16 @@ import {
   Apple,
   Play,
   ArrowRight,
+  Video,
+  Users,
+  MapPin,
 } from 'lucide-react';
 import './vendor-signup.css';
 
 export const metadata = {
-  title: 'Become a Vendor · CediMart',
+  title: 'Sell on CediMart · Ghana\'s Social Commerce Marketplace',
   description:
-    'Start selling to thousands of students across Ghana\'s top universities. Free to join.',
+    'Start selling to buyers across Ghana — free to join, no listing fees. Listing tools, video posts, in-app chat, and secure escrow payments.',
 };
 
 const APP_STORE_URL = 'https://apps.apple.com/us/app/cedimart/id6762318566';
@@ -34,16 +37,16 @@ const PERKS = [
     bg: '#FFF7ED',
   },
   {
-    icon: TrendingUp,
-    title: 'Reach every campus',
-    desc: 'Get discovered by students at UG, KNUST, UCC, UPSA, Ashesi and more.',
+    icon: MapPin,
+    title: 'Reach buyers across Ghana',
+    desc: 'Sell to your city or ship nationwide. Buyers in every major city discover your shop.',
     color: '#0D9488',
     bg: '#F0FDFA',
   },
   {
     icon: ShieldCheck,
     title: 'Secure escrow payments',
-    desc: 'Buyers pay upfront — you get paid after delivery is confirmed.',
+    desc: 'Buyers pay upfront — you get paid as soon as delivery is confirmed.',
     color: '#059669',
     bg: '#ECFDF5',
   },
@@ -54,13 +57,43 @@ const PERKS = [
     color: '#7E22CE',
     bg: '#F3E8FF',
   },
+  {
+    icon: Video,
+    title: 'Sell with video',
+    desc: 'Post short product videos and 24-hour stories to showcase what you sell.',
+    color: '#0EA5E9',
+    bg: '#F0F9FF',
+  },
+  {
+    icon: Users,
+    title: 'Build a real audience',
+    desc: 'Your shop gets followers and repeat customers — not just one-off listings.',
+    color: '#DC2626',
+    bg: '#FEF2F2',
+  },
 ];
 
 const STEPS = [
-  { n: '01', title: 'Download the app', desc: 'Free on iOS and Android.' },
-  { n: '02', title: 'Tap "Create Vendor Account"', desc: 'Fill a short form — takes 2 minutes.' },
-  { n: '03', title: 'Verify your student ID', desc: 'Upload a clear photo. We review it within 24 hours.' },
-  { n: '04', title: 'Start selling', desc: 'List your first item and go live immediately.' },
+  {
+    n: '01',
+    title: 'Download the app',
+    desc: 'Free on iOS and Android.',
+  },
+  {
+    n: '02',
+    title: 'Create a vendor account',
+    desc: 'Tap "Vendor Sign Up" on the welcome screen. Fill a short form — takes 2 minutes.',
+  },
+  {
+    n: '03',
+    title: 'Verify your ID',
+    desc: 'Upload a clear photo of a government-issued ID. We review it within 24 hours.',
+  },
+  {
+    n: '04',
+    title: 'Start selling',
+    desc: 'List your first item, post a video if you want, and go live immediately.',
+  },
 ];
 
 export default function VendorSignupPage() {
@@ -92,8 +125,8 @@ export default function VendorSignupPage() {
 
           <p className="vs-hero-sub">
             Everything you need to run a real business — listing tools,
-            in-app chat, secure payments, and an audience of thousands of
-            students across Ghana.
+            video posts, in-app chat, secure payments, and an audience
+            of buyers across Ghana.
           </p>
 
           <div className="vs-hero-pill">
@@ -132,9 +165,10 @@ export default function VendorSignupPage() {
             Vendor accounts are created in the app
           </h2>
           <p className="vs-download-sub">
-            We use the app to verify your student ID, handle payments
-            securely, and give you the listing tools. Download it, then tap{' '}
-            <strong>Create Vendor Account</strong> on the sign-up screen.
+            We use the app to verify your identity, handle payments
+            securely, and give you the tools to list, chat, and grow
+            your audience. Download it, then tap{' '}
+            <strong>Vendor Sign Up</strong> on the welcome screen.
           </p>
 
           <div className="vs-store-buttons">

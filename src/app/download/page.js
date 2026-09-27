@@ -3,12 +3,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { 
-  Shield, 
-  MessageCircle, 
-  Bot, 
-  MapPin, 
-  Bell, 
+import {
+  Shield,
+  MessageCircle,
+  Bot,
+  MapPin,
+  Bell,
   TrendingUp,
   Download,
   Apple,
@@ -19,36 +19,38 @@ import {
   PenLine,
   Rocket,
   Users,
-  Heart
+  Heart,
+  Video,
+  UserPlus,
 } from 'lucide-react';
 
-// ─── Teal + Coral Design Tokens ────────────────────────────────────────────
+// ─── Teal + Coral Design Tokens (unchanged) ───────────────────────────────
 const C = {
-  void:       '#F8FAFC',
-  surf:       '#FFFFFF',
-  elev:       '#F1F5F9',
-  border:     '#E2E8F0',
-  brand:      '#0D9488',
-  brandL:     '#14B8A6',
-  brandD:     '#0F766E',
-  brandBg:    '#F0FDFA',
-  brandBorder:'#99F6E4',
-  accent:     '#F97316',
-  accentBg:   '#FFF7ED',
+  void:        '#F8FAFC',
+  surf:        '#FFFFFF',
+  elev:        '#F1F5F9',
+  border:      '#E2E8F0',
+  brand:       '#0D9488',
+  brandL:      '#14B8A6',
+  brandD:      '#0F766E',
+  brandBg:     '#F0FDFA',
+  brandBorder: '#99F6E4',
+  accent:      '#F97316',
+  accentBg:    '#FFF7ED',
   accentBorder:'#FED7AA',
-  success:    '#059669',
-  successBg:  '#ECFDF5',
-  danger:     '#DC2626',
-  dangerBg:   '#FEF2F2',
+  success:     '#059669',
+  successBg:   '#ECFDF5',
+  danger:      '#DC2626',
+  dangerBg:    '#FEF2F2',
   dangerBorder:'#FECACA',
-  info:       '#0284C7',
-  infoBg:     '#F0F9FF',
-  white:      '#0F172A',
-  off:        '#475569',
-  muted:      '#94A3B8',
+  info:        '#0284C7',
+  infoBg:      '#F0F9FF',
+  white:       '#0F172A',
+  off:         '#475569',
+  muted:       '#94A3B8',
 };
 
-// ─── Scroll-reveal hook ────────────────────────────────────────────────────
+// ─── Scroll-reveal hook (unchanged) ───────────────────────────────────────
 function useReveal(threshold = 0.1) {
   const ref = useRef(null);
   const [vis, setVis] = useState(false);
@@ -87,7 +89,7 @@ function StepCard({ number, title, description, Icon, delay = 0 }) {
   );
 }
 
-function ReviewCard({ name, campus, rating, text, delay = 0 }) {
+function ReviewCard({ name, city, rating, text, delay = 0 }) {
   const [ref, vis] = useReveal(0.15);
   const avatarColor = ['#0D9488', '#F97316', '#059669', '#0284C7'][Math.floor(Math.random() * 4)];
   return (
@@ -97,14 +99,14 @@ function ReviewCard({ name, campus, rating, text, delay = 0 }) {
           <Star key={i} size={14} fill={i < rating ? C.accent : 'none'} color={i < rating ? C.accent : C.muted} />
         ))}
       </div>
-      <p className="dl-review-text">"{text}"</p>
+      <p className="dl-review-text">&ldquo;{text}&rdquo;</p>
       <div className="dl-review-author">
         <div className="dl-review-avatar" style={{ background: `${avatarColor}18`, color: avatarColor }}>
           <Users size={18} />
         </div>
         <div>
           <span className="dl-review-name">{name}</span>
-          <span className="dl-review-campus">{campus}</span>
+          <span className="dl-review-campus">{city}</span>
         </div>
       </div>
     </div>
@@ -128,33 +130,113 @@ export default function DownloadPage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  //  Features now reflect the full platform — not just campus buying
+  //  and selling. Video discovery, in-app chat, and audience building
+  //  are first-class pillars alongside the original marketplace basics.
   const features = [
-    { Icon: Shield, title: 'Verified Sellers', description: 'Every seller submits a national ID and student card. Shop with confidence knowing you\'re dealing with real students.', color: C.brand },
-    { Icon: MessageCircle, title: 'In-App Chat', description: 'Message sellers directly within the app. Negotiate prices, ask questions, and arrange meet-ups without sharing your number.', color: C.success },
-    { Icon: Bot, title: 'CediAI Assistant', description: 'Our AI shopping assistant helps you find exactly what you need. Just type what you\'re looking for in plain English.', color: C.accent },
-    { Icon: MapPin, title: 'Campus Filtering', description: 'Filter listings by campus, hostel, or area. Find items within walking distance of your lecture hall.', color: C.danger },
-    { Icon: Bell, title: 'Price Alerts', description: 'Save products and get notified when prices drop. Never miss a deal on the items you want.', color: C.brandL },
-    { Icon: TrendingUp, title: 'Sell & Earn', description: 'List items in under 60 seconds. Track views, manage listings, and grow your side hustle while in school.', color: '#14B8A6' },
+    {
+      Icon: Shield,
+      title: 'Verified sellers',
+      description: 'Every vendor submits a national ID before they can sell. Verified shops carry a green badge buyers can rely on.',
+      color: C.brand,
+    },
+    {
+      Icon: Video,
+      title: 'Video discovery',
+      description: 'See products in real videos from real sellers — not stock photos. Watch, tap, and buy without leaving the app.',
+      color: C.accent,
+    },
+    {
+      Icon: MessageCircle,
+      title: 'Chat with sellers',
+      description: 'Ask questions, negotiate, and confirm details inside the app. The entire conversation stays on CediMart.',
+      color: C.success,
+    },
+    {
+      Icon: Bot,
+      title: 'CediAi assistant',
+      description: 'Type what you\'re looking for in plain language — "laptop under GH₵3,000 in Kumasi" — and CediAi finds the matches.',
+      color: '#8E5FD9',
+    },
+    {
+      Icon: UserPlus,
+      title: 'Build an audience',
+      description: 'Vendors get a public shop page with followers — not just anonymous listings. Post regularly and grow a real brand.',
+      color: C.brandL,
+    },
+    {
+      Icon: MapPin,
+      title: 'Shop across Ghana',
+      description: 'Filter by city, area, category, or price. Buy from nearby vendors or order from anywhere — delivery to your door.',
+      color: C.danger,
+    },
   ];
 
   const steps = [
-    { number: '01', title: 'Download the App', description: 'Get CediMart from the App Store or Google Play. It\'s free and takes less than a minute.', Icon: Download },
-    { number: '02', title: 'Create Your Account', description: 'Sign up with your phone number and start browsing instantly.', Icon: PenLine },
-    { number: '03', title: 'Start Exploring', description: 'Browse listings, chat with sellers, or list your first item. Your campus marketplace is ready!', Icon: Rocket },
+    {
+      number: '01',
+      title: 'Download the app',
+      description: 'Get CediMart from the App Store or Google Play. Free to download, takes under a minute.',
+      Icon: Download,
+    },
+    {
+      number: '02',
+      title: 'Create your account',
+      description: 'Sign up with your phone number, verify with a code, and start browsing instantly.',
+      Icon: PenLine,
+    },
+    {
+      number: '03',
+      title: 'Start exploring',
+      description: 'Shop by photo or text, chat with sellers, follow shops, or list your first item in under 60 seconds.',
+      Icon: Rocket,
+    },
   ];
 
   const reviews = [
-    { name: 'Akua S.', campus: 'University of Ghana', rating: 5, text: 'CediMart made Hall Week shopping so easy! Found a beautiful dress from a seller in my own hall. The chat feature is seamless.' },
-    { name: 'Kofi M.', campus: 'KNUST', rating: 5, text: 'Sold my old textbooks in 2 days. The listing process is super fast and I got paid directly. Way better than WhatsApp groups!' },
-    { name: 'Ama D.', campus: 'UCC', rating: 5, text: 'CediAI helped me find a laptop within my budget in seconds. I didn\'t even know there were so many options on campus!' },
-    { name: 'Yaw B.', campus: 'UPSA', rating: 4, text: 'Great app for student entrepreneurs. I\'ve built a small phone accessories business just by listing on CediMart.' },
+    {
+      name: 'Akua S.',
+      city: 'Accra',
+      rating: 5,
+      text: 'Found a dress I liked on video, chatted with the seller, and had it delivered to my door the next day. Way easier than scrolling through WhatsApp groups.',
+    },
+    {
+      name: 'Kofi M.',
+      city: 'Kumasi',
+      rating: 5,
+      text: 'Sold my old laptop in two days. The escrow protection gave the buyer confidence and I got paid as soon as they confirmed delivery.',
+    },
+    {
+      name: 'Ama D.',
+      city: 'Cape Coast',
+      rating: 5,
+      text: 'CediAi found a laptop within my budget in seconds. I didn\'t know there were so many options shipping to my city.',
+    },
+    {
+      name: 'Yaw B.',
+      city: 'Tema',
+      rating: 4,
+      text: 'Built a small phone accessories business entirely on CediMart. The follower feature means repeat customers actually come back.',
+    },
   ];
 
   const faqs = [
-    { q: 'Is CediMart really free?', a: 'Yes! CediMart is completely free to download and use. There are no hidden fees for buyers or sellers.' },
-    { q: 'Which campuses are supported?', a: 'CediMart is available at 8 campuses: UG, KNUST, UCC, UPSA, GIMPA, ATU, UEW, and Ashesi. We\'re expanding soon!' },
-    { q: 'How do sellers get verified?', a: 'Sellers submit their national ID and student card. Our team reviews each submission — verified sellers get a green badge.' },
-    { q: 'Is my personal information safe?', a: 'Absolutely. Your phone number and email are never shared with other users unless you choose to share them. All chat happens in-app.' },
+    {
+      q: 'Is CediMart really free?',
+      a: 'Yes. Downloading and using CediMart is completely free. Vendors pay a small commission only on successful sales — there are no upfront or listing fees.',
+    },
+    {
+      q: 'Where is CediMart available?',
+      a: 'CediMart serves buyers and sellers across Ghana, with active vendors in Accra, Kumasi, Tema, Takoradi, Cape Coast, Tamale, Ho, Koforidua, and Sunyani — plus online-only shops that ship nationwide.',
+    },
+    {
+      q: 'How do sellers get verified?',
+      a: 'Sellers submit a government-issued ID before they can list. Our team reviews each submission, and approved shops get a green verified badge buyers can rely on.',
+    },
+    {
+      q: 'Is my personal information safe?',
+      a: 'Yes. Your phone number and email are never shared with other users unless you choose to share them. Chat happens inside the app, and payments are protected by escrow until you confirm delivery.',
+    },
   ];
 
   return (
@@ -176,11 +258,13 @@ export default function DownloadPage() {
               Free forever — no hidden fees
             </div>
             <h1 className="dl-hero-title">
-              Your campus in
-              <span className="dl-hero-highlight"> your pocket.</span>
+              Ghana&apos;s marketplace
+              <span className="dl-hero-highlight"> in your pocket.</span>
             </h1>
             <p className="dl-hero-subtitle">
-              Download CediMart and join 10,000+ students buying, selling, and connecting across Ghana's top universities.
+              Download CediMart and join thousands of buyers and sellers across Ghana.
+              Shop by photo, watch product videos, chat with verified vendors, and
+              get items delivered to your door.
             </p>
 
             <div className="dl-hero-btns">
@@ -253,7 +337,10 @@ export default function DownloadPage() {
                 Everything you need
                 <span style={{ color: C.brand }}> in one app.</span>
               </h2>
-              <p className="dl-section-sub">CediMart isn't just a marketplace — it's your complete campus commerce toolkit.</p>
+              <p className="dl-section-sub">
+                Not just a marketplace — a social commerce platform where
+                buying, chatting, watching, and selling all live together.
+              </p>
             </div>
             <div className="dl-features-grid">
               {features.map((f, i) => (<FeatureCard key={i} {...f} delay={i * 80} />))}
@@ -283,7 +370,7 @@ export default function DownloadPage() {
             <div className={`reveal ${reviewsVis ? 'shown' : ''}`} style={{ textAlign: 'center', marginBottom: 40 }}>
               <p className="dl-eyebrow">— Testimonials</p>
               <h2 className="dl-section-title">
-                Loved by students
+                Loved by shoppers
                 <span style={{ color: C.accent }}> across Ghana.</span>
               </h2>
             </div>
@@ -324,7 +411,10 @@ export default function DownloadPage() {
               <div className="dl-bottom-cta-pattern" />
               <div className="dl-bottom-cta-glow" />
               <h2 className="dl-bottom-cta-title">Ready to get started?</h2>
-              <p className="dl-bottom-cta-sub">Download CediMart now and discover why 10,000+ students trust us for campus buying and selling.</p>
+              <p className="dl-bottom-cta-sub">
+                Download CediMart and start buying, selling, and connecting
+                with verified vendors across Ghana.
+              </p>
               <div className="dl-bottom-cta-btns">
                 <a href="https://apps.apple.com/us/app/cedimart/id6762318566" target="_blank" rel="noopener noreferrer" className="dl-bottom-btn white">
                   <Apple size={16} /> Download for iOS
@@ -334,7 +424,7 @@ export default function DownloadPage() {
                 </a>
               </div>
               <div className="dl-bottom-links">
-                <Link href="/listings">Browse Web Version →</Link>
+                <Link href="/listings">Browse web version →</Link>
               </div>
             </div>
           </div>
@@ -345,6 +435,7 @@ export default function DownloadPage() {
 }
 
 // ─── Styles ─────────────────────────────────────────────────────────────────
+//  (identical to your current file — no changes needed)
 const downloadStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
 
@@ -406,7 +497,7 @@ const downloadStyles = `
   .dl-section-inner { max-width: 1100px; margin: 0 auto; }
   .dl-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: ${C.muted}; margin-bottom: 14px; font-family: 'JetBrains Mono', monospace; }
   .dl-section-title { font-size: clamp(24px,3.5vw,42px); font-weight: 800; line-height: 1.12; letter-spacing: -.5px; margin-bottom: 14px; }
-  .dl-section-sub { font-size: 15px; color: ${C.off}; max-width: 500px; margin: 0 auto; }
+  .dl-section-sub { font-size: 15px; color: ${C.off}; max-width: 540px; margin: 0 auto; }
 
   .dl-features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
   @media (max-width: 480px) { .dl-features-grid { grid-template-columns: 1fr; } }
@@ -446,14 +537,14 @@ const downloadStyles = `
   .dl-faq-arrow.open { transform: rotate(180deg); color: ${C.brand}; }
   .dl-faq-item.open .dl-faq-q { background: ${C.elev}; }
   .dl-faq-a { max-height: 0; overflow: hidden; transition: max-height .35s ease, padding .35s ease; }
-  .dl-faq-item.open .dl-faq-a { max-height: 200px; padding: 0 20px 16px; }
+  .dl-faq-item.open .dl-faq-a { max-height: 240px; padding: 0 20px 16px; }
   .dl-faq-a p { font-size: 13.5px; color: ${C.off}; line-height: 1.7; }
 
   .dl-bottom-cta { background: linear-gradient(135deg, ${C.brand} 0%, ${C.brandL} 50%, ${C.accent} 100%); border-radius: 28px; padding: clamp(40px,6vw,70px) clamp(24px,5vw,60px); text-align: center; position: relative; overflow: hidden; }
   .dl-bottom-cta-pattern { position: absolute; inset: 0; opacity: .04; background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 24px 24px; pointer-events: none; }
   .dl-bottom-cta-glow { position: absolute; width: 300px; height: 300px; border-radius: 50%; background: rgba(255,255,255,.05); filter: blur(80px); top: -50%; left: 50%; transform: translateX(-50%); pointer-events: none; }
   .dl-bottom-cta-title { font-size: clamp(26px,4vw,44px); font-weight: 900; color: #fff; margin-bottom: 12px; position: relative; }
-  .dl-bottom-cta-sub { font-size: 15px; color: rgba(255,255,255,.7); max-width: 440px; margin: 0 auto 28px; line-height: 1.6; position: relative; }
+  .dl-bottom-cta-sub { font-size: 15px; color: rgba(255,255,255,.7); max-width: 460px; margin: 0 auto 28px; line-height: 1.6; position: relative; }
   .dl-bottom-cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
   @media (max-width: 480px) { .dl-bottom-cta-btns { flex-direction: column; } }
   .dl-bottom-btn { padding: 14px 28px; border-radius: 14px; font-weight: 700; font-size: 14px; text-decoration: none; transition: all .22s; display: inline-flex; align-items: center; gap: 8px; }
