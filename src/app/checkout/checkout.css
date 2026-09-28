@@ -911,3 +911,208 @@
   outline: 2px solid var(--ck-brand);
   outline-offset: 2px;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PAYMENT CARD (elevated)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.ck-pay-card {
+  display: flex;
+  background: #FFFFFF;
+  border-radius: 20px;
+  margin: 10px 0;
+  border: 1px solid #99F6E4;
+  overflow: hidden;
+  box-shadow:
+    0 6px 20px rgba(13, 148, 136, 0.10),
+    0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.ck-pay-card-accent {
+  width: 5px;
+  background: #0D9488;
+  flex-shrink: 0;
+}
+
+.ck-pay-card-inner {
+  flex: 1;
+  padding: 20px;
+  min-width: 0;
+}
+
+.ck-pay-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.ck-pay-header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #0D9488;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ck-pay-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.ck-pay-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.2px;
+  margin: 0;
+}
+
+.ck-pay-subtitle {
+  font-size: 12px;
+  color: #94A3B8;
+  margin: 2px 0 0;
+  font-weight: 500;
+}
+
+/* ── Payment option row ── */
+.ck-pay-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid #EEEEEE;
+  background: #FAFAFA;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  margin-bottom: 10px;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.ck-pay-option:hover {
+  border-color: #99F6E4;
+  background: #FFFFFF;
+}
+
+.ck-pay-option.is-selected {
+  border-color: #0D9488;
+  background: #F0FDFA;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.12);
+}
+
+.ck-pay-option-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #F0FDFA;
+  color: #0D9488;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ck-pay-option-icon.is-active {
+  background: #0D9488;
+  color: #FFFFFF;
+}
+
+.ck-pay-option-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ck-pay-option-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ck-pay-option-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.ck-pay-option.is-selected .ck-pay-option-title {
+  color: #0F766E;
+}
+
+.ck-pay-option-badge {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: #FFF7ED;
+  color: #F97316;
+  border: 1px solid #FED7AA;
+}
+
+.ck-pay-option-badge.is-active {
+  background: #F97316;
+  color: #FFFFFF;
+  border-color: #F97316;
+}
+
+.ck-pay-option-sub {
+  font-size: 12px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.ck-pay-option.is-selected .ck-pay-option-sub {
+  color: #0F766E;
+}
+
+.ck-pay-radio {
+  width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  border: 2px solid #D0D0D0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+
+.ck-pay-radio.is-active {
+  border-color: #0D9488;
+}
+
+.ck-pay-radio-fill {
+  width: 11px;
+  height: 11px;
+  border-radius: 6px;
+  background: #0D9488;
+}
+
+/* ── Payment email inside the payment card ── */
+.ck-pay-email-wrap {
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #99F6E4;
+}
+
+.ck-pay-email-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0F766E;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin: 0 0 10px;
+}
+
