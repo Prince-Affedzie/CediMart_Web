@@ -7,6 +7,7 @@ import MobileTabBar from '@/components/MobileTabBar';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
 import Script from 'next/script';
+import { Analytics } from "@vercel/analytics/next"
 import './globals.css';
 
 export const metadata = {
@@ -139,6 +140,7 @@ export default function RootLayout({ children }) {
           src="https://accounts.google.com/gsi/client"
           strategy="afterInteractive"
         />
+       <Analytics />
       </body>
     </html>
   );
