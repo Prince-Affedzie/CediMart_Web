@@ -42,6 +42,21 @@
   /* Matches Header.jsx's .nav { height: 64px } */
   --header-h: 64px;
 
+  /* Shared with .lp-shell's grid so the sidebar column width and gutter
+     are defined once and can't drift apart. */
+  --sidebar-w: 252px;
+  --shell-gap: 32px;
+
+  /*
+   * Fallback height of the sticky .lp-topbar. ListingsClient.jsx measures
+   * the real height on mount and on every resize via a ResizeObserver and
+   * overwrites this with an inline style, so this value only matters for
+   * the first paint / no-JS case. The topbar now holds only the title +
+   * search row (sort/results/filters moved into the content column), so
+   * this is small and essentially constant.
+   */
+  --topbar-h: 74px;
+
   min-height: 100vh;
   background: var(--void);
   color: var(--text);
@@ -80,7 +95,12 @@ html { scroll-behavior: smooth; }
 
 a.lp-card { text-decoration: none; color: inherit; }
 
-/* ══════════════════════ TOP BAR ══════════════════════════════════════════ */
+/* ══════════════════════ TOP BAR (title + search only) ════════════════════
+   Sort, result count and the filter button used to live here too, which is
+   why earlier attempts needed hacks to line this bar up with the sidebar
+   below it. They now live inside the content column instead (see
+   .lp-toolbar, further down), so this bar stays simple and a near-constant
+   height, and no such alignment trick is needed at all. */
 
 .lp-topbar {
   background: var(--surf);
@@ -93,38 +113,28 @@ a.lp-card { text-decoration: none; color: inherit; }
 .lp-topbar-inner {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 14px 24px 10px;
+  padding: 14px 24px;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  align-items: center;
   gap: 16px;
   flex-wrap: wrap;
 }
 
-.lp-topbar-left {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
+.lp-topbar-left { flex: 0 0 auto; min-width: 0; }
 
 .lp-topbar-title {
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 800;
   letter-spacing: -.4px;
   margin: 0;
   color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
 }
 
-.lp-topbar-count {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.lp-topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.lp-topbar-right { flex: 0 0 auto; margin-left: auto; }
 
 .lp-deliver-pill {
   display: inline-flex;
@@ -155,13 +165,27 @@ a.lp-card { text-decoration: none; color: inherit; }
 }
 .lp-deliver-pill-value { font-size: 12.5px; font-weight: 700; }
 
+@media (max-width: 900px) {
+  .lp-topbar-title { max-width: 55vw; }
+  .lp-topbar-left  { order: 1; }
+  .lp-topbar-right { order: 2; }
+  .lp-search-wrap  { order: 3; flex: 1 1 100%; max-width: none; }
+}
+
+@media (max-width: 640px) {
+  .lp-topbar-inner { padding: 12px 14px; }
+  .lp-topbar-title { font-size: 18px; }
+}
+
 /* ══════════════════════ SEARCH BAR ═══════════════════════════════════════ */
 
 .lp-search-wrap {
   position: relative;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 24px 10px;
+  flex: 1 1 240px;
+  max-width: 480px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .lp-search-bar {
@@ -172,7 +196,7 @@ a.lp-card { text-decoration: none; color: inherit; }
   border: 1.5px solid transparent;
   border-radius: 12px;
   padding: 0 0 0 14px;
-  height: 46px;
+  height: 44px;
   transition: border-color .15s, background .15s, box-shadow .15s;
 }
 .lp-search-bar:focus-within {
@@ -220,8 +244,8 @@ a.lp-card { text-decoration: none; color: inherit; }
   color: #fff;
   border: none;
   cursor: pointer;
-  height: 46px;
-  width: 52px;
+  height: 44px;
+  width: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -230,12 +254,15 @@ a.lp-card { text-decoration: none; color: inherit; }
 }
 .lp-search-go:hover { background: var(--accent-d); }
 
-/* Live dropdown */
+/* Live dropdown — spans exactly the search box's own width now that
+   .lp-search-wrap is an inline, variable-width flex item rather than a
+   full-bleed row with its own side padding. */
 .lp-live-dropdown {
   position: absolute;
   top: 100%;
-  left: 24px;
-  right: 24px;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
   background: var(--surf);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -331,68 +358,122 @@ a.lp-card { text-decoration: none; color: inherit; }
   color: #fff;
 }
 
-/* ══════════════════════ SORT / FILTER BAR ════════════════════════════════ */
+/* ══════════════════════ IN-COLUMN TOOLBAR (results + sort + filter) ══════
+   Lives inside .lp-main, directly above the grid — the same column width
+   as the grid itself, not stretched over the sidebar. This mirrors how
+   Jumia's own category pages place their sort/result bar: scoped to the
+   content column, with sort rendered as plain underline tabs rather than
+   a native <select>. Because it's a normal document-flow element inside
+   the already-existing content column, it needs no special alignment
+   logic of its own — it lines up with the grid for free. */
 
-.lp-sortbar {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 24px 12px;
+.lp-toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
 }
 
-.lp-sortbar-seg {
+.lp-toolbar-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.lp-sort-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.lp-sort-tabs::-webkit-scrollbar { display: none; }
+
+.lp-sort-tabs-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-right: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.lp-sort-tab {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--off);
+  white-space: nowrap;
+  padding: 6px 10px;
+  transition: color .15s, border-color .15s;
+}
+.lp-sort-tab:hover { color: var(--brand-d); }
+.lp-sort-tab.is-active {
+  color: var(--accent);
+  font-weight: 800;
+  border-bottom-color: var(--accent);
+}
+
+.lp-toolbar-filter {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--brand);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 8px;
+  flex-shrink: 0;
+  background: var(--surf);
+  border: 1.5px solid var(--border);
+  color: var(--off);
   font-family: inherit;
-  transition: background .15s, color .15s;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
 }
-.lp-sortbar-seg:hover { background: var(--brand-dim); }
-
-.lp-sortbar-seg.is-active {
-  background: var(--accent-dim);
+.lp-toolbar-filter:hover {
+  border-color: var(--brand);
+  color: var(--brand-d);
+  background: var(--brand-dim);
+}
+.lp-toolbar-filter.is-active {
+  border-color: var(--accent);
   color: var(--accent);
+  background: var(--accent-dim);
 }
 
-.lp-sortbar-divider {
-  width: 1px;
-  height: 20px;
-  background: var(--border);
-}
-
-.lp-sortbar-count {
+.lp-toolbar-filter-count {
   background: var(--accent);
   color: #fff;
   font-size: 10px;
   font-weight: 800;
   border-radius: 10px;
-  padding: 1px 7px;
-  margin-left: 4px;
+  padding: 1px 6px;
 }
 
-.lp-sort-select {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent);
-  font-family: inherit;
-  padding: 4px 4px;
-  appearance: none;
+@media (max-width: 640px) {
+  .lp-toolbar {
+    row-gap: 10px;
+  }
+  .lp-toolbar-count  { order: 1; flex: 1 1 auto; }
+  .lp-toolbar-filter { order: 2; flex: 0 0 auto; }
+  .lp-sort-tabs      { order: 3; flex: 1 1 100%; }
 }
 
-/* ══════════════════════ ACTIVE FILTER CHIPS ══════════════════════════════ */
+/* ══════════════════════ ACTIVE FILTER CHIPS ══════════════════════════════
+   Also inside .lp-main now, directly under .lp-toolbar. */
 
 .lp-active-filters {
   display: flex;
@@ -450,7 +531,8 @@ a.lp-card { text-decoration: none; color: inherit; }
 
 .lp-shell {
   display: grid;
-  grid-template-columns: 252px 1fr;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  gap: 0 var(--shell-gap);
   align-items: start;
   max-width: 1280px;
   margin: 0 auto;
@@ -464,14 +546,14 @@ a.lp-card { text-decoration: none; color: inherit; }
 }
 
 @media (max-width: 900px) {
-  .lp-shell { grid-template-columns: 1fr; }
+  .lp-shell { grid-template-columns: 1fr; gap: 0; }
   .lp-sidebar { display: none; }
 }
 
 .lp-sidebar {
   position: sticky;
-  top: var(--header-h);
-  height: calc(100vh - var(--header-h));
+  top: calc(var(--header-h) + var(--topbar-h));
+  height: calc(100vh - var(--header-h) - var(--topbar-h));
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
@@ -480,7 +562,7 @@ a.lp-card { text-decoration: none; color: inherit; }
   background: var(--surf);
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
-  z-index: 30;
+  z-index: 20;
   min-width: 0;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
@@ -1308,12 +1390,8 @@ a.lp-card { text-decoration: none; color: inherit; }
   .lp-card-name { font-size: 12.5px; }
   .lp-price { font-size: 14px; }
   .lp-card-body { padding: 9px 10px 11px; }
-  .lp-topbar-title { font-size: 18px; }
 
   /* Tighten container padding on small screens */
-  .lp-topbar-inner { padding: 12px 14px 8px; }
-  .lp-search-wrap { padding: 0 14px 10px; }
-  .lp-sortbar { padding: 0 14px 12px; }
   .lp-shell { padding: 0 14px; }
   .lp-main { padding: 16px 0 60px; }
 }

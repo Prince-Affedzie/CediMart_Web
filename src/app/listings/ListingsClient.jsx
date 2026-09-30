@@ -104,6 +104,13 @@ export default function ListingsClient() {
   const hydratedRef = useRef(false);
   const searchWrapRef = useRef(null);
 
+  // Refs used to measure the sticky topbar's real height so the sidebar can
+  // offset itself below it (see the --topbar-h ResizeObserver effect). The
+  // topbar now only holds the title row + search row, so this height is
+  // effectively constant — it no longer shifts when filters are toggled.
+  const pageRef = useRef(null);
+  const topbarRef = useRef(null);
+
   // ── Seed state from URL on mount only ─────────────────────────────────────
   useEffect(() => {
     if (hydratedRef.current) return;
@@ -156,6 +163,26 @@ export default function ListingsClient() {
     searchQuery, activeCategory, activeSub, selectedLocation, selectedSuburb,
     sort, condition, negotiableOnly, minPrice, maxPrice, page,
   ]);
+
+  // ── Measure the sticky topbar and expose its height as --topbar-h ─────────
+  // The sidebar needs to stick directly below the topbar rather than
+  // overlapping it. A ResizeObserver keeps this correct through any
+  // resize / content change (e.g. the title wrapping onto two lines on a
+  // narrow desktop window) without tracking each cause by hand.
+  useEffect(() => {
+    const topbarEl = topbarRef.current;
+    const pageEl = pageRef.current;
+    if (!topbarEl || !pageEl || typeof ResizeObserver === 'undefined') return;
+
+    const applyHeight = () => {
+      pageEl.style.setProperty('--topbar-h', `${topbarEl.offsetHeight}px`);
+    };
+
+    applyHeight();
+    const ro = new ResizeObserver(applyHeight);
+    ro.observe(topbarEl);
+    return () => ro.disconnect();
+  }, []);
 
   // Derived location lists
   const cityOptions = useMemo(
@@ -341,6 +368,11 @@ export default function ListingsClient() {
     setPage(1);
   };
 
+  const handleSortChange = (value) => {
+    setSort(value);
+    setPage(1);
+  };
+
   const clearAllFilters = () => {
     setActiveCategory('');
     setActiveSub('');
@@ -387,8 +419,12 @@ export default function ListingsClient() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="lp-page">
-      <div className="lp-topbar">
+    <div className="lp-page" ref={pageRef}>
+      {/* STICKY TOPBAR — title + search only. Sort, result count and
+          filters now live inside the content column, just above the grid
+          (see .lp-toolbar below), so this bar stays a constant height and
+          never needs to line up with the sidebar. */}
+      <div className="lp-topbar" ref={topbarRef}>
         <div className="lp-topbar-inner">
           <div className="lp-topbar-left">
             <h1 className="lp-topbar-title">
@@ -400,9 +436,90 @@ export default function ListingsClient() {
                     ? `Results for "${searchQuery}"`
                     : 'Shop'}
             </h1>
-            <span className="lp-topbar-count">
-              {loading ? 'Loading…' : `${total.toLocaleString()} items`}
-            </span>
+          </div>
+
+          {/* SEARCH BAR */}
+          <div className="lp-search-wrap" ref={searchWrapRef}>
+            <form
+              className="lp-search-bar"
+              onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
+              role="search"
+            >
+              <Search size={17} strokeWidth={2.2} className="lp-search-icon" />
+              <input
+                type="search"
+                className="lp-search-input"
+                placeholder="Search listings…"
+                value={searchInput}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onFocus={handleInputFocus}
+                aria-label="Search listings"
+                aria-expanded={showSuggestions}
+                aria-autocomplete="list"
+                autoComplete="off"
+              />
+              {searchInput.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    className="lp-search-clear"
+                    onClick={clearSearch}
+                    aria-label="Clear search"
+                  >
+                    <X size={16} strokeWidth={2.4} />
+                  </button>
+                  <button type="submit" className="lp-search-go" aria-label="Search">
+                    <Search size={15} strokeWidth={2.4} color="#fff" />
+                  </button>
+                </>
+              )}
+            </form>
+
+            {showSuggestions && (
+              <div className="lp-live-dropdown">
+                {liveSearching && liveResults.length === 0 ? (
+                  <div className="lp-live-loading">Searching…</div>
+                ) : liveResults.length > 0 ? (
+                  <>
+                    {liveResults.map((p) => (
+                      <Link
+                        key={p._id}
+                        href={`/product/${p._id}`}
+                        className="lp-live-row"
+                        onClick={() => {
+                          setSuggestOpen(false);
+                          setLiveResults([]);
+                        }}
+                      >
+                        {p.images?.[0] ? (
+                          <img src={p.images[0]} alt="" className="lp-live-thumb" />
+                        ) : (
+                          <div className="lp-live-thumb lp-live-thumb-empty" />
+                        )}
+                        <div className="lp-live-info">
+                          <span className="lp-live-name">{p.name}</span>
+                          <span className="lp-live-meta">
+                            <strong>GH₵ {Number(p.price).toFixed(2)}</strong>
+                            {getLocationLabel(p.location) && (
+                              <span className="lp-live-loc">{getLocationLabel(p.location)}</span>
+                            )}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                    <button
+                      type="button"
+                      className="lp-live-view-all"
+                      onClick={submitSearch}
+                    >
+                      See all results for &quot;{searchInput}&quot; →
+                    </button>
+                  </>
+                ) : (
+                  <div className="lp-live-empty">No results found</div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="lp-topbar-right">
@@ -419,165 +536,8 @@ export default function ListingsClient() {
             </button>
           </div>
         </div>
-
-        {/* SEARCH BAR */}
-        <div className="lp-search-wrap" ref={searchWrapRef}>
-          <form
-            className="lp-search-bar"
-            onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
-            role="search"
-          >
-            <Search size={17} strokeWidth={2.2} className="lp-search-icon" />
-            <input
-              type="search"
-              className="lp-search-input"
-              placeholder="Search listings…"
-              value={searchInput}
-              onChange={(e) => handleInputChange(e.target.value)}
-              onFocus={handleInputFocus}
-              aria-label="Search listings"
-              aria-expanded={showSuggestions}
-              aria-autocomplete="list"
-              autoComplete="off"
-            />
-            {searchInput.length > 0 && (
-              <>
-                <button
-                  type="button"
-                  className="lp-search-clear"
-                  onClick={clearSearch}
-                  aria-label="Clear search"
-                >
-                  <X size={16} strokeWidth={2.4} />
-                </button>
-                <button type="submit" className="lp-search-go" aria-label="Search">
-                  <Search size={15} strokeWidth={2.4} color="#fff" />
-                </button>
-              </>
-            )}
-          </form>
-
-          {showSuggestions && (
-            <div className="lp-live-dropdown">
-              {liveSearching && liveResults.length === 0 ? (
-                <div className="lp-live-loading">Searching…</div>
-              ) : liveResults.length > 0 ? (
-                <>
-                  {liveResults.map((p) => (
-                    <Link
-                      key={p._id}
-                      href={`/product/${p._id}`}
-                      className="lp-live-row"
-                      onClick={() => {
-                        setSuggestOpen(false);
-                        setLiveResults([]);
-                      }}
-                    >
-                      {p.images?.[0] ? (
-                        <img src={p.images[0]} alt="" className="lp-live-thumb" />
-                      ) : (
-                        <div className="lp-live-thumb lp-live-thumb-empty" />
-                      )}
-                      <div className="lp-live-info">
-                        <span className="lp-live-name">{p.name}</span>
-                        <span className="lp-live-meta">
-                          <strong>GH₵ {Number(p.price).toFixed(2)}</strong>
-                          {getLocationLabel(p.location) && (
-                            <span className="lp-live-loc">{getLocationLabel(p.location)}</span>
-                          )}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                  <button
-                    type="button"
-                    className="lp-live-view-all"
-                    onClick={submitSearch}
-                  >
-                    See all results for &quot;{searchInput}&quot; →
-                  </button>
-                </>
-              ) : (
-                <div className="lp-live-empty">No results found</div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* SORT / FILTER BAR */}
-        <div className="lp-sortbar">
-          <div className="lp-sortbar-seg">
-            <select
-              className="lp-sort-select"
-              value={sort}
-              onChange={(e) => { setSort(e.target.value); setPage(1); }}
-              aria-label="Sort by"
-            >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o.value || o.id} value={o.value || o.id}>{o.label}</option>
-              ))}
-            </select>
-          </div>
-          <div className="lp-sortbar-divider" />
-          <button
-            type="button"
-            className={`lp-sortbar-seg ${activeFilterCount > 0 ? 'is-active' : ''}`}
-            onClick={() => setFilterSheetOpen(true)}
-          >
-            <SlidersHorizontal size={14} strokeWidth={2.4} />
-            <span>Filter</span>
-            {activeFilterCount > 0 && <span className="lp-sortbar-count">{activeFilterCount}</span>}
-          </button>
-        </div>
-
-        {/* ACTIVE FILTER CHIPS */}
-        {hasAnyActiveFilter && (
-          <div className="lp-active-filters">
-            {selectedLocation && (
-              <span className="lp-filter-pill">
-                <MapPin size={11} strokeWidth={2.2} /> {deliverToLabel}
-                <button className="lp-filter-pill-x" onClick={removeLocationFilter} aria-label="Remove location">
-                  <X size={13} strokeWidth={2.5} />
-                </button>
-              </span>
-            )}
-            {condition && (
-              <span className="lp-filter-pill">
-                {CONDITION_OPTIONS.find((c) => c.value === condition)?.label || condition}
-                <button className="lp-filter-pill-x" onClick={() => { setCondition(''); setPage(1); }}>
-                  <X size={13} strokeWidth={2.5} />
-                </button>
-              </span>
-            )}
-            {negotiableOnly && (
-              <span className="lp-filter-pill">
-                Negotiable
-                <button className="lp-filter-pill-x" onClick={() => { setNegotiableOnly(false); setPage(1); }}>
-                  <X size={13} strokeWidth={2.5} />
-                </button>
-              </span>
-            )}
-            {(minPrice || maxPrice) && (
-              <span className="lp-filter-pill">
-                GH₵ {minPrice || '0'} – {maxPrice || '∞'}
-                <button className="lp-filter-pill-x" onClick={() => { setMinPrice(''); setMaxPrice(''); setPage(1); }}>
-                  <X size={13} strokeWidth={2.5} />
-                </button>
-              </span>
-            )}
-            {searchQuery && (
-              <span className="lp-filter-pill">
-                <Search size={11} strokeWidth={2.2} /> &quot;{searchQuery}&quot;
-                <button className="lp-filter-pill-x" onClick={clearSearch}>
-                  <X size={13} strokeWidth={2.5} />
-                </button>
-              </span>
-            )}
-            <button className="lp-clear-all" onClick={clearAllFilters}>Clear all</button>
-          </div>
-        )}
-       
       </div>
+
        <MobileCategoryStrip
             activeCategory={activeCategory}
             activeSub={activeSub}
@@ -609,6 +569,93 @@ export default function ListingsClient() {
                 </span>
               ))}
             </nav>
+
+            {/* RESULT COUNT + SORT + FILTER — scoped to the content column,
+                same width as the grid below it, exactly like Jumia's
+                category-page toolbar. Sort is a row of plain tabs with an
+                underline on the active one, not a native <select>. */}
+            <div className="lp-toolbar">
+              <span className="lp-toolbar-count">
+                {loading ? 'Loading…' : `${total.toLocaleString()} result${total !== 1 ? 's' : ''}`}
+              </span>
+
+              <div className="lp-sort-tabs" role="tablist" aria-label="Sort by">
+                <span className="lp-sort-tabs-label">Sort by</span>
+                {SORT_OPTIONS.map((o) => {
+                  const value = o.value || o.id;
+                  const active = sort === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      className={`lp-sort-tab ${active ? 'is-active' : ''}`}
+                      onClick={() => handleSortChange(value)}
+                    >
+                      {o.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                className={`lp-toolbar-filter ${activeFilterCount > 0 ? 'is-active' : ''}`}
+                onClick={() => setFilterSheetOpen(true)}
+              >
+                <SlidersHorizontal size={14} strokeWidth={2.4} />
+                <span>Filter</span>
+                {activeFilterCount > 0 && <span className="lp-toolbar-filter-count">{activeFilterCount}</span>}
+              </button>
+            </div>
+
+            {/* ACTIVE FILTER CHIPS */}
+            {hasAnyActiveFilter && (
+              <div className="lp-active-filters">
+                {selectedLocation && (
+                  <span className="lp-filter-pill">
+                    <MapPin size={11} strokeWidth={2.2} /> {deliverToLabel}
+                    <button className="lp-filter-pill-x" onClick={removeLocationFilter} aria-label="Remove location">
+                      <X size={13} strokeWidth={2.5} />
+                    </button>
+                  </span>
+                )}
+                {condition && (
+                  <span className="lp-filter-pill">
+                    {CONDITION_OPTIONS.find((c) => c.value === condition)?.label || condition}
+                    <button className="lp-filter-pill-x" onClick={() => { setCondition(''); setPage(1); }}>
+                      <X size={13} strokeWidth={2.5} />
+                    </button>
+                  </span>
+                )}
+                {negotiableOnly && (
+                  <span className="lp-filter-pill">
+                    Negotiable
+                    <button className="lp-filter-pill-x" onClick={() => { setNegotiableOnly(false); setPage(1); }}>
+                      <X size={13} strokeWidth={2.5} />
+                    </button>
+                  </span>
+                )}
+                {(minPrice || maxPrice) && (
+                  <span className="lp-filter-pill">
+                    GH₵ {minPrice || '0'} – {maxPrice || '∞'}
+                    <button className="lp-filter-pill-x" onClick={() => { setMinPrice(''); setMaxPrice(''); setPage(1); }}>
+                      <X size={13} strokeWidth={2.5} />
+                    </button>
+                  </span>
+                )}
+                {searchQuery && (
+                  <span className="lp-filter-pill">
+                    <Search size={11} strokeWidth={2.2} /> &quot;{searchQuery}&quot;
+                    <button className="lp-filter-pill-x" onClick={clearSearch}>
+                      <X size={13} strokeWidth={2.5} />
+                    </button>
+                  </span>
+                )}
+                <button className="lp-clear-all" onClick={clearAllFilters}>Clear all</button>
+              </div>
+            )}
 
             {filterLoading ? (
               <div className="lp-grid">
