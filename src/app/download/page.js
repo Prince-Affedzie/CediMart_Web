@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Shield,
   MessageCircle,
@@ -23,7 +24,7 @@ import {
   Video,
   UserPlus,
 } from 'lucide-react';
-import mobile_frame from '@/assets/mobile_frame.png'
+import mobile_frame from '@/assets/mobile_frame.png';
 
 // ─── Teal + Coral Design Tokens (unchanged) ───────────────────────────────
 const C = {
@@ -131,9 +132,6 @@ export default function DownloadPage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  //  Features now reflect the full platform — not just campus buying
-  //  and selling. Video discovery, in-app chat, and audience building
-  //  are first-class pillars alongside the original marketplace basics.
   const features = [
     {
       Icon: Shield,
@@ -307,25 +305,15 @@ export default function DownloadPage() {
             </div>
           </div>
 
-          <div className="dl-hero-phone">
-            <div className="dl-phone-frame">
-              <div className="dl-phone-notch" />
-              <div className="dl-phone-screen">
-                <div className="dl-phone-app-icon">
-                  <Smartphone size={22} color="#fff" />
-                </div>
-                <div className="dl-phone-app-name">CediMart</div>
-                <div className="dl-phone-preview-grid">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="dl-phone-preview-item" style={{ animationDelay: `${i * 0.1}s` }}>
-                      <div className="dl-phone-preview-img" />
-                      <div className="dl-phone-preview-line" style={{ width: `${60 + Math.random() * 30}%` }} />
-                      <div className="dl-phone-preview-line short" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          <div className={`dl-hero-phone reveal ${heroVis ? 'shown' : ''}`}>
+            <div className="dl-hero-phone-glow" />
+            <Image
+              src={mobile_frame}
+              alt="CediMart mobile app preview"
+              className="dl-hero-phone-img"
+              priority
+              sizes="(max-width: 900px) 260px, 320px"
+            />
           </div>
         </section>
 
@@ -436,7 +424,6 @@ export default function DownloadPage() {
 }
 
 // ─── Styles ─────────────────────────────────────────────────────────────────
-//  (identical to your current file — no changes needed)
 const downloadStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
 
@@ -481,18 +468,38 @@ const downloadStyles = `
   .dl-trust-text { font-size: 11px; color: ${C.muted}; font-weight: 600; }
   .dl-trust-divider { width: 1px; height: 32px; background: ${C.border}; }
 
-  .dl-hero-phone { position: relative; z-index: 2; display: flex; justify-content: center; }
-  .dl-phone-frame { width: 260px; height: 520px; background: ${C.surf}; border: 3px solid ${C.border}; border-radius: 36px; overflow: hidden; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,.1); }
-  .dl-phone-notch { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 80px; height: 24px; background: ${C.void}; border-radius: 12px; z-index: 3; }
-  .dl-phone-screen { padding: 52px 16px 16px; height: 100%; display: flex; flex-direction: column; align-items: center; }
-  .dl-phone-app-icon { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, ${C.brand}, ${C.brandL}); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
-  .dl-phone-app-name { font-size: 14px; font-weight: 700; margin-bottom: 20px; }
-  .dl-phone-preview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; }
-  .dl-phone-preview-item { animation: phoneFadeIn .6s ease forwards; opacity: 0; }
-  .dl-phone-preview-img { aspect-ratio: 1; background: ${C.elev}; border-radius: 10px; margin-bottom: 6px; }
-  .dl-phone-preview-line { height: 6px; background: ${C.elev}; border-radius: 3px; margin-bottom: 4px; }
-  .dl-phone-preview-line.short { width: 40% !important; }
-  @keyframes phoneFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  /* ─── Hero phone image (replaces the old fake device) ─────────────────── */
+  .dl-hero-phone {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .dl-hero-phone-glow {
+    position: absolute;
+    width: 340px;
+    height: 340px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(13,148,136,.18), transparent 70%);
+    filter: blur(40px);
+    z-index: -1;
+  }
+  .dl-hero-phone-img {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 30px 60px rgba(15,23,42,.18));
+    animation: heroPhoneFloat 6s ease-in-out infinite;
+  }
+  @keyframes heroPhoneFloat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dl-hero-phone-img { animation: none; }
+  }
 
   .dl-section { padding: clamp(48px,8vw,100px) clamp(20px,5vw,80px); }
   .dl-section-inner { max-width: 1100px; margin: 0 auto; }
