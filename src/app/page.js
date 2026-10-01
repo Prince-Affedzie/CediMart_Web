@@ -37,13 +37,14 @@ export default function HomePage() {
         {/* 4. Vendor spotlight — avatars + "see all" */}
         <VendorSpotlight title="Featured vendors" subtitle="Top-rated sellers" limit={12} />
 
-        {/* 5. Featured listings grid */}
+        {/* 5. Featured listings grid — routes to the tag-themed page now,
+            not the plain filtered listings view. */}
         <ProductGrid
           title="Featured Listings"
           subtitle="Hand-picked by our team"
           tag="featured"
           limit={12}
-          seeAllHref="/listings?tag=featured"
+          seeAllHref="/tag/featured"
         />
 
         {/* 6. Category: Fashion */}
@@ -66,7 +67,7 @@ export default function HomePage() {
           title="Flash Sales"
           subtitle="Grab them before they're gone"
           accent="danger"
-          seeAllHref="/listings?tag=urgent-sale"
+          seeAllHref="/tag/urgent-sale"
         />
 
         {/* 9. Category: Phones & Tablets */}
@@ -76,13 +77,14 @@ export default function HomePage() {
           subtitle="Smartphones, cases, and accessories"
         />
 
-        {/* 10. Popular */}
+        {/* 10. Popular — keeps ?sort=popular so "see all" still opens
+            sorted by most-viewed, not the tag page's newest-first default. */}
         <ProductGrid
           title="Popular"
           subtitle="Most viewed this week"
           tag="popular"
           limit={10}
-          seeAllHref="/listings?tag=popular&sort=popular"
+          seeAllHref="/tag/popular?sort=popular"
         />
 
         {/* 11. Category: Beauty & Grooming */}
@@ -97,7 +99,7 @@ export default function HomePage() {
           tag="new-arrival"
           title="New Arrivals"
           subtitle="Just listed"
-          seeAllHref="/listings?tag=new-arrival&sort=newest"
+          seeAllHref="/tag/new-arrival"
         />
 
         {/* 13. Just for you */}
@@ -106,7 +108,7 @@ export default function HomePage() {
           subtitle="Curated for you"
           tag="student-favorite"
           limit={10}
-          seeAllHref="/listings?tag=student-favorite"
+          seeAllHref="/tag/student-favorite"
         />
         <VisualSearchFab />
         <FloatingAiButton/>

@@ -23,6 +23,7 @@ import {
   Video,
   UserPlus,
 } from 'lucide-react';
+import mobile_frame from '@/assets/mobile_frame.png'
 
 // ─── Teal + Coral Design Tokens (unchanged) ───────────────────────────────
 const C = {
