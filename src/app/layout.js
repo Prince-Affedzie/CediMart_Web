@@ -76,7 +76,7 @@ export const metadata = {
     description:
       'A social commerce platform for Ghana. Shop through video shorts, chat with sellers, and build your audience.',
     images: ['/og-image.png'],
-    site: '@cedimart',
+    site: '@cedimartghana',
     creator: '@cedimart',
   },
   icons: {
@@ -131,7 +131,25 @@ export default function RootLayout({ children }) {
             <ConditionalFooter />
           </CartProvider>
         </AuthProvider>
-
+        <Script
+          id="organization-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "CediMart",
+              "url": "https://cedimartgh.com",
+              "logo": "https://cedimartgh.com/icon.jpg",
+              "sameAs": [
+                "https://instagram.com/cedimartghana",
+                "https://tiktok.com/@cedimartghana",
+                "https://twitter.com/cedimartghana",
+                "https://facebook.com/cedimartghana"
+              ]
+            })
+          }}
+        />
         <Script
           src="https://js.paystack.co/v1/inline.js"
           strategy="afterInteractive"

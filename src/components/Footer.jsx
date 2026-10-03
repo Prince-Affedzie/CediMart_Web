@@ -46,10 +46,10 @@ export default function Footer() {
   ];
 
   const SOCIALS = [
-    { label: 'Instagram', href: 'https://instagram.com/cedimart', Icon: FiInstagram },
-    { label: 'Twitter',   href: 'https://twitter.com/cedimart',   Icon: FiTwitter },
-    { label: 'LinkedIn',  href: 'https://linkedin.com/company/cedimart', Icon: FiLinkedin },
-    { label: 'YouTube',   href: 'https://youtube.com/@cedimart',  Icon: FiYoutube },
+    { label: 'Instagram', href: 'https://instagram.com/cedimartghana?stkn=OHVocmhta211c3d1', Icon: FiInstagram },
+    { label: 'Twitter',   href: 'https://twitter.com/cedimartghana',   Icon: FiTwitter },
+    { label: 'LinkedIn',  href: 'https://linkedin.com/company/cedimartghana', Icon: FiLinkedin },
+    { label: 'YouTube',   href: 'https://youtube.com/@cedimartghana',  Icon: FiYoutube },
   ];
 
   return (
