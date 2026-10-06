@@ -13,7 +13,8 @@ import DealsRail from '@/components/Home/DealsRail';
 import EscrowBanner from '@/components/Home/EscrowBanner';
 import FloatingAiButton from '@/components/Home/FloatingAiButton'
 import VisualSearchFab from '@/components/VisualSearchFab'
-//import Footer from '@/components/Layout/Footer';
+import WelcomeTips from '@/components/WelcomeTips'
+
 import './home.css';
 
 export default function HomePage() {
@@ -110,6 +111,8 @@ export default function HomePage() {
           limit={6}
           seeAllHref="/tag/student-favorite"
         />
+
+        <WelcomeTips />
         <VisualSearchFab />
         <FloatingAiButton/>
 
