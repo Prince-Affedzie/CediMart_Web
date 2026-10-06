@@ -83,7 +83,7 @@ export default function HomePage() {
           title="Popular"
           subtitle="Most viewed this week"
           tag="popular"
-          limit={10}
+          limit={6}
           seeAllHref="/tag/popular?sort=popular"
         />
 
@@ -107,7 +107,7 @@ export default function HomePage() {
           title="Just for you"
           subtitle="Curated for you"
           tag="student-favorite"
-          limit={10}
+          limit={6}
           seeAllHref="/tag/student-favorite"
         />
         <VisualSearchFab />
