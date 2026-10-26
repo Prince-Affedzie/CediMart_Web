@@ -250,3 +250,174 @@
     animation: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FIRST-VISIT WELCOME POPUP
+   Centre-screen modal shown on a user's first visit to the site. Dismisses
+   into the strip on subsequent visits. Mobile-only.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.adb-welcome-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 250;
+  animation: adbFade .2s ease both;
+}
+
+.adb-welcome {
+  position: relative;
+  background: #FFFFFF;
+  width: 100%;
+  max-width: 380px;
+  border-radius: 22px;
+  padding: 26px 22px 18px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  animation: adbWelcomePop .32s cubic-bezier(.22, 1, .36, 1) both;
+  text-align: center;
+}
+
+@keyframes adbWelcomePop {
+  from { transform: scale(0.94) translateY(10px); opacity: 0; }
+  to   { transform: scale(1)    translateY(0);    opacity: 1; }
+}
+
+.adb-welcome-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #F1F5F9;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .15s;
+}
+.adb-welcome-close:hover { background: #E2E8F0; }
+
+.adb-welcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0D9488;
+  background: #F0FDFA;
+  border: 1px solid #99F6E4;
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+.adb-welcome-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.4px;
+  line-height: 1.25;
+  margin: 0 0 8px;
+}
+
+.adb-welcome-sub {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0 0 18px;
+}
+
+.adb-welcome-points {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.adb-welcome-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.45;
+}
+.adb-welcome-points li svg {
+  color: #0D9488;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.adb-welcome-stores {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.adb-welcome-skip {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  color: #64748B;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: background .15s, color .15s;
+}
+.adb-welcome-skip:hover {
+  background: #F1F5F9;
+  color: #334155;
+}
+
+/* ── Make .adb-store work as both <a> and <button> ────────────────── */
+.adb-welcome .adb-store,
+.adb-sheet-links .adb-store {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: #0F172A;
+  color: #FFFFFF;
+  text-decoration: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition: transform .15s ease, background .18s ease;
+}
+.adb-welcome .adb-store:active,
+.adb-sheet-links .adb-store:active {
+  transform: scale(0.98);
+  background: #1E293B;
+}
+
+/* ── Mobile-only ───────────────────────────────────────────────────── */
+@media (min-width: 769px) {
+  .adb-welcome-backdrop { display: none; }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .adb-welcome-backdrop,
+  .adb-welcome { animation: none; }
+}
