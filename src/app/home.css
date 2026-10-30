@@ -100,14 +100,7 @@
 @media (max-width: 640px) {
 
   /* Use more of the available screen width */
-  .home-main {
-    width: 100%;
-    max-width: 100%;
-    padding-left: 8px;
-    padding-right: 8px;
-    box-sizing: border-box;
-   
-  }
+ 
 
   /* Reduce the space between page sections */
   .home-section {
@@ -993,8 +986,13 @@
   .home-main,
   .home-section {
     min-width: 0;
-    max-width: 100%;
+    max-width: 110%;
     box-sizing: border-box;
+  }
+
+  .home-main{
+     padding-left: 8px;
+    padding-right: 8px;
   }
 
   .home-section {
