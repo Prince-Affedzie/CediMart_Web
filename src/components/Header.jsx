@@ -50,6 +50,14 @@ const HIDE_SEARCH_ON = [
   '/register',
   '/account',
   '/ai-assistant',
+  '/vendor',
+  '/vendor-login',
+  '/vendor-signup',
+  '/orders','/account','/auth',
+  '/product','/privacy-policy','/sell','/vendors','/visual-search','/about',
+  '/support','/payment','/order-confirmed','/download','/favorites','/contact'
+
+
 ];
 
 export default function Header() {

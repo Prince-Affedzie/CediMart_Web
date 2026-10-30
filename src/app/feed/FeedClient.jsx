@@ -60,12 +60,16 @@ export default function FeedClient() {
 
   // ── Size the stage to exactly the space below the site header ───────────
   useEffect(() => {
-    const update = () => {
-      const el = stageRef.current;
-      if (!el) return;
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      el.style.setProperty('--feed-h', `${Math.max(360, window.innerHeight - top)}px`);
-    };
+         const update = () => {
+       const el = stageRef.current;
+       if (!el) return;
+       const top = el.getBoundingClientRect().top + window.scrollY;
+      // On phones the fixed tab bar sits at the bottom, so reserve its height.
+       const tabBar = document.querySelector('.mtb-wrap');
+       const tabH =
+        tabBar && getComputedStyle(tabBar).display !== 'none' ? tabBar.offsetHeight : 0;
+       el.style.setProperty('--feed-h', `${Math.max(360, window.innerHeight - top - tabH)}px`);
+     };
     update();
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
