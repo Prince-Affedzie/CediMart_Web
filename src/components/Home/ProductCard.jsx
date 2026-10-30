@@ -172,7 +172,7 @@ export default function ProductCard({ product, index = 0, skeleton = false }) {
                 {fmtPrice(product.price)}
               </span>
             </div>
-            <span className="prod-view-btn">View</span>
+            
           </div>
         </div>
       </div>

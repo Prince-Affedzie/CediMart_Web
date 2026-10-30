@@ -90,6 +90,225 @@
 }
 
 /* ══════════════════════ Home main + section shell ══════════════════════ */
+
+
+/* ═══════════════════════════════════════════
+   MOBILE WIDTH & SPACING OPTIMIZATION
+   Append this block at the END of home.css
+═══════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+
+  /* Use more of the available screen width */
+  .home-main {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 8px;
+    padding-right: 8px;
+    box-sizing: border-box;
+   
+  }
+
+  /* Reduce the space between page sections */
+  .home-section {
+    padding: 14px 10px;
+    margin: 10px 0;
+    border-radius: 12px;
+    box-sizing: border-box;
+  }
+
+  .home-section-head {
+    margin-bottom: 12px;
+    gap: 8px;
+    padding-bottom: 10px;
+  }
+
+  .home-section-title {
+    font-size: 19px;
+  }
+
+  .home-section-sub {
+    font-size: 12px;
+  }
+
+  /* Keep flash sale header aligned with its container */
+  .home-section:has(.home-section-title.is-danger) {
+    padding-top: 0;
+  }
+
+  .home-section:has(.home-section-title.is-danger) .home-section-head {
+    margin-left: -10px;
+    margin-right: -10px;
+    padding: 12px 10px;
+  }
+
+  /* Product grid: maximize card width */
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 110%;
+  }
+
+  .prod-info {
+    padding: 9px 9px 11px;
+    gap: 5px;
+  }
+
+  .prod-name {
+    font-size: 12.5px;
+    min-height: 34px;
+  }
+
+  .prod-price {
+    font-size: 14px;
+  }
+
+  .prod-view-btn {
+    font-size: 10.5px;
+    padding: 5px 8px;
+  }
+
+  /* Category grid */
+  .category-pills {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .category-pill {
+    padding: 8px 2px;
+  }
+
+  .category-pill-icon {
+    width: 46px;
+    height: 46px;
+    font-size: 20px;
+  }
+
+  /* Featured banner */
+  .featured-track {
+    height: 280px;
+    border-radius: 12px;
+  }
+
+  .featured-slide-copy {
+    padding: 18px;
+    max-width: 90%;
+  }
+
+  .featured-slide-title {
+    font-size: 23px;
+  }
+
+  .featured-dots {
+    right: 12px;
+    bottom: 12px;
+  }
+
+  /* SEO content */
+  .seo-intro {
+    padding: 14px;
+    margin: 10px 0 20px;
+    border-radius: 12px;
+  }
+
+  .seo-intro h1 {
+    font-size: 19px;
+  }
+
+  .seo-intro p {
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  /* Trust strip */
+  .trust-strip {
+    padding: 12px;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .trust-item {
+    flex-basis: 190px;
+  }
+
+  /* Escrow banner */
+  .escrow-banner {
+    margin: 20px 0;
+    padding: 22px 16px;
+    border-radius: 14px;
+  }
+
+  .escrow-banner h2 {
+    font-size: 23px;
+  }
+
+  /* Refer strip */
+  .refer-strip {
+    padding: 11px 12px;
+    margin: 10px 0;
+  }
+
+  .refer-strip-text {
+    min-width: 0;
+    font-size: 12.5px;
+  }
+
+  /* Deal cards */
+  .dc {
+    flex-basis: 185px;
+  }
+
+  /* Header spacing */
+  .site-header-inner {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .site-header-nav {
+    gap: 10px;
+  }
+}
+
+/* Extra optimization for very small phones */
+@media (max-width: 380px) {
+
+  .home-main {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .home-section {
+    padding: 12px 8px;
+  }
+
+  .home-section:has(.home-section-title.is-danger) .home-section-head {
+    margin-left: -8px;
+    margin-right: -8px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .product-grid {
+    gap: 7px;
+  }
+
+  .prod-info {
+    padding: 8px;
+  }
+
+  .prod-foot {
+    gap: 4px;
+  }
+
+  .prod-price {
+    font-size: 13px;
+  }
+
+  .seo-intro {
+    padding: 12px;
+  }
+}
+
 .home-main { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
 
 .home-section { padding: 32px 0; border-bottom: 1px solid var(--border); }
@@ -762,3 +981,100 @@
   background: rgba(13,148,136,.08); padding: 6px 12px; border-radius: 20px;
 }
 .seo-intro-links a:hover { background: var(--brand); color: #fff; }
+
+
+/* ═══════════════════════════════════════════
+   MOBILE HORIZONTAL OVERFLOW FIX
+═══════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+
+  /* Prevent sections from expanding beyond viewport */
+  .home-main,
+  .home-section {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .home-section {
+    overflow: hidden;
+  }
+
+  /* Product grid */
+  .product-grid {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    box-sizing: border-box;
+  }
+
+  /* Allow cards to shrink inside grid columns */
+  .product-grid > *,
+  .prod-card-link,
+  .prod-card {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Prevent product information from forcing card width */
+  .prod-info,
+  .prod-meta-row,
+  .prod-foot {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .prod-name {
+    overflow-wrap: anywhere;
+  }
+
+  .prod-foot {
+    flex-wrap: wrap;
+  }
+
+  .prod-price {
+    overflow-wrap: anywhere;
+  }
+
+  /* Category section */
+  .category-pills {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    box-sizing: border-box;
+  }
+
+  .category-pills > *,
+  .category-pill {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .category-pill-label {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  /* Prevent long text from expanding section headers */
+  .home-section-head,
+  .home-section-head > * {
+    min-width: 0;
+  }
+
+  /* Keep horizontal carousels contained */
+  .vendor-row,
+  .deals-rail {
+    max-width: 100%;
+    min-width: 0;
+  }
+}

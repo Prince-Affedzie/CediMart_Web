@@ -34,7 +34,7 @@ export default function HomePage() {
           tag="featured" limit={12} seeAllHref="/tag/featured"
         />
 
-        <VendorSpotlight title="Featured vendors" subtitle="Top-rated sellers" limit={12} />
+        <VendorSpotlight title="New onboarded vendors" subtitle="Vendors who just joined" limit={12} />
 
         <EscrowBanner />
 

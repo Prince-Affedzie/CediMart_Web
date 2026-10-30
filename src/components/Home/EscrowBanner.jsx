@@ -271,30 +271,6 @@ export default function EscrowBanner() {
           <ArrowRight size={18} strokeWidth={2.4} aria-hidden="true" />
         </Link>
       </div>
-
-      <div className="eb-flow">
-        <div className="eb-flow-head">
-          How escrow protects you
-          <span className="eb-flow-badge">
-            <Lock size={12} strokeWidth={2.6} aria-hidden="true" />
-            Escrow protected
-          </span>
-        </div>
-
-        <ol className="eb-steps">
-          {STEPS.map(({ icon: Icon, title, text }) => (
-            <li className="eb-step" key={title}>
-              <span className="eb-step-icon" aria-hidden="true">
-                <Icon size={20} strokeWidth={2} />
-              </span>
-              <div>
-                <h3 className="eb-step-title">{title}</h3>
-                <p className="eb-step-text">{text}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
     </section>
   );
 }
