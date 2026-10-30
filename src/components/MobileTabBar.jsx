@@ -3,13 +3,14 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Home, Store, ShoppingCart, User } from 'lucide-react';
+import { Home, PlayCircle, Store, ShoppingCart, User } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 
 const TABS = [
   { key: 'home',    label: 'Home',    href: '/',         icon: Home },
   { key: 'shop',    label: 'Shop',    href: '/listings', icon: Store },
+  { key: 'feed',    label: 'Feed',    href: '/feed',     icon: PlayCircle },
   { key: 'cart',    label: 'Cart',    href: '/cart',     icon: ShoppingCart, showBadge: true },
   { key: 'profile', label: 'Profile', href: '/account',  icon: User, requiresAuth: true },
 ];
@@ -17,19 +18,15 @@ const TABS = [
 export default function MobileTabBar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { cartCount } = useCart();
+  const { cartCount = 0 } = useCart();
   const { isAuthenticated } = useAuth();
+
+  // Same rule as the Header: logged out means zero, don't trust stale cart state.
+  const safeCartCount = isAuthenticated ? cartCount : 0;
 
   const isActive = (tab) => {
     if (tab.href === '/') return pathname === '/';
     return pathname === tab.href || pathname.startsWith(`${tab.href}/`);
-  };
-
-  const handleProfilePress = (e) => {
-    if (tab.requiresAuth && !isAuthenticated) {
-      e.preventDefault();
-      router.push('/login?redirect=/account');
-    }
   };
 
   return (
@@ -52,7 +49,7 @@ export default function MobileTabBar() {
 
         .mtb-row {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(5, 1fr);
           height: 60px;
           max-width: 560px;
           margin: 0 auto;
@@ -88,10 +85,10 @@ export default function MobileTabBar() {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 32px;
-          height: 26px;
+          width: 40px;
+          height: 28px;
           transition: background 0.2s ease;
-          border-radius: 8px;
+          border-radius: 9px;
         }
 
         .mtb-tab.is-active .mtb-tab-icon-wrap {
@@ -113,8 +110,8 @@ export default function MobileTabBar() {
 
         .mtb-badge {
           position: absolute;
-          top: -2px;
-          right: -6px;
+          top: -3px;
+          right: -1px;
           min-width: 16px;
           height: 16px;
           padding: 0 4px;
@@ -141,7 +138,7 @@ export default function MobileTabBar() {
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab);
-            const showBadge = tab.showBadge && cartCount > 0;
+            const showBadge = tab.showBadge && safeCartCount > 0;
 
             return (
               <Link
@@ -150,14 +147,17 @@ export default function MobileTabBar() {
                 className={`mtb-tab${active ? ' is-active' : ''}`}
                 aria-current={active ? 'page' : undefined}
                 onClick={(e) => {
-                  if (tab.requiresAuth && !isAuthenticated) handleProfilePress(e);
+                  if (tab.requiresAuth && !isAuthenticated) {
+                    e.preventDefault();
+                    router.push('/login?redirect=/account');
+                  }
                 }}
               >
                 <span className="mtb-tab-icon-wrap">
-                  <Icon size={28} strokeWidth={active ? 2.4 : 2} />
+                  <Icon size={24} strokeWidth={active ? 2.4 : 2} />
                   {showBadge && (
                     <span className="mtb-badge">
-                      {cartCount > 99 ? '99+' : cartCount}
+                      {safeCartCount > 99 ? '99+' : safeCartCount}
                     </span>
                   )}
                 </span>
