@@ -26,7 +26,10 @@ export const metadata = {
   'CediMart Ghana',
 
   // General shopping and marketplace
-  'online shopping platforms in ghana',
+  'online shopping platforms in Ghana',
+  'top 10 online shopping sites in Ghana',
+  'cheapest online shopping sites in Ghana',
+  'Ghana online shopping apps',
   'online shopping Ghana',
   'online marketplace Ghana',
   'shop online Ghana',
