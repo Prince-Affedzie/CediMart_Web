@@ -39,6 +39,19 @@ const MOBILE_LINKS = [
   { label: 'Contact',      href: '/contact',      icon: MessageCircle },
 ];
 
+// Pages where the navbar search bar is hidden.
+// Each entry also covers its sub-routes (e.g. '/cart' covers '/cart/anything').
+const HIDE_SEARCH_ON = [
+  '/feed',         // full-screen video, has its own search
+  '/listings',     // has its own search box in the page top bar
+  '/cart',
+  '/checkout',
+  '/login',
+  '/register',
+  '/account',
+  '/ai-assistant',
+];
+
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -67,6 +80,10 @@ export default function Header() {
     if (href === '/') return pathname === '/';
     return pathname === href || pathname.startsWith(`${href}/`);
   };
+
+  const hideSearch = HIDE_SEARCH_ON.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
 
   return (
     <header className="sticky top-0 z-[200]">
@@ -124,6 +141,11 @@ export default function Header() {
           align-items: center;
           gap: 2px;
           flex-shrink: 0;
+        }
+        /* When search is hidden, links take the free space and sit in the middle */
+        .nav.no-search .nav-links {
+          flex: 1;
+          justify-content: center;
         }
         .nav-link {
           font-size: 13.5px;
@@ -413,6 +435,14 @@ export default function Header() {
           .nav-left   { order: 1; }
           .nav-right  { order: 2; }
           .nav-search { order: 3; flex: 1 0 100%; max-width: none; }
+
+          /* No search row on these pages: back to a single compact row */
+          .nav.no-search {
+            flex-wrap: nowrap;
+            row-gap: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+          }
         }
 
         /* Hide login text on very small screens, keep icon */
@@ -422,7 +452,7 @@ export default function Header() {
         }
       `}</style>
 
-      <nav className="nav">
+      <nav className={`nav${hideSearch ? ' no-search' : ''}`}>
         {/* ── LEFT: hamburger + logo ── */}
         <div className="nav-left">
           <button
@@ -440,10 +470,12 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* ── SEARCH ── */}
-        <div className="nav-search">
-          <HomeSearchBar variant="nav" />
-        </div>
+        {/* ── SEARCH (hidden on some pages) ── */}
+        {!hideSearch && (
+          <div className="nav-search">
+            <HomeSearchBar variant="nav" />
+          </div>
+        )}
 
         {/* ── Desktop links ── */}
         <div className="nav-links">
