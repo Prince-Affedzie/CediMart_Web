@@ -23,7 +23,7 @@ import Pagination from '@/components/Listings/Pagination';
 
 import './listings.css';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 100;
 const SEARCH_DEBOUNCE_MS = 350;
 const MIN_SUGGEST_LENGTH = 2;
 
