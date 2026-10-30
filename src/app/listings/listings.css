@@ -565,6 +565,11 @@ a.lp-card { text-decoration: none; color: inherit; }
   min-width: 0;
   z-index: 20;
 }
+@media (max-width: 767px) {
+  .lp-sidebar {
+    display: none !important;
+  }
+}
 .lp-sidebar::-webkit-scrollbar { width: 3px; }
 .lp-sidebar::-webkit-scrollbar-track { background: transparent; }
 .lp-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
