@@ -34,7 +34,9 @@ export default function DealsRail({ tag, title, subtitle, accent, seeAllHref }) 
     <section className="home-section" aria-label={title}>
       <div className="home-section-head">
         <div>
-          <h2 className={`home-section-title ${accent === 'danger' ? 'is-danger' : ''}`}>{title}</h2>
+         <h2 className={`home-section-title ${accent ? `is-${accent}` : ''}`}>
+          {title}
+        </h2>
           {subtitle && <p className="home-section-sub">{subtitle}</p>}
         </div>
         <div className="home-section-head-right">

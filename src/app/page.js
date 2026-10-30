@@ -41,7 +41,7 @@ export default function HomePage() {
         <CategorySection category="phones and tablets" title="Phones & Tablets" subtitle="Smartphones, cases, and accessories" />
         <CategorySection category="computers and laptops" title="Computers & Laptops" subtitle="Laptops, accessories, and more" />
 
-        <DealsRail tag="new-arrival" title="New Arrivals" subtitle="Just listed" seeAllHref="/tag/new-arrival" />
+        <DealsRail tag="new-arrival" title="New Arrivals" subtitle="Just listed" accent="brand"  seeAllHref="/tag/new-arrival" />
 
         <CategorySection category="fashion" title="Fashion" subtitle="Shop fashion from trusted sellers" />
 
