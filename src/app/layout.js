@@ -187,6 +187,21 @@ export default function RootLayout({ children }) {
             })
           }}
         />
+        {/* Google Analytics */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-KVFJTLB3NJ"
+        strategy="afterInteractive"
+      />
+
+      <Script id="google-analytics" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){window.dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', 'G-KVFJTLB3NJ');
+        `}
+      </Script>
         <Script
           src="https://js.paystack.co/v1/inline.js"
           strategy="afterInteractive"
