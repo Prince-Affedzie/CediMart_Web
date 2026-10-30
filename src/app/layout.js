@@ -20,30 +20,63 @@ export const metadata = {
   verification: {
     google: 'iBMCCAhAo_5ViK0WT_9CypifyxUQi2SEzE66ATC11i0',
   },
-  keywords: [
-    // Marketplace core
-    'marketplace Ghana',
-    'buy and sell Ghana',
-    'online shopping Ghana',
-    'CediMart',
-    // Social commerce
-    'social commerce',
-    'shop by video',
-    'live shopping',
-    'video shopping Ghana',
-    // Vendor / creator economy
-    'vendor platform Ghana',
-    'seller tools Ghana',
-    'creator marketplace',
-    'audience building',
-    // Chat / messaging
-    'buyer seller chat',
-    'in-app messaging marketplace',
-    // Legacy / campus audience (still relevant)
-    'campus marketplace',
-    'student buy sell',
-    'Ghana university',
-  ],
+  keywords : [
+  // Brand keywords
+  'CediMart',
+  'CediMart Ghana',
+
+  // General shopping and marketplace
+  'online shopping Ghana',
+  'online marketplace Ghana',
+  'shop online Ghana',
+  'buy products online Ghana',
+  'Ghana online shopping sites',
+  'buy and sell online Ghana',
+  'marketplace Ghana',
+
+  // Fashion
+  'fashion', 'sneakers',
+  'women dresses',
+  'fashion online Ghana',
+  'buy clothes online Ghana',
+  'women dresses Ghana',
+  'sneakers online Ghana',
+
+  // Electronics
+  'phones for sale',
+  'laptops for sale',
+  'electronics online Ghana',
+  'phones for sale Ghana',
+  'laptops for sale Ghana',
+  'buy smartphones online Ghana',
+  'iphones for sale',
+  'Where to buy iphone online in Ghana',
+
+
+  // Beauty
+  'beauty products',
+  'skincare products',
+  'makeup products',
+  'beauty products Ghana',
+  'skincare products Ghana',
+  'makeup products Ghana',
+
+  // Home and lifestyle
+  'home appliances',
+  'home appliances Ghana',
+  'furniture online Ghana',
+  'home essentials Ghana',
+
+  // Social commerce (supporting keywords)
+  'social commerce Ghana',
+  'video shopping Ghana',
+  'social shopping Ghana',
+
+  // Seller and business-related keywords
+  'sell products online Ghana',
+  'online selling platform Ghana',
+  'sell online Ghana',
+],
   authors: [{ name: 'CediMart' }],
   creator: 'CediMart',
   publisher: 'CediMart',
