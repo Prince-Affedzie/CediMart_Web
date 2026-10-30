@@ -1,4 +1,4 @@
-/* src/components/home/browse-by-category.css */
+/* src/components/Home/browse-by-category.css */
 
 .bbc-section {
   --void: #F8FAFC;
@@ -53,7 +53,7 @@
   flex-shrink: 0;
 }
 
-/* Arrow buttons */
+/* Arrow buttons (desktop only) */
 .bbc-arrows {
   display: none;
   gap: 6px;
@@ -134,7 +134,7 @@
 }
 .bbc-strip::-webkit-scrollbar { display: none; }
 
-/* ── Category tile ───────────────────────────────────────────────────── */
+/* ── Category tile (desktop) ─────────────────────────────────────────── */
 .bbc-tile {
   position: relative;
   flex-shrink: 0;
@@ -144,11 +144,10 @@
   justify-content: center;
   gap: 8px;
 
-  /* Compact square-ish tile — small enough to fit ~7–8 on desktop */
   width: 92px;
   padding: 14px 8px 12px;
 
-  border-radius: 58px;
+  border-radius: 24px;
   background: var(--surf);
   border: 1.5px solid var(--border);
   text-decoration: none;
@@ -171,8 +170,8 @@
 
 /* Icon badge */
 .bbc-tile-icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -205,38 +204,94 @@
 }
 .bbc-tile:hover .bbc-tile-label { color: var(--cat-color); }
 
-/* ── Mobile tweaks ──────────────────────────────────────────────────── */
-@media (max-width: 640px) {
+/* ══════════════════════════════════════════════════════════════════════
+   MOBILE & TABLET (≤ 899px): 2-row swipeable grid of round icons
+   ══════════════════════════════════════════════════════════════════════ */
+@media (max-width: 899px) {
+  /* White card, matches the other homepage sections */
   .bbc-section {
-    padding: 24px var(--gutter) 20px;
+    background: var(--surf);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin: 0 0 16px;
+    padding: 16px var(--gutter) 4px;
   }
-  .bbc-header { margin-bottom: 14px; }
-  .bbc-title { font-size: 18px; }
-  .bbc-subtitle { font-size: 12px; }
 
-  .bbc-tile {
-    width: 84px;
-    padding: 12px 6px 10px;
-    gap: 6px;
-    border-radius: 32px;
-  }
-  .bbc-tile-icon {
+  .bbc-header { flex-wrap: nowrap; align-items: center; margin-bottom: 12px; }
+  .bbc-title { font-size: 16px; margin: 0; }
+  .bbc-subtitle { display: none; }
+  .bbc-see-all { padding: 6px 12px; font-size: 12px; }
+
+  /* Soft fade on the right edge so people know it scrolls */
+  .bbc-strip-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 14px;
     width: 28px;
-    height: 28px;
-    border-radius: 10px;
+    pointer-events: none;
+    background: linear-gradient(to left, var(--surf), rgba(255,255,255,0));
   }
-  .bbc-tile-icon svg { width: 16px; height: 16px; }
-  .bbc-tile-label { font-size: 10.5px; }
+
+  /* Two rows, scrolls horizontally */
+  .bbc-strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(2, auto);
+    grid-auto-columns: 72px;
+    gap: 14px 6px;
+    padding: 2px var(--gutter) 14px;
+    border-radius: 0;
+    scroll-snap-type: x proximity;
+    scroll-padding-left: var(--gutter);
+    overscroll-behavior-x: contain;
+  }
+
+  /* Tile = round icon + label, no box */
+  .bbc-tile {
+    width: auto;
+    padding: 0;
+    gap: 6px;
+    justify-content: flex-start;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+  }
+  .bbc-tile:hover { transform: none; box-shadow: none; }
+
+  .bbc-tile-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+  }
+  .bbc-tile-icon svg { width: 24px; height: 24px; }
+
+  /* Neutralise hover (it sticks on touch); use a tap-press instead */
+  .bbc-tile:hover .bbc-tile-icon {
+    transform: none;
+    background: var(--cat-tint);
+    color: var(--cat-color);
+    border-color: color-mix(in srgb, var(--cat-color) 18%, transparent);
+  }
+  .bbc-tile:active .bbc-tile-icon { transform: scale(.92); }
+  .bbc-tile:hover .bbc-tile-label { color: var(--text); }
+
+  /* Labels: max 2 lines, fixed height so both rows line up */
+  .bbc-tile-label {
+    font-size: 11px;
+    line-height: 1.25;
+    min-height: 27px;
+    max-width: 72px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
+/* Small phones: slightly tighter so ~4.5 columns still show */
 @media (max-width: 380px) {
-  .bbc-tile {
-    width: 76px;
-    padding: 10px 4px 8px;
-  }
-  .bbc-tile-icon {
-    width: 32px;
-    height: 32px;
-  }
-  .bbc-tile-label { font-size: 10px; }
+  .bbc-strip { grid-auto-columns: 66px; gap: 12px 4px; }
+  .bbc-tile-icon { width: 52px; height: 52px; }
+  .bbc-tile-icon svg { width: 22px; height: 22px; }
+  .bbc-tile-label { font-size: 10.5px; max-width: 66px; }
 }

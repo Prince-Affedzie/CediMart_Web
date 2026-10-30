@@ -1,31 +1,34 @@
-// src/components/home/BrowseByCategory.jsx
+// src/components/Home/BrowseByCategory.jsx
 'use client';
 
 import Link from 'next/link';
 import { useRef } from 'react';
 import {
   Shirt, Smartphone, Laptop, Gamepad2, BookOpen, Bed,
-  Tv, Armchair, Sparkles, Dumbbell, Watch, UtensilsCrossed,
+  Tv, Armchair, Dumbbell, Watch, UtensilsCrossed,
   Ticket, Bike, Wrench, Package, ArrowRight, GraduationCap,
   Camera, Palette, Hammer, Home, ChevronLeft, ChevronRight,
+  Headphones, Flower2,
 } from 'lucide-react';
 import './browse-by-category.css';
 
-// ─── Category list (mirrors CATEGORY_CONFIG order for consistency) ────────
+// ─── Category list ────────────────────────────────────────────────────────
+// Most popular first so they fill the visible part of the strip on mobile.
+// `key` values are unchanged, so /categories/[key] links keep working.
 const CATEGORIES = [
   { key: 'fashion',                 label: 'Fashion',           icon: Shirt,           color: '#DC2626', tint: '#FEF2F2' },
-  { key: 'electronics',             label: 'Electronics',       icon: Sparkles,        color: '#2563EB', tint: '#EFF6FF' },
   { key: 'phones and tablets',      label: 'Phones & Tablets',  icon: Smartphone,      color: '#7C3AED', tint: '#F5F3FF' },
   { key: 'computers and laptops',   label: 'Computers',         icon: Laptop,          color: '#0891B2', tint: '#ECFEFF' },
-  { key: 'gaming',                  label: 'Gaming',            icon: Gamepad2,        color: '#DB2777', tint: '#FDF2F8' },
+  { key: 'electronics',             label: 'Electronics',       icon: Headphones,      color: '#2563EB', tint: '#EFF6FF' },
   { key: 'books-course-materials',  label: 'Books & Notes',     icon: BookOpen,        color: '#B45309', tint: '#FFFBEB' },
   { key: 'hostel-items',            label: 'Hostel Items',      icon: Bed,             color: '#0D9488', tint: '#F0FDFA' },
+  { key: 'beauty and grooming',     label: 'Beauty',            icon: Flower2,         color: '#EC4899', tint: '#FDF2F8' },
+  { key: 'gaming',                  label: 'Gaming',            icon: Gamepad2,        color: '#DB2777', tint: '#FDF2F8' },
   { key: 'appliances',              label: 'Appliances',        icon: Tv,              color: '#475569', tint: '#F1F5F9' },
   { key: 'furniture',               label: 'Furniture',         icon: Armchair,        color: '#92400E', tint: '#FEF3C7' },
-  { key: 'beauty and grooming',     label: 'Beauty',            icon: Sparkles,        color: '#EC4899', tint: '#FDF2F8' },
-  { key: 'sports and fitness',      label: 'Sports',            icon: Dumbbell,        color: '#16A34A', tint: '#F0FDF4' },
-  { key: 'accessories',             label: 'Accessories',       icon: Watch,           color: '#CA8A04', tint: '#FEFCE8' },
   { key: 'food and drinks',         label: 'Food & Drinks',     icon: UtensilsCrossed, color: '#EA580C', tint: '#FFF7ED' },
+  { key: 'accessories',             label: 'Accessories',       icon: Watch,           color: '#CA8A04', tint: '#FEFCE8' },
+  { key: 'sports and fitness',      label: 'Sports',            icon: Dumbbell,        color: '#16A34A', tint: '#F0FDF4' },
   { key: 'services',                label: 'Services',          icon: Wrench,          color: '#0284C7', tint: '#F0F9FF' },
   { key: 'tutoring-education',      label: 'Tutoring',          icon: GraduationCap,   color: '#4F46E5', tint: '#EEF2FF' },
   { key: 'photography-media',       label: 'Photography',       icon: Camera,          color: '#0EA5E9', tint: '#F0F9FF' },
@@ -48,7 +51,7 @@ export default function BrowseByCategory() {
   };
 
   return (
-    <section className="bbc-section">
+    <section className="bbc-section" aria-label="Browse by category">
       {/* ── Section header ── */}
       <div className="bbc-header">
         <div>
@@ -63,6 +66,7 @@ export default function BrowseByCategory() {
               className="bbc-arrow-btn"
               onClick={() => scrollBy('left')}
               aria-label="Scroll categories left"
+              tabIndex={-1}
             >
               <ChevronLeft size={16} strokeWidth={2.5} />
             </button>
@@ -71,6 +75,7 @@ export default function BrowseByCategory() {
               className="bbc-arrow-btn"
               onClick={() => scrollBy('right')}
               aria-label="Scroll categories right"
+              tabIndex={-1}
             >
               <ChevronRight size={16} strokeWidth={2.5} />
             </button>
@@ -82,7 +87,7 @@ export default function BrowseByCategory() {
         </div>
       </div>
 
-      {/* ── Horizontal scrollable category strip ── */}
+      {/* ── Scrollable category strip (2-row grid on mobile, single row on desktop) ── */}
       <div className="bbc-strip-wrap">
         <div ref={scrollerRef} className="bbc-strip">
           {CATEGORIES.map((cat) => {
@@ -98,7 +103,7 @@ export default function BrowseByCategory() {
                 }}
               >
                 <span className="bbc-tile-icon">
-                  <Icon size={12} strokeWidth={2.1} />
+                  <Icon size={20} strokeWidth={2.1} />
                 </span>
                 <span className="bbc-tile-label">{cat.label}</span>
               </Link>

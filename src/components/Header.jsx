@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Menu,
@@ -14,17 +13,24 @@ import {
   Bot,
   BookOpen,
   MessageCircle,
-  Download,
   Smartphone,
   ShoppingCart,
   Heart,
   User as UserIcon,
 } from 'lucide-react';
-import icon from '@/app/icon.jpg';
+import HomeSearchBar from '@/components/Home/HomeSearchBar';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 
-const NAV_LINKS = [
+// Desktop navbar: kept short so the search bar has room.
+const DESKTOP_LINKS = [
+  { label: 'Home',     href: '/',         icon: HomeIcon },
+  { label: 'Vendors',  href: '/vendors',  icon: Store },
+  { label: 'Listings', href: '/listings', icon: Package },
+];
+
+// Mobile drawer: the full list.
+const MOBILE_LINKS = [
   { label: 'Home',         href: '/',             icon: HomeIcon },
   { label: 'Vendors',      href: '/vendors',      icon: Store },
   { label: 'Listings',     href: '/listings',     icon: Package },
@@ -70,7 +76,7 @@ export default function Header() {
           align-items: center;
           justify-content: space-between;
           padding: 0 clamp(16px, 5vw, 80px);
-          height: 64px;
+          min-height: 64px;
           background: rgba(255, 255, 255, 0.92);
           backdrop-filter: blur(20px) saturate(160%);
           border-bottom: 1px solid #E2E8F0;
@@ -78,7 +84,6 @@ export default function Header() {
           gap: 16px;
           position: relative;
           z-index: 200;
-          
         }
 
         /* Left cluster: hamburger (mobile) + logo */
@@ -96,22 +101,6 @@ export default function Header() {
           text-decoration: none;
           flex-shrink: 0;
         }
-        .nav-logo-mark {
-          width: 34px;
-          height: 34px;
-          border-radius: 9px;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
-          flex-shrink: 0;
-        }
-        .nav-logo-mark img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
         .nav-logo-text {
           font-size: 18px;
           font-weight: 800;
@@ -122,13 +111,19 @@ export default function Header() {
           color: #F97316 !important;
         }
 
+        /* Search (sits between logo and links on desktop) */
+        .nav-search {
+          flex: 1 1 360px;
+          min-width: 0;
+          max-width: 600px;
+        }
+
         /* Desktop links */
         .nav-links {
           display: flex;
           align-items: center;
-          gap: 4px;
-          flex: 1;
-          justify-content: center;
+          gap: 2px;
+          flex-shrink: 0;
         }
         .nav-link {
           font-size: 13.5px;
@@ -169,7 +164,7 @@ export default function Header() {
           flex-shrink: 0;
         }
 
-        /* Right cluster: counters + login (desktop) */
+        /* Right cluster: counters + login */
         .nav-right {
           display: flex;
           align-items: center;
@@ -375,7 +370,7 @@ export default function Header() {
           border-top: 1px solid #E2E8F0;
           background: #FFFFFF;
           box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.04);
-          bottom:54px;
+          bottom: 54px;
         }
         .mobile-nav-cta {
           display: flex;
@@ -397,24 +392,33 @@ export default function Header() {
           box-shadow: 0 6px 20px rgba(13, 148, 136, 0.32);
         }
 
-        /* Responsive — collapse nav at 900px so 6 links have room */
+        /* Tighten desktop a little on mid-size screens so search keeps room */
+        @media (max-width: 1100px) {
+          .nav { gap: 12px; }
+          .nav-link { padding: 8px 9px; }
+          .nav-link-icon { display: none; }
+        }
+
+        /* Mobile / tablet: two rows — [menu, logo ... cart, heart, login] then [search] */
         @media (max-width: 900px) {
-          .nav-links {
-            display: none;
+          .nav {
+            flex-wrap: wrap;
+            row-gap: 10px;
+            padding-top: 10px;
+            padding-bottom: 10px;
           }
-          .nav-hamburger {
-            display: flex;
-          }
+          .nav-links { display: none; }
+          .nav-hamburger { display: flex; }
+
+          .nav-left   { order: 1; }
+          .nav-right  { order: 2; }
+          .nav-search { order: 3; flex: 1 0 100%; max-width: none; }
         }
 
         /* Hide login text on very small screens, keep icon */
         @media (max-width: 420px) {
-          .nav-login span {
-            display: none;
-          }
-          .nav-login {
-            padding: 10px 12px;
-          }
+          .nav-login span { display: none; }
+          .nav-login { padding: 10px 12px; }
         }
       `}</style>
 
@@ -436,9 +440,14 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* ── CENTER: desktop links ── */}
+        {/* ── SEARCH ── */}
+        <div className="nav-search">
+          <HomeSearchBar variant="nav" />
+        </div>
+
+        {/* ── Desktop links ── */}
         <div className="nav-links">
-          {NAV_LINKS.map((link) => {
+          {DESKTOP_LINKS.map((link) => {
             const IconComponent = link.icon;
             const active = isActive(link.href);
             return (
@@ -506,7 +515,6 @@ export default function Header() {
       <div className={`mobile-menu ${menuOpen ? 'active' : ''}`}>
         <div className="mobile-menu-head">
           <Link href="/" className="nav-logo" onClick={closeMenu}>
-            
             <span className="nav-logo-text">
               Cedi<span>Mart</span>
             </span>
@@ -521,7 +529,7 @@ export default function Header() {
         </div>
 
         <div className="mobile-menu-body">
-          {NAV_LINKS.map((link, i) => {
+          {MOBILE_LINKS.map((link, i) => {
             const IconComponent = link.icon;
             const active = isActive(link.href);
             return (

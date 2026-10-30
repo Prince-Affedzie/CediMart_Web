@@ -711,3 +711,54 @@
     background: rgba(153, 246, 228, .5);
   }
 }
+
+/* Page background so white section cards stand out, like Jumia */
+.home-page { background: #F1F5F9; }
+
+/* Every section becomes a card */
+.home-section {
+  background: #fff; border: 1px solid var(--border) !important;
+  border-radius: 14px; padding: 20px; margin: 16px 0;
+}
+.home-section-head { padding-bottom: 12px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+
+/* Flash Sales gets Jumia's coloured header band */
+.home-section:has(.home-section-title.is-danger) { padding-top: 0; overflow: hidden; }
+.home-section:has(.home-section-title.is-danger) .home-section-head {
+  background: linear-gradient(90deg, #DC2626, #EA580C);
+  margin: 0 -20px 16px; padding: 14px 20px; border-bottom: none;
+}
+.home-section:has(.home-section-title.is-danger) .home-section-title,
+.home-section:has(.home-section-title.is-danger) .home-section-sub,
+.home-section:has(.home-section-title.is-danger) .home-section-link { color: #fff; }
+
+/* Trust strip */
+.trust-strip {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  margin: 0 0 16px; padding: 14px 18px;
+  background: #fff; border: 1px solid var(--border); border-radius: 14px;
+}
+.trust-item { display: flex; align-items: center; gap: 10px; color: var(--brand); }
+.trust-item strong { display: block; font-size: 13px; color: var(--text); }
+.trust-item span   { display: block; font-size: 11.5px; color: var(--muted); }
+@media (max-width: 760px) {
+  .trust-strip { display: flex; overflow-x: auto; scrollbar-width: none; }
+  .trust-item  { flex: 0 0 210px; }
+}
+
+/* Show the pill strip on mobile only (the sidebar replaces it on desktop) */
+@media (min-width: 900px) { .only-mobile { display: none; } }
+
+/* SEO text block */
+.seo-intro {
+  background: #fff; border: 1px solid var(--border); border-radius: 14px;
+  padding: 24px; margin: 16px 0 32px;
+}
+.seo-intro h1 { font-size: 20px; font-weight: 800; margin: 0 0 10px; letter-spacing: -.3px; }
+.seo-intro p  { font-size: 13.5px; line-height: 1.7; color: var(--off); margin: 0 0 10px; }
+.seo-intro-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.seo-intro-links a {
+  font-size: 12px; font-weight: 600; color: var(--brand); text-decoration: none;
+  background: rgba(13,148,136,.08); padding: 6px 12px; border-radius: 20px;
+}
+.seo-intro-links a:hover { background: var(--brand); color: #fff; }

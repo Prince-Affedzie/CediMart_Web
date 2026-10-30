@@ -366,3 +366,54 @@
   background: #CCFBF1;
   color: #0F766E;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NAV VARIANT — compact bar that lives inside the Header
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.hs-wrap--nav {
+  position: relative;
+  top: auto;
+  z-index: auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  pointer-events: auto;
+}
+
+.hs-wrap--nav .hs-bar {
+  height: 44px;
+  border-width: 1.5px;
+  border-radius: 22px;
+  box-shadow: none;
+}
+.hs-wrap--nav .hs-bar:focus-within {
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.16);
+}
+
+.hs-wrap--nav .hs-cat-btn {
+  font-size: 12.5px;
+  padding: 0 10px 0 14px;
+  border-radius: 20px 0 0 20px;
+}
+.hs-wrap--nav .hs-cat-label { max-width: 90px; }
+.hs-wrap--nav .hs-icon { margin-left: 12px; }
+.hs-wrap--nav .hs-input { font-size: 14px; }
+
+/* Icon-only submit button inside the navbar */
+.hs-wrap--nav .hs-submit {
+  padding: 0 14px;
+  border-radius: 18px;
+  box-shadow: none;
+}
+.hs-wrap--nav .hs-submit-label { display: none; }
+
+/* Dropdown lines up with the bar, not the old 20px page gutter */
+.hs-wrap--nav .hs-dropdown { left: 0; right: 0; }
+
+/* Not enough room for the category picker on smaller desktops */
+@media (max-width: 1180px) {
+  .hs-wrap--nav .hs-cat { display: none; }
+}

@@ -1,0 +1,64 @@
+.ht {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 230px;
+  gap: 16px;
+  margin: 8px 0 16px;
+  align-items: stretch;
+}
+
+/* Sidebar */
+.ht-cats {
+  background: #fff; border: 1px solid var(--border); border-radius: 14px;
+  padding: 10px 6px; display: flex; flex-direction: column;
+}
+.ht-cats-title {
+  font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--muted); padding: 6px 12px 8px; margin: 0;
+}
+.ht-cats ul { list-style: none; margin: 0; padding: 0; }
+.ht-cat {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 9px;
+  font-size: 13.5px; font-weight: 600; color: var(--text); text-decoration: none;
+  transition: background .12s, color .12s;
+}
+.ht-cat span { flex: 1; }
+.ht-cat svg:first-child { color: var(--muted); }
+.ht-cat-arrow { opacity: 0; transition: opacity .12s; }
+.ht-cat:hover { background: rgba(13,148,136,.08); color: var(--brand-d); }
+.ht-cat:hover svg:first-child { color: var(--brand); }
+.ht-cat:hover .ht-cat-arrow { opacity: 1; }
+.ht-cats-all {
+  margin: auto 6px 4px; padding: 10px 12px; border-radius: 9px;
+  font-size: 13px; font-weight: 700; color: var(--brand); text-decoration: none;
+  background: var(--brand-bg, #F0FDFA); text-align: center;
+}
+
+/* Hero inside the grid: override the standalone carousel sizing */
+.ht-hero { min-width: 0; }
+.ht-hero .hero-carousel { padding: 0; max-width: none; height: 100%; }
+.ht-hero .hero-track { aspect-ratio: auto; height: 400px; max-height: none; }
+
+/* Promo cards */
+.ht-promos { display: flex; flex-direction: column; gap: 16px; }
+.ht-promo {
+  flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px;
+  padding: 18px; border-radius: 14px; color: #fff; text-decoration: none;
+  transition: transform .18s, box-shadow .18s;
+}
+.ht-promo:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15,23,42,.15); }
+.ht-promo strong { font-size: 16px; font-weight: 800; letter-spacing: -.2px; }
+.ht-promo span { font-size: 12.5px; line-height: 1.45; color: rgba(255,255,255,.88); }
+.ht-promo-sell   { background: linear-gradient(135deg, #F97316, #EA580C); }
+.ht-promo-escrow { background: linear-gradient(135deg, #0D9488, #0F766E); }
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .ht { grid-template-columns: 220px minmax(0, 1fr); }
+  .ht-promos { display: none; }
+}
+@media (max-width: 899px) {
+  .ht { grid-template-columns: 1fr; margin-top: 0; }
+  .ht-cats { display: none; }
+  .ht-hero .hero-track { height: auto; aspect-ratio: 16 / 9; }
+}

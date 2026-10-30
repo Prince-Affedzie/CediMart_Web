@@ -33,7 +33,8 @@ function saveRecent(list) {
   try { window.localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch {}
 }
 
-export default function HomeSearchBar() {
+// variant: 'page' (original sticky bar) | 'nav' (compact, lives inside the Header)
+export default function HomeSearchBar({ variant = 'page' }) {
   const router = useRouter();
 
   const [query, setQuery]             = useState('');
@@ -150,7 +151,10 @@ export default function HomeSearchBar() {
   const showDropdown = showRecent || showResults;
 
   return (
-    <section className="hs-wrap" ref={rootRef}>
+    <section
+      className={`hs-wrap${variant === 'nav' ? ' hs-wrap--nav' : ''}`}
+      ref={rootRef}
+    >
       <form className="hs-bar" onSubmit={handleSubmit} role="search">
         {/* ── Category selector ── */}
         <div className="hs-cat">
@@ -201,7 +205,7 @@ export default function HomeSearchBar() {
           ref={inputRef}
           type="text"
           className="hs-input"
-          placeholder="Search for laptops, textbooks, sneakers…"
+          placeholder="Search for Electronics, Fashion, Home Appliance and more…"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
@@ -226,7 +230,7 @@ export default function HomeSearchBar() {
         {/* ── Submit ── */}
         <button type="submit" className="hs-submit" aria-label="Search">
           <Search size={17} strokeWidth={2.6} />
-         
+          <span className="hs-submit-label">Search</span>
         </button>
       </form>
 
