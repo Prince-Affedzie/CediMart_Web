@@ -37,6 +37,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import GuestCheckout from '@/components/GuestCheckOut';
 import { shareProduct } from '@/utils/shareProduct';
+import ChatFab from '@/components/Messages/ChatFab';
 import './product-detail.css';
 
 // ─── Design Tokens (aligned with mobile app C palette) ─────────────────────────
@@ -584,21 +585,8 @@ function StickyCartBar({ inStock, lineTotal, quantity, addingToCart, onAddToCart
   );
 }
 
-// ─── Floating "Chat Seller" launcher ───────────────────────────────────────────
-// Also rendered outside .pd-page for the same reason as the sticky bar.
-function ChatFab({ onClick }) {
-  return (
-    <button
-      type="button"
-      className="pd-chat-fab"
-      onClick={onClick}
-      aria-label="Chat with seller"
-      title="Chat with seller"
-    >
-      <MessageCircle size={22} strokeWidth={2.2} />
-    </button>
-  );
-}
+
+<ChatFab product={product} />
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function ProductDetailClient() {

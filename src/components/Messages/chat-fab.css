@@ -1,0 +1,89 @@
+/* src/components/Messages/chat-fab.css */
+
+.cf-wrap {
+  position: fixed;
+  right: 16px;
+  bottom: var(--cf-bottom, 24px);
+  z-index: 380; /* above page content, below the tab bar (400) and modals (600+) */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+}
+
+/* ── Pill ── */
+.cf-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 26px;
+  border: none;
+  border-radius: 26px;
+  background: #0D9488;
+  color: #fff;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: cfGlow 3.2s ease-in-out infinite;
+  transition: transform .15s ease, background .15s ease;
+}
+.cf-pill:hover:not(:disabled) { background: #0F766E; }
+.cf-pill:active:not(:disabled) { transform: scale(.95); }
+.cf-pill:focus-visible { outline: 3px solid #99F6E4; outline-offset: 3px; }
+.cf-pill.is-loading { background: #0F766E; cursor: default; animation: none; box-shadow: 0 4px 12px rgba(13, 148, 136, .3); }
+
+/* "Breathing" glow, same idea as the mobile app */
+@keyframes cfGlow {
+  0%, 100% { box-shadow: 0 4px 10px rgba(13, 148, 136, .22); }
+  50%      { box-shadow: 0 6px 24px rgba(13, 148, 136, .5); }
+}
+
+.cf-spin { animation: cfSpin .8s linear infinite; }
+@keyframes cfSpin { to { transform: rotate(360deg); } }
+
+/* ── Popover (sign-in prompt / errors) ── */
+.cf-pop {
+  position: relative;
+  width: min(280px, calc(100vw - 32px));
+  padding: 16px 18px 16px;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  background: #fff;
+  color: #0F172A;
+  box-shadow: 0 14px 40px rgba(15, 23, 42, .18);
+  animation: cfPop .16s ease;
+}
+@keyframes cfPop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.cf-pop strong { display: block; padding-right: 22px; font-size: 14.5px; font-weight: 800; }
+.cf-pop p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: #475569; }
+.cf-pop-x {
+  position: absolute; top: 10px; right: 10px; display: flex; padding: 3px;
+  border: none; border-radius: 6px; background: none; color: #94A3B8; cursor: pointer;
+}
+.cf-pop-x:hover { background: #F1F5F9; color: #0F172A; }
+.cf-pop-actions { display: flex; gap: 8px; margin-top: 14px; }
+.cf-pop-btn {
+  flex: 1; padding: 10px 12px; border: 1.5px solid #E2E8F0; border-radius: 10px;
+  background: #fff; color: #0F172A; font-size: 13px; font-weight: 700; text-align: center; text-decoration: none;
+  transition: border-color .15s, color .15s;
+}
+.cf-pop-btn:hover { border-color: #0D9488; color: #0D9488; }
+.cf-pop-btn.is-primary { border-color: #0D9488; background: #0D9488; color: #fff; }
+.cf-pop-btn.is-primary:hover { background: #0F766E; border-color: #0F766E; color: #fff; }
+
+/* ── Small phones: round icon button so it covers less of the page ── */
+@media (max-width: 480px) {
+  .cf-wrap { right: 14px; }
+  .cf-pill { width: 54px; height: 54px; padding: 0; border-radius: 50%; }
+  .cf-label { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-pill, .cf-pop, .cf-spin { animation: none; }
+}
