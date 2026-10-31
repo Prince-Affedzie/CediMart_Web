@@ -19,11 +19,11 @@ import SkeletonCard from '@/components/Listings/SkeletonCard';
 import FloatingAiButton from '@/components/Home/FloatingAiButton'
 import VisualSearchFab from '@/components/VisualSearchFab'
 import MobileCategoryStrip from '@/components/Listings/MobileCategoryStrip';
-import Pagination from '@/components/Listings/Pagination';
+import InfiniteLoader from '@/components/Listings/InfiniteLoader';
 
 import './listings.css';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 24;
 const SEARCH_DEBOUNCE_MS = 350;
 const MIN_SUGGEST_LENGTH = 2;
 
@@ -71,7 +71,9 @@ export default function ListingsClient() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterLoading, setFilterLoading] = useState(false);
-  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [total, setTotal] = useState(0);
 
   // Filters
@@ -101,6 +103,8 @@ export default function ListingsClient() {
 
   const isMountedRef = useRef(true);
   const fetchIdRef = useRef(0);
+  const productsRef = useRef([]);
+  const loadingMoreRef = useRef(false);
   const hydratedRef = useRef(false);
   const searchWrapRef = useRef(null);
 
@@ -128,7 +132,7 @@ export default function ListingsClient() {
     setNegotiableOnly(seed.negotiable);
     setMinPrice(seed.minPrice);
     setMaxPrice(seed.maxPrice);
-    setPage(seed.page);
+    
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -150,7 +154,7 @@ export default function ListingsClient() {
       if (negotiableOnly)            params.set('negotiable', '1');
       if (minPrice)                  params.set('minPrice', minPrice);
       if (maxPrice)                  params.set('maxPrice', maxPrice);
-      if (page > 1)                  params.set('page', String(page));
+      
 
       const qs = params.toString();
       const next = `${pathname}${qs ? `?${qs}` : ''}`;
@@ -161,7 +165,7 @@ export default function ListingsClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     searchQuery, activeCategory, activeSub, selectedLocation, selectedSuburb,
-    sort, condition, negotiableOnly, minPrice, maxPrice, page,
+    sort, condition, negotiableOnly, minPrice, maxPrice,
   ]);
 
   // ── Measure the sticky topbar and expose its height as --topbar-h ─────────
@@ -200,13 +204,23 @@ export default function ListingsClient() {
   ].filter(Boolean).length;
 
   // ── Fetch products ─────────────────────────────────────────────────────────
-  const fetchProducts = useCallback(
-    async ({ pageNum = 1, searchOverride, filterChange = false } = {}) => {
+    const fetchProducts = useCallback(
+    async ({ pageNum = 1, searchOverride, filterChange = false, append = false } = {}) => {
       fetchIdRef.current += 1;
       const myId = fetchIdRef.current;
 
-      if (filterChange) setFilterLoading(true);
-      else setLoading(true);
+      if (append) {
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
+        setLoadMoreError(false);
+      } else {
+        loadingMoreRef.current = false;
+        setLoadingMore(false);
+        setLoadMoreError(false);
+        setHasMore(false);
+        if (filterChange) setFilterLoading(true);
+        else setLoading(true);
+      }
 
       try {
         const effectiveSearch = searchOverride !== undefined ? searchOverride : searchQuery;
@@ -229,24 +243,51 @@ export default function ListingsClient() {
           ? await getProductsByCategory(activeCategory, params)
           : await getAllProducts(params);
 
+        // Filters changed (or we unmounted) while this was in flight: drop it.
         if (myId !== fetchIdRef.current || !isMountedRef.current) return;
 
         const data = extractProducts(res);
         const pg = res?.data?.pagination || res?.pagination || {};
         const tot = res?.data?.total ?? res?.total ?? data.length;
+        const pages = pg.totalPages ?? Math.ceil(tot / PAGE_SIZE);
 
-        setProducts(data);
-        setTotalPages(pg.totalPages ?? Math.ceil(tot / PAGE_SIZE) ?? 1);
+        let next;
+        let more;
+        if (append) {
+          // New listings can be posted while someone scrolls, which shifts the
+          // offsets and repeats items. Skip anything we already have.
+          const seen = new Set(productsRef.current.map((p) => p._id));
+          const fresh = data.filter((p) => !seen.has(p._id));
+          next = [...productsRef.current, ...fresh];
+          more = fresh.length > 0 && pageNum < pages; // nothing new = stop, never loop
+        } else {
+          next = data;
+          more = data.length > 0 && pageNum < pages;
+        }
+
+        productsRef.current = next;
+        setProducts(next);
         setTotal(tot);
+        setPage(pageNum);
+        setHasMore(more);
       } catch {
         if (myId === fetchIdRef.current && isMountedRef.current) {
-          setProducts([]);
-          setTotal(0);
+          if (append) {
+            setLoadMoreError(true); // keep what's on screen, offer a retry
+          } else {
+            productsRef.current = [];
+            setProducts([]);
+            setTotal(0);
+            setHasMore(false);
+          }
         }
       } finally {
-        if (myId !== fetchIdRef.current || !isMountedRef.current) return;
-        setLoading(false);
-        setFilterLoading(false);
+        if (myId === fetchIdRef.current && isMountedRef.current) {
+          loadingMoreRef.current = false;
+          setLoading(false);
+          setFilterLoading(false);
+          setLoadingMore(false);
+        }
       }
     },
     [
@@ -259,12 +300,17 @@ export default function ListingsClient() {
 
   useEffect(() => {
     if (!hydratedRef.current) return;
-    fetchProducts({ pageNum: page, filterChange: page === 1 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (typeof window !== 'undefined' && window.scrollY > 0) window.scrollTo({ top: 0 });
+    fetchProducts({ pageNum: 1, filterChange: true });
   }, [
     activeCategory, activeSub, sort, selectedLocation, selectedSuburb,
-    condition, negotiableOnly, minPrice, maxPrice, searchQuery, page,
+    condition, negotiableOnly, minPrice, maxPrice, searchQuery,
   ]);
+
+  const loadMore = useCallback(() => {
+    if (loadingMoreRef.current || loading || filterLoading || !hasMore) return;
+    fetchProducts({ pageNum: page + 1, append: true });
+  }, [loading, filterLoading, hasMore, page, fetchProducts]);
 
   // Cleanup
   useEffect(() => {
@@ -675,18 +721,26 @@ export default function ListingsClient() {
                 )}
               </div>
             ) : (
-              <div className="lp-grid">
-                {products.map((p, i) => (
-                  <ProductCard key={p._id || i} product={p} index={i} />
-                ))}
-              </div>
-            )}
+              <>
+                <div className="lp-grid">
+                  {products.map((p, i) => (
+                    <ProductCard key={p._id || i} product={p} index={i} />
+                  ))}
+                  {loadingMore && [...Array(6)].map((_, i) => <SkeletonCard key={`more-${i}`} />)}
+                </div>
 
-            <Pagination
-              page={page}
-              totalPages={loading ? 1 : totalPages}
-              onPageChange={setPage}
-            />
+                <InfiniteLoader
+                  hasMore={hasMore}
+                  busy={loadingMore}
+                  error={loadMoreError}
+                  count={products.length}
+                 total={total}
+                 showEnd={page > 1}
+                  onLoadMore={loadMore}
+                  onRetry={loadMore}
+                />
+              </>
+            )}
             <VisualSearchFab />
              <FloatingAiButton/>
           </main>

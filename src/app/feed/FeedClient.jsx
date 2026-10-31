@@ -361,7 +361,10 @@ export default function FeedClient() {
               <div className="fd-title-row">
                 <h1 className="fd-title">Feed</h1>
                 <div className="fd-title-actions">
-                  <button
+                <button type="button" className="fd-icon-btn" onClick={openSearch} aria-label="Search posts">
+                <Search size={19} />
+                </button>
+                <button
                     type="button"
                     className="fd-icon-btn"
                     onClick={() => setMuted((m) => !m)}
@@ -370,9 +373,7 @@ export default function FeedClient() {
                   >
                     {muted ? <VolumeX size={19} /> : <Volume2 size={19} />}
                   </button>
-                  <button type="button" className="fd-icon-btn" onClick={openSearch} aria-label="Search posts">
-                    <Search size={19} />
-                  </button>
+                  
                 </div>
               </div>
               {/*<TypeFilter types={FEED_TYPES} activeType={activeType} onSelect={setActiveType} />*/}
