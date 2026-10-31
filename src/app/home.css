@@ -986,7 +986,7 @@
   .home-main,
   .home-section {
     min-width: 0;
-    max-width: 110%;
+    max-width: 105%;
     box-sizing: border-box;
   }
 
