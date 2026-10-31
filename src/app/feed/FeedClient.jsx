@@ -375,7 +375,7 @@ export default function FeedClient() {
                   </button>
                 </div>
               </div>
-              <TypeFilter types={FEED_TYPES} activeType={activeType} onSelect={setActiveType} />
+              {/*<TypeFilter types={FEED_TYPES} activeType={activeType} onSelect={setActiveType} />*/}
             </>
           )}
         </div>
