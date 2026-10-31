@@ -586,7 +586,7 @@ function StickyCartBar({ inStock, lineTotal, quantity, addingToCart, onAddToCart
 }
 
 
-<ChatFab product={product} />
+
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function ProductDetailClient() {
@@ -1219,7 +1219,7 @@ export default function ProductDetailClient() {
         </div>
       </div>
 
-      <ChatFab onClick={() => handleAction('contact')} />
+      <ChatFab product={product} />
       <StickyCartBar
         inStock={inStock}
         lineTotal={lineTotal}
