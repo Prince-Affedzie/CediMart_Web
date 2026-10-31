@@ -1,18 +1,18 @@
-// src/components/MobileTabBar.jsx
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Home, PlayCircle, Store, ShoppingCart, User } from 'lucide-react';
+import { Home, PlayCircle, Store, ShoppingCart, User, MessageSquare } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useChat } from '@/context/ChatContext';
 
 const TABS = [
-  { key: 'home',    label: 'Home',    href: '/',         icon: Home },
-  { key: 'shop',    label: 'Shop',    href: '/listings', icon: Store },
-  { key: 'feed',    label: 'Feed',    href: '/feed',     icon: PlayCircle },
-  { key: 'cart',    label: 'Cart',    href: '/cart',     icon: ShoppingCart, showBadge: true },
-  { key: 'profile', label: 'Profile', href: '/account',  icon: User, requiresAuth: true },
+  { key: 'home',     label: 'Home',    href: '/',         icon: Home },
+  { key: 'shop',     label: 'Shop',    href: '/listings', icon: Store },
+  { key: 'feed',     label: 'Feed',    href: '/feed',     icon: PlayCircle },
+  { key: 'messages', label: 'Inbox',   href: '/messages', icon: MessageSquare, showBadge: true, badgeType: 'unread' },
+  { key: 'profile',  label: 'Profile', href: '/account',  icon: User, requiresAuth: true },
 ];
 
 export default function MobileTabBar() {
@@ -20,8 +20,9 @@ export default function MobileTabBar() {
   const router = useRouter();
   const { cartCount = 0 } = useCart();
   const { isAuthenticated } = useAuth();
+  const { totalUnread = 0 } = useChat();
 
-  // Same rule as the Header: logged out means zero, don't trust stale cart state.
+  const safeUnread = isAuthenticated ? totalUnread : 0;
   const safeCartCount = isAuthenticated ? cartCount : 0;
 
   const isActive = (tab) => {
@@ -95,7 +96,6 @@ export default function MobileTabBar() {
           background: rgba(13, 148, 136, 0.08);
         }
 
-        /* Small active indicator above the icon */
         .mtb-tab.is-active::before {
           content: '';
           position: absolute;
@@ -127,7 +127,6 @@ export default function MobileTabBar() {
           line-height: 1;
         }
 
-        /* ── Show only on mobile ── */
         @media (max-width: 768px) {
           .mtb-wrap { display: block; }
         }
@@ -138,7 +137,10 @@ export default function MobileTabBar() {
           {TABS.map((tab) => {
             const Icon = tab.icon;
             const active = isActive(tab);
-            const showBadge = tab.showBadge && safeCartCount > 0;
+
+            // Pick the correct count based on tab type
+            const badgeCount = tab.badgeType === 'unread' ? safeUnread : safeCartCount;
+            const showBadge = tab.showBadge && badgeCount > 0;
 
             return (
               <Link
@@ -157,7 +159,7 @@ export default function MobileTabBar() {
                   <Icon size={24} strokeWidth={active ? 2.4 : 2} />
                   {showBadge && (
                     <span className="mtb-badge">
-                      {safeCartCount > 99 ? '99+' : safeCartCount}
+                      {badgeCount > 99 ? '99+' : badgeCount}
                     </span>
                   )}
                 </span>

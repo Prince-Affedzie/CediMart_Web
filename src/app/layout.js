@@ -6,6 +6,8 @@ import AppDownloadBanner from '@/components/AppDownloadBanner';
 import MobileTabBar from '@/components/MobileTabBar';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
+import {NotificationProvider} from '@/context/NotificationContext'
+import {ChatProvider} from '@/context/ChatContext'
 import Script from 'next/script';
 import { Analytics } from "@vercel/analytics/next"
 import './globals.css';
@@ -161,11 +163,15 @@ export default function RootLayout({ children }) {
       >
         <AuthProvider>
           <CartProvider>
+            <NotificationProvider>
+              <ChatProvider>
             <AppDownloadBanner />
             <Header />
             <main>{children}</main>
             <MobileTabBar />
             <ConditionalFooter />
+            </ChatProvider>
+            </NotificationProvider>
           </CartProvider>
         </AuthProvider>
         <Script

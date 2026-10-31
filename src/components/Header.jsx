@@ -53,7 +53,7 @@ const HIDE_SEARCH_ON = [
   '/vendor',
   '/vendor-login',
   '/vendor-signup',
-  '/orders','/account','/auth',
+  '/orders','/account','/auth','/messages',
   '/product','/privacy-policy','/sell','/vendors','/visual-search','/about',
   '/support','/payment','/order-confirmed','/download','/favorites','/contact'
 

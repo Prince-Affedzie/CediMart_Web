@@ -17,7 +17,7 @@ const REASONS = [
   { key: 'other', label: 'Something else', desc: 'Doesn’t fit the categories above' },
 ];
 
-export default function ReportModal({ open, onClose, contentType, contentId }) {
+export default function ReportModal({ open, onClose, contentType, contentId, onSubmitted }) {
   const [reason, setReason] = useState(null);
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -48,7 +48,9 @@ export default function ReportModal({ open, onClose, contentType, contentId }) {
       });
       if (res.data?.success) {
         setResult({ ok: true, message: res.data?.message || 'Thanks — our team will review it.' });
+        onSubmitted?.();
       } else {
+        if (err?.response?.status === 409) onSubmitted?.();
         setResult({ ok: false, message: res.data?.message || 'Failed to submit report' });
       }
     } catch (err) {
