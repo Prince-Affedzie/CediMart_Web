@@ -24,6 +24,7 @@ const HIDDEN_PREFIXES = [
   '/account',
   '/product',
   '/vendors',
+  '/messages'
 ];
 
 export default function ConditionalFooter() {
