@@ -12,6 +12,7 @@ import {
 } from '@/apis/chatApi';
 import { NotificationContext } from './NotificationContext';
 import { useAuth } from './AuthContext';
+import { mergeConversation, isHydrated } from '@/utils/conversation';
 
 const PAGE_SIZE = 30;
 const SEND_TIMEOUT_MS = 15000;
@@ -55,9 +56,15 @@ export const ChatProvider = ({ children }) => {
   const joinedRoomRef = useRef(null);
   const pendingReadRef = useRef(false);
   const unreadTimerRef = useRef(null);
+  const inboxRef = useRef([]);
+  const inboxTimerRef = useRef(null);
 
   useEffect(() => { messagesRef.current = messages; }, [messages]);
-  useEffect(() => () => clearTimeout(unreadTimerRef.current), []);
+  useEffect(() => { inboxRef.current = inbox; }, [inbox]);
+  useEffect(() => () => {
+     clearTimeout(unreadTimerRef.current);
+     clearTimeout(inboxTimerRef.current);
+   }, []);
 
   const setActive = useCallback((conv) => {
     activeConvRef.current = conv;
@@ -75,11 +82,12 @@ export const ChatProvider = ({ children }) => {
 
   const upsertInboxConversation = useCallback((updated) => {
     setInbox((prev) => {
-      const exists = prev.some((c) => c._id === updated._id);
-      if (!exists) return [updated, ...prev];
-      return prev
-        .map((c) => (c._id === updated._id ? updated : c))
-        .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    const existing = prev.find((c) => c._id === updated._id);
+     if (!existing) return [updated, ...prev];
+     const merged = mergeConversation(existing, updated);
+     return prev
+       .map((c) => (c._id === updated._id ? merged : c))
+       .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
     });
   }, []);
 
@@ -88,7 +96,13 @@ export const ChatProvider = ({ children }) => {
     setInboxLoading(true);
     try {
       const res = await getInboxApi({ status: 'active' });
-      if (res.data?.success) setInbox(res.data.conversations);
+      if (res.data?.success) {
+        setInbox((prev) =>
+          res.data.conversations.map((c) =>
+            mergeConversation(prev.find((p) => p._id === c._id), c)
+          )
+        );
+      }
     } catch (err) {
       console.error('loadInbox error:', err.message);
     } finally {
@@ -112,6 +126,11 @@ export const ChatProvider = ({ children }) => {
     unreadTimerRef.current = setTimeout(loadTotalUnread, 300);
   }, [loadTotalUnread]);
 
+   const refreshInboxSoon = useCallback(() => {
+    clearTimeout(inboxTimerRef.current);
+    inboxTimerRef.current = setTimeout(loadInbox, 300);
+  }, [loadInbox]);
+
   // ── Open a conversation (create or fetch) ─────────────────────────────────
   const openConversation = useCallback(async ({ productId, recipientId } = {}) => {
     try {
@@ -122,11 +141,13 @@ export const ChatProvider = ({ children }) => {
       const res = await openConversationApi(payload);
       if (res.data?.success) {
         const conversation = res.data.conversation;
-        setInbox((prev) =>
-          prev.some((c) => c._id === conversation._id)
-            ? prev
-            : [{ ...conversation, myUnread: 0 }, ...prev]
-        );
+        setInbox((prev) => {
+          const existing = prev.find((c) => c._id === conversation._id);
+          if (existing) {
+            return prev.map((c) => (c._id === conversation._id ? mergeConversation(c, conversation) : c));
+          }
+          return [{ ...conversation, myUnread: 0 }, ...prev];
+        });
         return conversation;
       }
     } catch (err) {
@@ -349,6 +370,10 @@ export const ChatProvider = ({ children }) => {
       const myUnread = isActive ? 0 : isBuyer ? conversation.buyerUnread : conversation.sellerUnread;
       upsertInboxConversation({ ...conversation, myUnread });
       refreshUnreadSoon();
+      const known = inboxRef.current.some((c) => c._id === conversation._id);
+      upsertInboxConversation({ ...conversation, myUnread });
+      refreshUnreadSoon();
+      if (!known && !isHydrated(conversation)) refreshInboxSoon();
     };
 
     const onMessagesRead = ({ conversationId }) => {
@@ -394,7 +419,7 @@ export const ChatProvider = ({ children }) => {
     };
   }, [
     socket, userId, loadMessages, loadInbox, loadTotalUnread,
-    markActiveRead, upsertInboxConversation, refreshUnreadSoon,
+    markActiveRead, upsertInboxConversation, refreshUnreadSoon,refreshInboxSoon,
   ]);
 
   // ── Load on login, reset on logout ────────────────────────────────────────

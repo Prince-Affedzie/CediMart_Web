@@ -10,6 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import InboxList from '@/components/Messages/InboxList';
 import ChatPanel from '@/components/Messages/ChatPanel';
 import { useStageHeight } from '@/components/Messages/messageUtils';
+import { isHydrated } from '@/utils/conversation';
 import './messages.css';
 
 export default function MessagesClient() {
@@ -27,6 +28,12 @@ export default function MessagesClient() {
 
   const selected = useMemo(() => inbox.find((c) => c._id === convId) || null, [inbox, convId]);
   const selectedId = selected?._id || null;
+
+  // A conversation can arrive with bare ids (no names or product yet): fetch the full record once.
+  const needsHydrate = !!selected && !isHydrated(selected);
+  useEffect(() => {
+    if (needsHydrate) loadInbox();
+  }, [needsHydrate, loadInbox]);
 
   // Latest values for effects that must only re-run when the selected id changes
   const selectedRef = useRef(null);

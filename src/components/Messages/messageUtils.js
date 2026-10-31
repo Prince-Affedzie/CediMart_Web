@@ -11,6 +11,7 @@ export const getOtherParty = (conv, userId) => {
 
 export const getDisplayName = (party) => {
   if (!party) return 'Unknown User';
+  if (typeof party !== 'object') return 'Loading…';
   if (party.firstName) return party.lastName ? `${party.firstName} ${party.lastName}` : party.firstName;
   return party.name || 'Unknown User';
 };
@@ -18,13 +19,13 @@ export const getDisplayName = (party) => {
 export const getFirstName = (party) =>
   party?.firstName || party?.name?.split(' ')[0] || 'Chat';
 
-export const getInitial = (party) => (party?.firstName || party?.name || '?').charAt(0).toUpperCase();
-
+export const getInitial = (party) =>
+  typeof party === 'string' ? '' : (party?.firstName || party?.name || '?').charAt(0).toUpperCase();
 // The mobile chat used `avatar`, the feed uses `profileImage`. Accept both.
 export const getAvatar = (party) => party?.avatar || party?.profileImage || null;
 
 export const getProductName = (product, fallback = 'Product') =>
-  product?.name || product?.title || fallback;
+  typeof product === 'string' ? 'Loading…' : product?.name || product?.title || fallback;
 
 // A small on-brand rotation so contacts without a photo get distinct colours
 const AVATAR_PALETTE = [
