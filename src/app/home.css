@@ -986,8 +986,9 @@
   .home-main,
   .home-section {
     min-width: 0;
-    max-width: 105%;
+    max-width: 100%;
     box-sizing: border-box;
+    overflow:hidden;
   }
 
   .home-main{

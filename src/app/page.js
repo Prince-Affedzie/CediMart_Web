@@ -12,9 +12,13 @@ import SeoIntro from '@/components/Home/SeoIntro';
 import FloatingAiButton from '@/components/Home/FloatingAiButton';
 import VisualSearchFab from '@/components/VisualSearchFab';
 import WelcomeTips from '@/components/WelcomeTips';
+import OpenAppButton, { StickyOpenApp } from '@/components/VendorAuth/AppLoginCta';
 import './home.css';
 
 export default function HomePage() {
+const APP_STORE_URL = 'https://apps.apple.com/us/app/cedimart/id6762318566';
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.freshyfood.factory';
+
   return (
     <div className="home-page">
       <main className="home-main">
@@ -56,10 +60,11 @@ export default function HomePage() {
           title="Just for you" subtitle="Curated for you"
           tag="student-favorite" limit={6} seeAllHref="/tag/student-favorite"
         />
-
+      
         <SeoIntro />
 
         <WelcomeTips />
+        
         <VisualSearchFab />
         <FloatingAiButton />
       </main>
